@@ -1,0 +1,34 @@
+ID:61 | RawCode:[1] | ParentID: | ParentFull:NULL |
+CalcFull:[1] | Name: PERSIAPAN LAPANGAN / SITE WORK
+ ID:62 | RawCode:[1.1] | ParentID:61 | ParentFull:1 |
+CalcFull:[1.MARK.1] | Name: PEKERJAAN PERSIAPAN
+  ID:63 | RawCode:[1.1.1] | ParentID:62 | ParentFull:1.MARK.1 |
+CalcFull:[1.MARK.1.MARK.1] | Name: Pembuatan Pagar Proyek
+  ID:64 | RawCode:[1.1.3] | ParentID:62 | ParentFull:1.MARK.1 |
+CalcFull:[1.MARK.1.MARK.3] | Name: Pembersihan dan Pengupasan Per
+  ID:65 | RawCode:[1.1.4] | ParentID:62 | ParentFull:1.MARK.1 |
+CalcFull:[1.MARK.1.MARK.4] | Name: Pengukuran dan Pasangan Bouwpl
+ ID:66 | RawCode:[1.2] | ParentID:61 | ParentFull:1 |
+CalcFull:[1.MARK.2] | Name: PEKERJAAN GALIAN TANAH
+  ID:67 | RawCode:[1.2.1] | ParentID:66 | ParentFull:1.MARK.2 |
+CalcFull:[1.MARK.2.MARK.1] | Name: Tanah Biasa 
+   ID:68 | RawCode:[1.2.1.1] | ParentID:67 | ParentFull:1.MARK.2.MARK.1 |
+CalcFull:[1.MARK.2.MARK.1.MARK.1] | Name: Cara Manual 
+ ID:69 | RawCode:[1.3] | ParentID:61 | ParentFull:1 |
+CalcFull:[1.MARK.3] | Name: PEKERJAAN TIMBUNAN DAN PEMADAT
+  ID:70 | RawCode:[1.3.1] | ParentID:69 | ParentFull:1.MARK.3 |
+CalcFull:[1.MARK.3.MARK.1] | Name: Timbunan atau Urukan Secara Ma
+ID:71 | RawCode:[2] | ParentID: | ParentFull:NULL |
+CalcFull:[2] | Name: PEKERJAAN STRUKTUR 
+ ID:72 | RawCode:[2.1] | ParentID:71 | ParentFull:2 |
+CalcFull:[2.MARK.1] | Name: PEKERJAAN RANGKA ATAP 
+  ID:73 | RawCode:[2.1.1] | ParentID:72 | ParentFull:2.MARK.1 |
+CalcFull:[2.MARK.1.MARK.1] | Name: Rangka Atap Baja Ringan 
+ID:76 | RawCode:[6] | ParentID: | ParentFull:NULL |
+CalcFull:[6] | Name: PEKERJAAN PLAMBING 
+ ID:77 | RawCode:[6.4] | ParentID:76 | ParentFull:6 |
+CalcFull:[6.MARK.4] | Name: SISTEM PERPIPAAN DALAM GEDUNG 
+  ID:79 | RawCode:[6.4.1] | ParentID:77 | ParentFull:6.MARK.4 |
+CalcFull:[6.MARK.4.MARK.1] | Name: Pipa PVC 
+  ID:80 | RawCode:[6.4.2] | ParentID:77 | ParentFull:6.MARK.4 |
+CalcFull:[6.MARK.4.MARK.2] | Name: Pipa Galvanis 
