@@ -1,59 +1,79 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PROMAN5 - Construction Project Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+PROMAN5 adalah sistem Enterprise Resource Planning (ERP) dan Manajemen Proyek mutakhir yang dirancang khusus untuk industri konstruksi dan kontraktor di Indonesia. Dibangun menggunakan **Laravel 12**, sistem ini mengintegrasikan seluruh siklus hidup proyek konstruksi, mulai dari perencanaan anggaran (RAB), pengadaan material (Procurement), manajemen stok, hingga pelaporan progres lapangan secara komprehensif.
 
-## About Laravel
+## 🚀 Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### 1. Manajemen Proyek & Dokumen
+* **Project Tracking & Scheduling**: Pemantauan jadwal proyek dan penugasan tim (Project Team) secara terstruktur.
+* **Document Versioning**: Sistem manajemen file proyek dengan dukungan versi dokumen (Project File Version) dan fitur komentar.
+* **Progress Reporting**: Pembuatan laporan progres mingguan dan harian (Weekly & Progress Report) untuk memonitor perkembangan fisik lapangan.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### 2. Estimasi Biaya (RAB) & AHSP
+* **Integrasi AHSP (Analisa Harga Satuan Pekerjaan)**: Manajemen sistematis untuk kategori, komponen, dan tipe pekerjaan berstandar AHSP.
+* **RAB (Rencana Anggaran Biaya)**: Pembuatan RAB proyek yang mendetail (RabSection, RabItem) guna menjamin akurasi budget.
+* **Price History & Snapshot**: Pelacakan riwayat harga dasar AHSP untuk analisis fluktuasi biaya historis.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 3. Pengadaan (Procurement) & Supply Chain
+* **Supplier Management**: Pengelolaan basis data vendor dan pemasok proyek.
+* **Purchase Request (PR) & Purchase Order (PO)**: Alur pengajuan dan persetujuan pengadaan barang yang tersistematisasi.
+* **Goods Receipt**: Pencatatan penerimaan barang di gudang atau lokasi proyek yang secara otomatis memperbarui status inventaris.
 
-## Learning Laravel
+### 4. Manajemen Material & Inventaris
+* **Material Request & Usage**: Alur permintaan kebutuhan material serta pencatatan penggunaannya di lokasi proyek.
+* **Material Forecasting**: Fitur peramalan kebutuhan material proyek berbasis data riwayat (Material Forecast).
+* **Real-time Inventory**: Pelacakan stok material secara real-time yang dilengkapi dengan riwayat mutasi barang (Inventory Log).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 5. Keamanan & Notifikasi Terpadu
+* **Role & Permission Management**: Sistem manajemen hak akses (RBAC) granular menggunakan `spatie/laravel-permission`.
+* **Activity Audit Trails**: Pencatatan otomatis untuk setiap aksi pengguna di dalam sistem melalui `spatie/laravel-activitylog`.
+* **Push Notifications**: Terintegrasi penuh dengan **Firebase Cloud Messaging (FCM)** untuk pengiriman notifikasi real-time via web dan perangkat mobile.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### 6. Integrasi AI & Ekosistem Modern
+* **Kecerdasan Buatan (AI)**: Mendukung integrasi **OpenAI** dan **Google Gemini** (`openai-php/laravel`, `google-gemini-php/laravel`) untuk kemudahan analitik dan otomasi fitur.
+* **Export/Import Excel**: Pengelolaan data bulk secara mudah melalui impor dan ekspor file Excel (`maatwebsite/excel`).
+* **API Documentation**: Dokumentasi API otomatis dan rapi menggunakan `knuckleswtf/scribe` dan `dedoc/scramble`.
 
-## Laravel Sponsors
+## 🛠️ Tech Stack & Requirements
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Backend**: PHP `^8.2`, Laravel Framework `^12.0`
+- **Frontend/UI**: Livewire `^3.6`, TailwindCSS, Vite
+- **Database Engine**: MySQL / PostgreSQL / SQLite
+- **Cache, Session, & Queue**: Redis (`predis/predis`)
+- **Cloud Storage Integration**: AWS S3 (`league/flysystem-aws-s3-v3`)
 
-### Premium Partners
+## ⚙️ Instalasi & Setup
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+1. **Clone repositori**
+   ```bash
+   git clone <repository_url> bege-proman5
+   cd bege-proman5
+   ```
 
-## Contributing
+2. **Install dependensi (PHP & Node.js)**
+   ```bash
+   composer install
+   npm install
+   ```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+3. **Setup environment**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Pastikan untuk menyesuaikan konfigurasi database, Redis, Firebase credentials, dan AWS di dalam file `.env`.*
 
-## Code of Conduct
+4. **Migrasi dan Seeding Database**
+   ```bash
+   php artisan migrate
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+5. **Jalankan Aplikasi**
+   Untuk memulai server aplikasi secara terintegrasi (menjalankan server web, antrian, log, dan Vite secara bersamaan):
+   ```bash
+   npm run dev
+   ```
 
-## Security Vulnerabilities
+## 📝 Lisensi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Aplikasi ini bersifat **Proprietary** dan dikembangkan khusus untuk keperluan operasional. Dilarang menyalin, mendistribusikan ulang, atau menggunakan bagian manapun dari kode sumber ini tanpa izin tertulis yang sah.
