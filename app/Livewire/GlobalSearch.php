@@ -81,12 +81,22 @@ class GlobalSearch extends Component
             return;
         }
 
+        $user = auth()->user();
+        $isPrivileged = $user->hasRole(['super-admin', 'Superadmin', 'administrator']) || $user->can('financials.manage');
         $results = [];
 
         // Search Projects
-        $projects = Project::where('name', 'like', "{$query}%")
-            ->orWhere('code', 'like', "%{$query}%")
-            ->orWhere('location', 'like', "%{$query}%")
+        $projectsQuery = Project::query();
+        if (!$isPrivileged) {
+            $projectsQuery->whereHas('team', function ($q) use ($user) {
+                $q->where('user_id', $user->id)->where('is_active', true);
+            });
+        }
+        $projects = $projectsQuery->where(function($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('code', 'like', "%{$query}%")
+                  ->orWhere('location', 'like', "%{$query}%");
+            })
             ->limit(5)
             ->get();
 
@@ -103,13 +113,17 @@ class GlobalSearch extends Component
         }
 
         // Search Purchase Orders
-        $purchaseOrders = PurchaseOrder::with(['project', 'supplier'])
-            ->where('po_number', 'like', "%{$query}%")
-            ->orWhereHas('supplier', function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%");
-            })
-            ->orWhereHas('project', function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%");
+        $poQuery = PurchaseOrder::with(['project', 'supplier']);
+        if (!$isPrivileged) {
+            $poQuery->whereIn('project_id', function ($q) use ($user) {
+                $q->select('project_id')->from('project_team')->where('user_id', $user->id)->where('is_active', true);
+            });
+        }
+        $purchaseOrders = $poQuery->where(function($q) use ($query) {
+                $q->where('po_number', 'like', "%{$query}%")
+                  ->orWhereHas('supplier', function ($sq) use ($query) {
+                      $sq->where('name', 'like', "%{$query}%");
+                  });
             })
             ->limit(5)
             ->get();
@@ -127,11 +141,15 @@ class GlobalSearch extends Component
         }
 
         // Search Purchase Requests
-        $purchaseRequests = PurchaseRequest::with(['project'])
-            ->where('pr_number', 'like', "%{$query}%")
-            ->orWhere('status', 'like', "%{$query}%")
-            ->orWhereHas('project', function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%");
+        $prQuery = PurchaseRequest::with(['project']);
+        if (!$isPrivileged) {
+            $prQuery->whereIn('project_id', function ($q) use ($user) {
+                $q->select('project_id')->from('project_team')->where('user_id', $user->id)->where('is_active', true);
+            });
+        }
+        $purchaseRequests = $prQuery->where(function($q) use ($query) {
+                $q->where('pr_number', 'like', "%{$query}%")
+                  ->orWhere('status', 'like', "%{$query}%");
             })
             ->limit(5)
             ->get();
@@ -149,11 +167,15 @@ class GlobalSearch extends Component
         }
 
         // Search RAB Items
-        $rabItems = RabItem::with(['project', 'section'])
-            ->where('description', 'like', "%{$query}%")
-            ->orWhere('work_name', 'like', "%{$query}%")
-            ->orWhereHas('project', function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%");
+        $rabQuery = RabItem::with(['project', 'section']);
+        if (!$isPrivileged) {
+            $rabQuery->whereIn('project_id', function ($q) use ($user) {
+                $q->select('project_id')->from('project_team')->where('user_id', $user->id)->where('is_active', true);
+            });
+        }
+        $rabItems = $rabQuery->where(function($q) use ($query) {
+                $q->where('description', 'like', "%{$query}%")
+                  ->orWhere('work_name', 'like', "%{$query}%");
             })
             ->limit(5)
             ->get();
@@ -171,60 +193,66 @@ class GlobalSearch extends Component
         }
 
         // Search Materials
-        $materials = Material::where('name', 'like', "%{$query}%")
-            ->orWhere('code', 'like', "%{$query}%")
-            ->orWhere('category', 'like', "%{$query}%")
-            ->limit(5)
-            ->get();
+        if ($user->can('materials.view')) {
+            $materials = Material::where('name', 'like', "%{$query}%")
+                ->orWhere('code', 'like', "%{$query}%")
+                ->orWhere('category', 'like', "%{$query}%")
+                ->limit(5)
+                ->get();
 
-        foreach ($materials as $material) {
-            $results[] = [
-                'type' => 'material',
-                'group' => 'Material',
-                'icon' => 'cube',
-                'color' => 'blue',
-                'title' => $material->name,
-                'subtitle' => $material->code . ' • ' . ($material->category ?? 'No category'),
-                'url' => route('materials.index', ['search' => $material->code]),
-            ];
+            foreach ($materials as $material) {
+                $results[] = [
+                    'type' => 'material',
+                    'group' => 'Material',
+                    'icon' => 'cube',
+                    'color' => 'blue',
+                    'title' => $material->name,
+                    'subtitle' => $material->code . ' • ' . ($material->category ?? 'No category'),
+                    'url' => route('materials.index', ['search' => $material->code]),
+                ];
+            }
         }
 
         // Search Suppliers
-        $suppliers = Supplier::where('name', 'like', "%{$query}%")
-            ->orWhere('code', 'like', "%{$query}%")
-            ->orWhere('city', 'like', "%{$query}%")
-            ->limit(5)
-            ->get();
+        if ($user->can('suppliers.view')) {
+            $suppliers = Supplier::where('name', 'like', "%{$query}%")
+                ->orWhere('code', 'like', "%{$query}%")
+                ->orWhere('city', 'like', "%{$query}%")
+                ->limit(5)
+                ->get();
 
-        foreach ($suppliers as $supplier) {
-            $results[] = [
-                'type' => 'supplier',
-                'group' => 'Supplier',
-                'icon' => 'truck',
-                'color' => 'green',
-                'title' => $supplier->name,
-                'subtitle' => $supplier->code . ' • ' . ($supplier->city ?? 'No city'),
-                'url' => route('suppliers.index', ['search' => $supplier->code]),
-            ];
+            foreach ($suppliers as $supplier) {
+                $results[] = [
+                    'type' => 'supplier',
+                    'group' => 'Supplier',
+                    'icon' => 'truck',
+                    'color' => 'green',
+                    'title' => $supplier->name,
+                    'subtitle' => $supplier->code . ' • ' . ($supplier->city ?? 'No city'),
+                    'url' => route('suppliers.index', ['search' => $supplier->code]),
+                ];
+            }
         }
 
         // Search Clients
-        $clients = Client::where('name', 'like', "%{$query}%")
-            ->orWhere('code', 'like', "%{$query}%")
-            ->orWhere('contact_person', 'like', "%{$query}%")
-            ->limit(5)
-            ->get();
+        if ($user->can('clients.view')) {
+            $clients = Client::where('name', 'like', "%{$query}%")
+                ->orWhere('code', 'like', "%{$query}%")
+                ->orWhere('contact_person', 'like', "%{$query}%")
+                ->limit(5)
+                ->get();
 
-        foreach ($clients as $client) {
-            $results[] = [
-                'type' => 'client',
-                'group' => 'Klien',
-                'icon' => 'user-group',
-                'color' => 'purple',
-                'title' => $client->name,
-                'subtitle' => $client->code . ' • ' . ($client->city ?? 'No city'),
-                'url' => route('clients.index', ['search' => $client->code]),
-            ];
+            foreach ($clients as $client) {
+                $results[] = [
+                    'type' => 'client',
+                    'group' => 'Klien',
+                    'icon' => 'user-group',
+                    'color' => 'purple',
+                    'title' => $client->name,
+                    'subtitle' => $client->code . ' • ' . ($client->city ?? 'No city'),
+                    'url' => route('clients.index', ['search' => $client->code]),
+                ];
+            }
         }
 
         $this->results = $results;

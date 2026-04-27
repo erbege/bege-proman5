@@ -24,8 +24,11 @@ class MaterialAnalysisController extends Controller
      */
     public function index(Request $request, Project $project)
     {
+        $this->authorize('analysis.view');
+
         $activeTab = $request->get('tab', 'summary');
 
+        // ... existing logic ...
         // Get counts for tab badges (lightweight queries)
         $analyzedCount = $project->rabItems()->where('is_analyzed', true)->count();
         $unanalyzedCount = $project->rabItems()->notAnalyzed()->count();
@@ -103,6 +106,8 @@ class MaterialAnalysisController extends Controller
      */
     public function updateMapping(Request $request, Project $project, \App\Models\MaterialForecast $forecast)
     {
+        $this->authorize('analysis.manage');
+
         $validated = $request->validate([
             'material_id' => 'nullable|exists:materials,id',
         ]);
@@ -121,6 +126,8 @@ class MaterialAnalysisController extends Controller
      */
     public function analyze(Request $request, Project $project, RabItem $item)
     {
+        $this->authorize('analysis.run-ai');
+
         $provider = $request->input('provider', config('ai.default_provider', 'openai'));
 
         // Check if AI is globally disabled
@@ -148,6 +155,8 @@ class MaterialAnalysisController extends Controller
      */
     public function analyzeLocal(Request $request, Project $project, RabItem $item)
     {
+        $this->authorize('analysis.manage');
+
         // Find materials using source-based local matching
         $materials = $this->matcher->analyzeRabItemLocal($item);
 
@@ -167,6 +176,8 @@ class MaterialAnalysisController extends Controller
      */
     public function analyzeAllLocal(Request $request, Project $project)
     {
+        $this->authorize('analysis.manage');
+
         $unanalyzedCount = $project->rabItems()->notAnalyzed()->count();
 
         if ($unanalyzedCount === 0) {
@@ -220,6 +231,7 @@ class MaterialAnalysisController extends Controller
      */
     protected function streamLocalAnalysis(Project $project, $items)
     {
+        // Internal helper, usually called from authorized analyzeAllLocal
         return response()->stream(function () use ($items) {
             $total = $items->count();
             $processed = 0;
@@ -274,6 +286,7 @@ class MaterialAnalysisController extends Controller
      */
     protected function saveLocalForecasts(RabItem $item, array $materials): void
     {
+        // Internal helper, should be safe
         // Delete existing forecasts for this item
         $item->materialForecasts()->delete();
 
@@ -300,6 +313,8 @@ class MaterialAnalysisController extends Controller
      */
     public function analyzeAll(Request $request, Project $project)
     {
+        $this->authorize('analysis.run-ai');
+
         $provider = $request->input('provider', config('ai.default_provider', 'openai'));
 
         // Check if AI is globally disabled
@@ -330,6 +345,8 @@ class MaterialAnalysisController extends Controller
      */
     public function showItem(Project $project, RabItem $item)
     {
+        $this->authorize('analysis.view');
+
         $item->load('materialForecasts.material');
 
         return view('projects.analysis.item', compact('project', 'item'));
@@ -340,6 +357,8 @@ class MaterialAnalysisController extends Controller
      */
     public function reanalyze(Request $request, Project $project, RabItem $item)
     {
+        $this->authorize('analysis.run-ai');
+
         $provider = $request->input('provider', config('ai.default_provider', 'openai'));
 
         // Check if AI is globally disabled
@@ -371,6 +390,8 @@ class MaterialAnalysisController extends Controller
      */
     public function reanalyzeLocal(Request $request, Project $project, RabItem $item)
     {
+        $this->authorize('analysis.manage');
+
         // Delete existing forecasts
         $item->materialForecasts()->delete();
         $item->update(['is_analyzed' => false]);
@@ -384,6 +405,8 @@ class MaterialAnalysisController extends Controller
      */
     public function deleteForecast(Request $request, Project $project, MaterialForecast $forecast)
     {
+        $this->authorize('analysis.manage');
+
         $rabItem = $forecast->rabItem;
         $materialName = $forecast->raw_material_name;
 
@@ -410,6 +433,8 @@ class MaterialAnalysisController extends Controller
      */
     public function bulkDeleteForecasts(Request $request, Project $project)
     {
+        $this->authorize('analysis.manage');
+
         $validated = $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:rab_items,id'
@@ -431,6 +456,8 @@ class MaterialAnalysisController extends Controller
      */
     public function bulkDeleteMaterials(Request $request, Project $project)
     {
+        $this->authorize('analysis.manage');
+
         $validated = $request->validate([
             'forecast_ids' => 'required|array',
             'forecast_ids.*' => 'exists:material_forecasts,id'

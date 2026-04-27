@@ -23,6 +23,7 @@ class MaterialRequestController extends Controller
      */
     public function index(Project $project)
     {
+        $this->authorize('mr.view');
         $query = $project->materialRequests()->with(['requestedBy', 'items']);
         
         $user = auth()->user();
@@ -39,6 +40,7 @@ class MaterialRequestController extends Controller
      */
     public function create(Project $project)
     {
+        $this->authorize('mr.manage');
         $materials = Material::orderBy('name')->get();
         return view('projects.mr.create', compact('project', 'materials'));
     }
@@ -48,6 +50,7 @@ class MaterialRequestController extends Controller
      */
     public function store(Request $request, Project $project)
     {
+        $this->authorize('mr.manage');
         $validated = $request->validate([
             'request_date' => 'required|date',
             'notes' => 'nullable|string',
@@ -103,6 +106,7 @@ class MaterialRequestController extends Controller
      */
     public function show(Project $project, MaterialRequest $mr)
     {
+        $this->authorize('mr.view');
         $user = auth()->user();
         if (($user->hasRole('supervisor') || $user->getProjectRole($project) === 'supervisor') && $mr->requested_by !== $user->id) {
             abort(403, 'Anda tidak memiliki akses ke Material Request ini.');
@@ -117,6 +121,7 @@ class MaterialRequestController extends Controller
      */
     public function edit(Project $project, MaterialRequest $mr)
     {
+        $this->authorize('mr.manage');
         // Only pending MR can be edited
         if ($mr->status !== 'pending' && $mr->status !== 'draft') {
             return back()->with('error', 'Hanya MR status pending yang bisa diedit.');
@@ -131,6 +136,7 @@ class MaterialRequestController extends Controller
      */
     public function update(Request $request, Project $project, MaterialRequest $mr)
     {
+        $this->authorize('mr.manage');
         if ($mr->status !== 'pending' && $mr->status !== 'draft') {
             return back()->with('error', 'Hanya MR status pending yang bisa diedit.');
         }
@@ -192,6 +198,7 @@ class MaterialRequestController extends Controller
      */
     public function destroy(Project $project, MaterialRequest $mr)
     {
+        $this->authorize('mr.manage');
         if ($mr->status !== 'pending' && $mr->status !== 'draft') {
             return back()->with('error', 'Hanya MR status pending yang bisa dihapus.');
         }
@@ -202,6 +209,7 @@ class MaterialRequestController extends Controller
 
     public function updateStatus(Request $request, Project $project, MaterialRequest $mr)
     {
+        $this->authorize('mr.manage');
         $request->validate([
             'status' => 'required|in:approved,rejected',
             'comment' => 'nullable|string|max:500'

@@ -32,6 +32,9 @@ class MaterialUsageManager extends Component
 
     public function mount(Project $project)
     {
+        if (!auth()->user()->can('procurement.view')) {
+            abort(403);
+        }
         $this->project = $project;
         $this->usageDate = now()->format('Y-m-d');
     }
@@ -43,6 +46,9 @@ class MaterialUsageManager extends Component
 
     public function openModal()
     {
+        if (!auth()->user()->can('procurement.manage')) {
+            return;
+        }
         $this->resetValidation();
         $this->reset(['usageDate', 'rabItemId', 'notes', 'items']);
         $this->usageDate = now()->format('Y-m-d');
@@ -57,6 +63,9 @@ class MaterialUsageManager extends Component
 
     public function showDetail($id)
     {
+        if (!auth()->user()->can('procurement.view')) {
+            return;
+        }
         $this->selectedUsage = MaterialUsage::with(['items.material', 'createdBy', 'rabItem'])->find($id);
         $this->showDetailModal = true;
     }
@@ -96,6 +105,9 @@ class MaterialUsageManager extends Component
 
     public function save()
     {
+        if (!auth()->user()->can('procurement.manage')) {
+            return;
+        }
         $this->validate([
             'usageDate' => 'required|date',
             'rabItemId' => 'nullable|exists:rab_items,id',
@@ -155,6 +167,11 @@ class MaterialUsageManager extends Component
 
     public function render()
     {
+        if (!auth()->user()->can('procurement.view')) {
+            return <<<'HTML'
+                <div>Akses Terbatas</div>
+            HTML;
+        }
         $query = $this->project->materialUsages()->with(['items.material', 'createdBy', 'rabItem'])->latest('usage_date');
 
         if ($this->search) {

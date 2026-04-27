@@ -41,6 +41,7 @@
             <div class="mb-4 flex flex-wrap justify-between items-center gap-4">
                 {{-- Actions --}}
                 <div class="flex items-center gap-2">
+                    @can('files.create')
                     <button wire:click="openUploadModal"
                         class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition lg:text-sm text-xs">
                         <x-heroicon-o-arrow-up-tray class="w-4 h-4 mr-2" />
@@ -51,6 +52,7 @@
                         <x-heroicon-o-folder-plus class="w-4 h-4 mr-2" />
                         Folder
                     </button>
+                    @endcan
                 </div>
 
                 {{-- Filters --}}
@@ -95,12 +97,16 @@
                                     </a>
                                     {{-- Folder Actions --}}
                                     <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/80 dark:bg-dark-800/80 rounded p-1">
+                                        @can('files.update')
                                         <button wire:click="editFolder({{ $folder->id }})" class="text-blue-600 hover:text-blue-800 p-1" title="Rename">
                                             <x-heroicon-o-pencil class="w-4 h-4" />
                                         </button>
+                                        @endcan
+                                        @can('files.delete')
                                         <button wire:click="deleteFolder({{ $folder->id }})" wire:confirm="Hapus folder ini?" class="text-red-600 hover:text-red-800 p-1" title="Hapus">
                                             <x-heroicon-o-trash class="w-4 h-4" />
                                         </button>
+                                        @endcan
                                     </div>
                                 </div>
                             @endforeach
@@ -160,12 +166,16 @@
                                             <a href="{{ route('projects.files.download', [$project, $file]) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400" title="Download">
                                                 <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
                                             </a>
+                                            @can('files.update')
                                             <button wire:click="openMoveModal({{ $file->id }})" class="text-gray-600 hover:text-gray-800 dark:text-gray-400" title="Pindahkan">
                                                 <x-heroicon-o-arrow-right class="w-5 h-5" />
                                             </button>
+                                            @endcan
+                                            @can('files.delete')
                                             <button wire:click="confirmDelete({{ $file->id }})" class="text-red-600 hover:text-red-800 dark:text-red-400" title="Hapus">
                                                 <x-heroicon-o-trash class="w-5 h-5" />
                                             </button>
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>

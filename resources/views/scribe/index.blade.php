@@ -225,7 +225,10 @@
                     <a href="#procurement-purchase-requests">Procurement: Purchase Requests</a>
                 </li>
                                     <ul id="tocify-subheader-procurement-purchase-requests" class="tocify-subheader">
-                                                    <li class="tocify-item level-2" data-unique="procurement-purchase-requests-GETapi-purchase-requests">
+                                                    <li class="tocify-item level-2" data-unique="procurement-purchase-requests-GETapi-projects--project_id--available-mr-items">
+                                <a href="#procurement-purchase-requests-GETapi-projects--project_id--available-mr-items">Get available MR items for import.</a>
+                            </li>
+                                                                                <li class="tocify-item level-2" data-unique="procurement-purchase-requests-GETapi-purchase-requests">
                                 <a href="#procurement-purchase-requests-GETapi-purchase-requests">List purchase requests.</a>
                             </li>
                                                                                 <li class="tocify-item level-2" data-unique="procurement-purchase-requests-GETapi-purchase-requests--purchaseRequest_id-">
@@ -2500,7 +2503,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Get all RAB sections and items for a project.</p>
+
 
 <span id="example-requests-GETapi-projects--project_id--rab">
 <blockquote>Example request:</blockquote>
@@ -2687,7 +2690,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Get detailed information about a specific RAB item.</p>
+
 
 <span id="example-requests-GETapi-projects--project_id--rab-items--item-">
 <blockquote>Example request:</blockquote>
@@ -3660,11 +3663,11 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Accept: application/json" \
     --data "{
     \"rab_item_id\": \"architecto\",
-    \"report_date\": \"2026-04-27T01:58:06\",
+    \"report_date\": \"2026-04-27T12:22:41\",
     \"progress_percentage\": 22,
     \"description\": \"Eius et animi quos velit et.\",
     \"issues\": \"architecto\",
-    \"weather\": \"stormy\",
+    \"weather\": \"rainy\",
     \"workers_count\": 39
 }"
 </code></pre></div>
@@ -3683,11 +3686,11 @@ const headers = {
 
 let body = {
     "rab_item_id": "architecto",
-    "report_date": "2026-04-27T01:58:06",
+    "report_date": "2026-04-27T12:22:41",
     "progress_percentage": 22,
     "description": "Eius et animi quos velit et.",
     "issues": "architecto",
-    "weather": "stormy",
+    "weather": "rainy",
     "workers_count": 39
 };
 
@@ -3711,11 +3714,11 @@ $response = $client-&gt;post(
         ],
         'json' =&gt; [
             'rab_item_id' =&gt; 'architecto',
-            'report_date' =&gt; '2026-04-27T01:58:06',
+            'report_date' =&gt; '2026-04-27T12:22:41',
             'progress_percentage' =&gt; 22,
             'description' =&gt; 'Eius et animi quos velit et.',
             'issues' =&gt; 'architecto',
-            'weather' =&gt; 'stormy',
+            'weather' =&gt; 'rainy',
             'workers_count' =&gt; 39,
         ],
     ]
@@ -3731,11 +3734,11 @@ import json
 url = 'http://localhost:8000/api/projects/1/progress'
 payload = {
     "rab_item_id": "architecto",
-    "report_date": "2026-04-27T01:58:06",
+    "report_date": "2026-04-27T12:22:41",
     "progress_percentage": 22,
     "description": "Eius et animi quos velit et.",
     "issues": "architecto",
-    "weather": "stormy",
+    "weather": "rainy",
     "workers_count": 39
 }
 headers = {
@@ -3867,10 +3870,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="report_date"                data-endpoint="POSTapi-projects--project_id--progress"
-               value="2026-04-27T01:58:06"
+               value="2026-04-27T12:22:41"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-04-27T01:58:06</code></p>
+<p>Must be a valid date. Example: <code>2026-04-27T12:22:41</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>progress_percentage</code></b>&nbsp;&nbsp;
@@ -3915,10 +3918,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="weather"                data-endpoint="POSTapi-projects--project_id--progress"
-               value="stormy"
+               value="rainy"
                data-component="body">
     <br>
-<p>Example: <code>stormy</code></p>
+<p>Example: <code>rainy</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>sunny</code></li> <li><code>cloudy</code></li> <li><code>rainy</code></li> <li><code>stormy</code></li></ul>
         </div>
@@ -4142,7 +4145,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
-    \"usage_date\": \"2026-04-27T01:58:07\",
+    \"usage_date\": \"2026-04-27T12:22:41\",
     \"notes\": \"architecto\",
     \"items\": [
         {
@@ -4167,7 +4170,7 @@ const headers = {
 };
 
 let body = {
-    "usage_date": "2026-04-27T01:58:07",
+    "usage_date": "2026-04-27T12:22:41",
     "notes": "architecto",
     "items": [
         {
@@ -4197,7 +4200,7 @@ $response = $client-&gt;post(
             'Accept' =&gt; 'application/json',
         ],
         'json' =&gt; [
-            'usage_date' =&gt; '2026-04-27T01:58:07',
+            'usage_date' =&gt; '2026-04-27T12:22:41',
             'notes' =&gt; 'architecto',
             'items' =&gt; [
                 [
@@ -4219,7 +4222,7 @@ import json
 
 url = 'http://localhost:8000/api/projects/1/material-usages'
 payload = {
-    "usage_date": "2026-04-27T01:58:07",
+    "usage_date": "2026-04-27T12:22:41",
     "notes": "architecto",
     "items": [
         {
@@ -4346,10 +4349,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="usage_date"                data-endpoint="POSTapi-projects--project_id--material-usages"
-               value="2026-04-27T01:58:07"
+               value="2026-04-27T12:22:41"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-04-27T01:58:07</code></p>
+<p>Must be a valid date. Example: <code>2026-04-27T12:22:41</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>rab_item_id</code></b>&nbsp;&nbsp;
@@ -5264,7 +5267,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Get a paginated list of inventory items.</p>
+
 
 <span id="example-requests-GETapi-inventory">
 <blockquote>Example request:</blockquote>
@@ -5498,7 +5501,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Get a paginated list of inventory transaction logs.</p>
+
 
 <span id="example-requests-GETapi-inventory-history">
 <blockquote>Example request:</blockquote>
@@ -5732,7 +5735,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 <small class="badge badge-darkred">requires authentication</small>
 </p>
 
-<p>Get detailed information about a specific inventory item.</p>
+
 
 <span id="example-requests-GETapi-inventory--inventory_id-">
 <blockquote>Example request:</blockquote>
@@ -5934,7 +5937,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --data "{
     \"token\": \"b\",
     \"device_name\": \"n\",
-    \"platform\": \"ios\"
+    \"platform\": \"android\"
 }"
 </code></pre></div>
 
@@ -5953,7 +5956,7 @@ const headers = {
 let body = {
     "token": "b",
     "device_name": "n",
-    "platform": "ios"
+    "platform": "android"
 };
 
 fetch(url, {
@@ -5977,7 +5980,7 @@ $response = $client-&gt;post(
         'json' =&gt; [
             'token' =&gt; 'b',
             'device_name' =&gt; 'n',
-            'platform' =&gt; 'ios',
+            'platform' =&gt; 'android',
         ],
     ]
 );
@@ -5993,7 +5996,7 @@ url = 'http://localhost:8000/api/fcm-token'
 payload = {
     "token": "b",
     "device_name": "n",
-    "platform": "ios"
+    "platform": "android"
 }
 headers = {
   'Authorization': 'Bearer {YOUR_AUTH_KEY}',
@@ -6123,10 +6126,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="platform"                data-endpoint="POSTapi-fcm-token"
-               value="ios"
+               value="android"
                data-component="body">
     <br>
-<p>Example: <code>ios</code></p>
+<p>Example: <code>android</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>web</code></li> <li><code>android</code></li> <li><code>ios</code></li></ul>
         </div>
@@ -7878,7 +7881,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Accept: application/json" \
     --data "{
     \"project_id\": \"architecto\",
-    \"request_date\": \"2026-04-27T01:58:07\",
+    \"request_date\": \"2026-04-27T12:22:41\",
     \"notes\": \"architecto\",
     \"items\": [
         {
@@ -7904,7 +7907,7 @@ const headers = {
 
 let body = {
     "project_id": "architecto",
-    "request_date": "2026-04-27T01:58:07",
+    "request_date": "2026-04-27T12:22:41",
     "notes": "architecto",
     "items": [
         {
@@ -7935,7 +7938,7 @@ $response = $client-&gt;post(
         ],
         'json' =&gt; [
             'project_id' =&gt; 'architecto',
-            'request_date' =&gt; '2026-04-27T01:58:07',
+            'request_date' =&gt; '2026-04-27T12:22:41',
             'notes' =&gt; 'architecto',
             'items' =&gt; [
                 [
@@ -7958,7 +7961,7 @@ import json
 url = 'http://localhost:8000/api/material-requests'
 payload = {
     "project_id": "architecto",
-    "request_date": "2026-04-27T01:58:07",
+    "request_date": "2026-04-27T12:22:41",
     "notes": "architecto",
     "items": [
         {
@@ -8084,10 +8087,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="request_date"                data-endpoint="POSTapi-material-requests"
-               value="2026-04-27T01:58:07"
+               value="2026-04-27T12:22:41"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-04-27T01:58:07</code></p>
+<p>Must be a valid date. Example: <code>2026-04-27T12:22:41</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>notes</code></b>&nbsp;&nbsp;
@@ -8537,7 +8540,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --data "{
     \"project_id\": \"architecto\",
     \"supplier_id\": \"architecto\",
-    \"order_date\": \"2026-04-27T01:58:07\",
+    \"order_date\": \"2026-04-27T12:22:41\",
     \"expected_delivery\": \"2052-05-20\",
     \"payment_terms\": \"architecto\",
     \"notes\": \"architecto\",
@@ -8568,7 +8571,7 @@ const headers = {
 let body = {
     "project_id": "architecto",
     "supplier_id": "architecto",
-    "order_date": "2026-04-27T01:58:07",
+    "order_date": "2026-04-27T12:22:41",
     "expected_delivery": "2052-05-20",
     "payment_terms": "architecto",
     "notes": "architecto",
@@ -8604,7 +8607,7 @@ $response = $client-&gt;post(
         'json' =&gt; [
             'project_id' =&gt; 'architecto',
             'supplier_id' =&gt; 'architecto',
-            'order_date' =&gt; '2026-04-27T01:58:07',
+            'order_date' =&gt; '2026-04-27T12:22:41',
             'expected_delivery' =&gt; '2052-05-20',
             'payment_terms' =&gt; 'architecto',
             'notes' =&gt; 'architecto',
@@ -8632,7 +8635,7 @@ url = 'http://localhost:8000/api/purchase-orders'
 payload = {
     "project_id": "architecto",
     "supplier_id": "architecto",
-    "order_date": "2026-04-27T01:58:07",
+    "order_date": "2026-04-27T12:22:41",
     "expected_delivery": "2052-05-20",
     "payment_terms": "architecto",
     "notes": "architecto",
@@ -8774,10 +8777,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="order_date"                data-endpoint="POSTapi-purchase-orders"
-               value="2026-04-27T01:58:07"
+               value="2026-04-27T12:22:41"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-04-27T01:58:07</code></p>
+<p>Must be a valid date. Example: <code>2026-04-27T12:22:41</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>expected_delivery</code></b>&nbsp;&nbsp;
@@ -8907,7 +8910,194 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
     
 
-                                <h2 id="procurement-purchase-requests-GETapi-purchase-requests">List purchase requests.</h2>
+                                <h2 id="procurement-purchase-requests-GETapi-projects--project_id--available-mr-items">Get available MR items for import.</h2>
+
+<p>
+<small class="badge badge-darkred">requires authentication</small>
+</p>
+
+<p>Get list of approved MR items for a project that have not been fully processed to PR.</p>
+
+<span id="example-requests-GETapi-projects--project_id--available-mr-items">
+<blockquote>Example request:</blockquote>
+
+
+<div class="bash-example">
+    <pre><code class="language-bash">curl --request GET \
+    --get "http://localhost:8000/api/projects/16/available-mr-items" \
+    --header "Authorization: Bearer {YOUR_AUTH_KEY}" \
+    --header "Content-Type: application/json" \
+    --header "Accept: application/json"</code></pre></div>
+
+
+<div class="javascript-example">
+    <pre><code class="language-javascript">const url = new URL(
+    "http://localhost:8000/api/projects/16/available-mr-items"
+);
+
+const headers = {
+    "Authorization": "Bearer {YOUR_AUTH_KEY}",
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+};
+
+fetch(url, {
+    method: "GET",
+    headers,
+}).then(response =&gt; response.json());</code></pre></div>
+
+
+<div class="php-example">
+    <pre><code class="language-php">$client = new \GuzzleHttp\Client();
+$url = 'http://localhost:8000/api/projects/16/available-mr-items';
+$response = $client-&gt;get(
+    $url,
+    [
+        'headers' =&gt; [
+            'Authorization' =&gt; 'Bearer {YOUR_AUTH_KEY}',
+            'Content-Type' =&gt; 'application/json',
+            'Accept' =&gt; 'application/json',
+        ],
+    ]
+);
+$body = $response-&gt;getBody();
+print_r(json_decode((string) $body));</code></pre></div>
+
+
+<div class="python-example">
+    <pre><code class="language-python">import requests
+import json
+
+url = 'http://localhost:8000/api/projects/16/available-mr-items'
+headers = {
+  'Authorization': 'Bearer {YOUR_AUTH_KEY}',
+  'Content-Type': 'application/json',
+  'Accept': 'application/json'
+}
+
+response = requests.request('GET', url, headers=headers)
+response.json()</code></pre></div>
+
+</span>
+
+<span id="example-responses-GETapi-projects--project_id--available-mr-items">
+            <blockquote>
+            <p>Example response (401):</p>
+        </blockquote>
+                <details class="annotation">
+            <summary style="cursor: pointer;">
+                <small onclick="textContent = parentElement.parentElement.open ? 'Show headers' : 'Hide headers'">Show headers</small>
+            </summary>
+            <pre><code class="language-http">cache-control: no-cache, private
+content-type: application/json
+access-control-allow-origin: *
+ </code></pre></details>         <pre>
+
+<code class="language-json" style="max-height: 300px;">{
+    &quot;success&quot;: false,
+    &quot;message&quot;: &quot;Sesi berakhir, silakan login kembali.&quot;
+}</code>
+ </pre>
+    </span>
+<span id="execution-results-GETapi-projects--project_id--available-mr-items" hidden>
+    <blockquote>Received response<span
+                id="execution-response-status-GETapi-projects--project_id--available-mr-items"></span>:
+    </blockquote>
+    <pre class="json"><code id="execution-response-content-GETapi-projects--project_id--available-mr-items"
+      data-empty-response-text="<Empty response>" style="max-height: 400px;"></code></pre>
+</span>
+<span id="execution-error-GETapi-projects--project_id--available-mr-items" hidden>
+    <blockquote>Request failed with error:</blockquote>
+    <pre><code id="execution-error-message-GETapi-projects--project_id--available-mr-items">
+
+Tip: Check that you&#039;re properly connected to the network.
+If you&#039;re a maintainer of ths API, verify that your API is running and you&#039;ve enabled CORS.
+You can check the Dev Tools console for debugging information.</code></pre>
+</span>
+<form id="form-GETapi-projects--project_id--available-mr-items" data-method="GET"
+      data-path="api/projects/{project_id}/available-mr-items"
+      data-authed="1"
+      data-hasfiles="0"
+      data-isarraybody="0"
+      autocomplete="off"
+      onsubmit="event.preventDefault(); executeTryOut('GETapi-projects--project_id--available-mr-items', this);">
+    <h3>
+        Request&nbsp;&nbsp;&nbsp;
+                    <button type="button"
+                    style="background-color: #8fbcd4; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-tryout-GETapi-projects--project_id--available-mr-items"
+                    onclick="tryItOut('GETapi-projects--project_id--available-mr-items');">Try it out ⚡
+            </button>
+            <button type="button"
+                    style="background-color: #c97a7e; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-canceltryout-GETapi-projects--project_id--available-mr-items"
+                    onclick="cancelTryOut('GETapi-projects--project_id--available-mr-items');" hidden>Cancel 🛑
+            </button>&nbsp;&nbsp;
+            <button type="submit"
+                    style="background-color: #6ac174; padding: 5px 10px; border-radius: 5px; border-width: thin;"
+                    id="btn-executetryout-GETapi-projects--project_id--available-mr-items"
+                    data-initial-text="Send Request 💥"
+                    data-loading-text="⏱ Sending..."
+                    hidden>Send Request 💥
+            </button>
+            </h3>
+            <p>
+            <small class="badge badge-green">GET</small>
+            <b><code>api/projects/{project_id}/available-mr-items</code></b>
+        </p>
+                <h4 class="fancy-heading-panel"><b>Headers</b></h4>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Authorization</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Authorization" class="auth-value"               data-endpoint="GETapi-projects--project_id--available-mr-items"
+               value="Bearer {YOUR_AUTH_KEY}"
+               data-component="header">
+    <br>
+<p>Example: <code>Bearer {YOUR_AUTH_KEY}</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Content-Type</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Content-Type"                data-endpoint="GETapi-projects--project_id--available-mr-items"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                                <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>Accept</code></b>&nbsp;&nbsp;
+&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="text" style="display: none"
+                              name="Accept"                data-endpoint="GETapi-projects--project_id--available-mr-items"
+               value="application/json"
+               data-component="header">
+    <br>
+<p>Example: <code>application/json</code></p>
+            </div>
+                        <h4 class="fancy-heading-panel"><b>URL Parameters</b></h4>
+                    <div style="padding-left: 28px; clear: unset;">
+                <b style="line-height: 2;"><code>project_id</code></b>&nbsp;&nbsp;
+<small>integer</small>&nbsp;
+ &nbsp;
+ &nbsp;
+                <input type="number" style="display: none"
+               step="any"               name="project_id"                data-endpoint="GETapi-projects--project_id--available-mr-items"
+               value="16"
+               data-component="url">
+    <br>
+<p>The ID of the project. Example: <code>16</code></p>
+            </div>
+                    </form>
+
+                    <h2 id="procurement-purchase-requests-GETapi-purchase-requests">List purchase requests.</h2>
 
 <p>
 <small class="badge badge-darkred">requires authentication</small>
@@ -10875,7 +11065,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Accept: application/json" \
     --data "{
     \"week_number\": 16,
-    \"period_start\": \"2026-04-27T01:58:06\",
+    \"period_start\": \"2026-04-27T12:22:41\",
     \"period_end\": \"2052-05-20\",
     \"cover_title\": \"n\",
     \"activities\": \"architecto\",
@@ -10897,7 +11087,7 @@ const headers = {
 
 let body = {
     "week_number": 16,
-    "period_start": "2026-04-27T01:58:06",
+    "period_start": "2026-04-27T12:22:41",
     "period_end": "2052-05-20",
     "cover_title": "n",
     "activities": "architecto",
@@ -10924,7 +11114,7 @@ $response = $client-&gt;post(
         ],
         'json' =&gt; [
             'week_number' =&gt; 16,
-            'period_start' =&gt; '2026-04-27T01:58:06',
+            'period_start' =&gt; '2026-04-27T12:22:41',
             'period_end' =&gt; '2052-05-20',
             'cover_title' =&gt; 'n',
             'activities' =&gt; 'architecto',
@@ -10943,7 +11133,7 @@ import json
 url = 'http://localhost:8000/api/projects/1/weekly-reports'
 payload = {
     "week_number": 16,
-    "period_start": "2026-04-27T01:58:06",
+    "period_start": "2026-04-27T12:22:41",
     "period_end": "2052-05-20",
     "cover_title": "n",
     "activities": "architecto",
@@ -11078,10 +11268,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="period_start"                data-endpoint="POSTapi-projects--project_id--weekly-reports"
-               value="2026-04-27T01:58:06"
+               value="2026-04-27T12:22:41"
                data-component="body">
     <br>
-<p>Must be a valid date. Example: <code>2026-04-27T01:58:06</code></p>
+<p>Must be a valid date. Example: <code>2026-04-27T12:22:41</code></p>
         </div>
                 <div style=" padding-left: 28px;  clear: unset;">
             <b style="line-height: 2;"><code>period_end</code></b>&nbsp;&nbsp;
@@ -11703,8 +11893,8 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
     --form "cover_title=b"\
-    --form "status=published"\
-    --form "cover_image_upload=@C:\Users\OWNER\AppData\Local\Temp\phpA543.tmp" </code></pre></div>
+    --form "status=draft"\
+    --form "cover_image_upload=@C:\Users\OWNER\AppData\Local\Temp\php4C71.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -11720,7 +11910,7 @@ const headers = {
 
 const body = new FormData();
 body.append('cover_title', 'b');
-body.append('status', 'published');
+body.append('status', 'draft');
 body.append('cover_image_upload', document.querySelector('input[name="cover_image_upload"]').files[0]);
 
 fetch(url, {
@@ -11748,11 +11938,11 @@ $response = $client-&gt;post(
             ],
             [
                 'name' =&gt; 'status',
-                'contents' =&gt; 'published'
+                'contents' =&gt; 'draft'
             ],
             [
                 'name' =&gt; 'cover_image_upload',
-                'contents' =&gt; fopen('C:\Users\OWNER\AppData\Local\Temp\phpA543.tmp', 'r')
+                'contents' =&gt; fopen('C:\Users\OWNER\AppData\Local\Temp\php4C71.tmp', 'r')
             ],
         ],
     ]
@@ -11768,11 +11958,11 @@ import json
 url = 'http://localhost:8000/api/projects/1/weekly-reports/22/cover'
 files = {
   'cover_title': (None, 'b'),
-  'status': (None, 'published'),
-  'cover_image_upload': open('C:\Users\OWNER\AppData\Local\Temp\phpA543.tmp', 'rb')}
+  'status': (None, 'draft'),
+  'cover_image_upload': open('C:\Users\OWNER\AppData\Local\Temp\php4C71.tmp', 'rb')}
 payload = {
     "cover_title": "b",
-    "status": "published"
+    "status": "draft"
 }
 headers = {
   'Authorization': 'Bearer {YOUR_AUTH_KEY}',
@@ -11915,10 +12105,10 @@ You can check the Dev Tools console for debugging information.</code></pre>
  &nbsp;
                 <input type="text" style="display: none"
                               name="status"                data-endpoint="POSTapi-projects--project_id--weekly-reports--report_id--cover"
-               value="published"
+               value="draft"
                data-component="body">
     <br>
-<p>Example: <code>published</code></p>
+<p>Example: <code>draft</code></p>
 Must be one of:
 <ul style="list-style-type: square;"><li><code>draft</code></li> <li><code>published</code></li></ul>
         </div>
@@ -11944,7 +12134,7 @@ Must be one of:
                value=""
                data-component="body">
     <br>
-<p>Must be an image. Must not be greater than 5120 kilobytes. Example: <code>C:\Users\OWNER\AppData\Local\Temp\phpA543.tmp</code></p>
+<p>Must be an image. Must not be greater than 5120 kilobytes. Example: <code>C:\Users\OWNER\AppData\Local\Temp\php4C71.tmp</code></p>
         </div>
         </form>
 
@@ -12396,7 +12586,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
     --header "Authorization: Bearer {YOUR_AUTH_KEY}" \
     --header "Content-Type: multipart/form-data" \
     --header "Accept: application/json" \
-    --form "photos[]=@C:\Users\OWNER\AppData\Local\Temp\phpA592.tmp" </code></pre></div>
+    --form "photos[]=@C:\Users\OWNER\AppData\Local\Temp\php4CA1.tmp" </code></pre></div>
 
 
 <div class="javascript-example">
@@ -12434,7 +12624,7 @@ $response = $client-&gt;post(
         'multipart' =&gt; [
             [
                 'name' =&gt; 'photos[]',
-                'contents' =&gt; fopen('C:\Users\OWNER\AppData\Local\Temp\phpA592.tmp', 'r')
+                'contents' =&gt; fopen('C:\Users\OWNER\AppData\Local\Temp\php4CA1.tmp', 'r')
             ],
         ],
     ]
@@ -12449,7 +12639,7 @@ import json
 
 url = 'http://localhost:8000/api/projects/1/weekly-reports/22/documentations/upload'
 files = {
-  'photos[]': open('C:\Users\OWNER\AppData\Local\Temp\phpA592.tmp', 'rb')}
+  'photos[]': open('C:\Users\OWNER\AppData\Local\Temp\php4CA1.tmp', 'rb')}
 headers = {
   'Authorization': 'Bearer {YOUR_AUTH_KEY}',
   'Content-Type': 'multipart/form-data',
@@ -13289,5 +13479,3 @@ You can check the Dev Tools console for debugging information.</code></pre>
 </div>
 </body>
 </html>
-
-

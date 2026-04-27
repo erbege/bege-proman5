@@ -49,18 +49,25 @@ class RabExport implements WithMultipleSheets
 
     public function sheets(): array
     {
-        // Get all RAB items for AHSP sheet (will show what data is available)
-        $allItems = $this->project->rabItems()
-            ->with(['ahspWorkType.components', 'priceSnapshot', 'section'])
-            ->get()
-            ->sortBy(function ($item) {
-                return $item->section?->code . '.' . $item->code;
-            }, SORT_NATURAL);
+        $sheets = [];
 
-        return [
-            new RabRecapSheet($this->project, $this->sections, $this->grandTotal),
-            new RabDetailSheet($this->project, $this->sections, $this->grandTotal),
-            new RabAhspSheet($this->project, $allItems),
-        ];
+        // Always include Detail Sheet (but it will be hardened internally)
+        $sheets[] = new RabDetailSheet($this->project, $this->sections, $this->grandTotal);
+
+        // Only include Recap and AHSP sheets if user can view financials
+        if (auth()->user()->can('financials.view')) {
+            $sheets[] = new RabRecapSheet($this->project, $this->sections, $this->grandTotal);
+
+            $allItems = $this->project->rabItems()
+                ->with(['ahspWorkType.components', 'priceSnapshot', 'section'])
+                ->get()
+                ->sortBy(function ($item) {
+                    return $item->section?->code . '.' . $item->code;
+                }, SORT_NATURAL);
+
+            $sheets[] = new RabAhspSheet($this->project, $allItems);
+        }
+
+        return $sheets;
     }
 }

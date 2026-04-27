@@ -16,12 +16,18 @@ class ProjectFileController extends Controller
     /**
      * Display file listing for a project
      */
+    /**
+     * Display file listing for a project
+     */
     public function index(Request $request, Project $project)
     {
+        $this->authorize('files.view');
+
         $query = ProjectFile::where('project_id', $project->id)
             ->where('type', 'file')
             ->with(['uploader', 'latestVersion']);
 
+        // ... existing logic ...
         // Filter by folder
         if ($request->has('folder')) {
             $query->where('folder_id', $request->folder);
@@ -72,6 +78,8 @@ class ProjectFileController extends Controller
      */
     public function store(Request $request, Project $project)
     {
+        $this->authorize('files.create');
+
         $maxSize = SystemSetting::getMaxFileSize();
         $maxSizeKb = $maxSize / 1024;
 
@@ -132,6 +140,8 @@ class ProjectFileController extends Controller
      */
     public function show(Project $project, ProjectFile $file)
     {
+        $this->authorize('files.view');
+
         $file->load(['versions.uploader', 'comments.user', 'comments.replies.user', 'uploader']);
 
         // Generate breadcrumbs
@@ -153,6 +163,13 @@ class ProjectFileController extends Controller
      */
     public function uploadVersion(Request $request, Project $project, ProjectFile $file)
     {
+        $this->authorize('files.update');
+
+        // Protect FINAL files
+        if ($file->status === 'final' && !auth()->user()->hasRole(['Superadmin', 'super-admin', 'project-manager'])) {
+            return back()->with('error', 'File berstatus FINAL tidak dapat diupdate versinya.');
+        }
+
         $maxSize = SystemSetting::getMaxFileSize();
         $maxSizeKb = $maxSize / 1024;
 
@@ -205,6 +222,13 @@ class ProjectFileController extends Controller
      */
     public function rollback(Project $project, ProjectFile $file, ProjectFileVersion $version)
     {
+        $this->authorize('files.update');
+
+        // Protect FINAL files
+        if ($file->status === 'final' && !auth()->user()->hasRole(['Superadmin', 'super-admin', 'project-manager'])) {
+            return back()->with('error', 'File berstatus FINAL tidak dapat di-rollback.');
+        }
+
         if ($version->project_file_id !== $file->id) {
             abort(404);
         }
@@ -221,6 +245,8 @@ class ProjectFileController extends Controller
      */
     public function updateStatus(Request $request, Project $project, ProjectFile $file)
     {
+        $this->authorize('files.manage-status');
+
         $request->validate([
             'status' => 'required|in:draft,review,approved,final',
         ]);
@@ -244,6 +270,8 @@ class ProjectFileController extends Controller
      */
     public function download(Project $project, ProjectFile $file, ?ProjectFileVersion $version = null)
     {
+        $this->authorize('files.view');
+
         $version = $version ?? $file->latestVersion;
 
         if (!$version || !$version->exists()) {
@@ -261,6 +289,13 @@ class ProjectFileController extends Controller
      */
     public function destroy(Project $project, ProjectFile $file)
     {
+        $this->authorize('files.delete');
+
+        // Protect FINAL files
+        if ($file->status === 'final' && !auth()->user()->hasRole(['Superadmin', 'super-admin', 'project-manager'])) {
+            return back()->with('error', 'File berstatus FINAL tidak dapat dihapus.');
+        }
+
         $file->delete();
 
         return redirect()
@@ -273,6 +308,8 @@ class ProjectFileController extends Controller
      */
     public function storeComment(Request $request, Project $project, ProjectFile $file)
     {
+        $this->authorize('files.view');
+
         $request->validate([
             'comment' => 'required|string|max:2000',
             'parent_id' => 'nullable|exists:project_file_comments,id',
@@ -295,6 +332,8 @@ class ProjectFileController extends Controller
      */
     public function toggleResolveComment(Project $project, ProjectFile $file, ProjectFileComment $comment)
     {
+        $this->authorize('files.view');
+
         if ($comment->resolved) {
             $comment->unresolve();
         } else {
@@ -309,6 +348,8 @@ class ProjectFileController extends Controller
      */
     public function createFolder(Request $request, Project $project)
     {
+        $this->authorize('files.create');
+
         $request->validate([
             'name' => 'required|string|max:255',
             'folder_id' => 'nullable|exists:project_files,id',

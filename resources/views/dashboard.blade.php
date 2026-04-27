@@ -394,6 +394,7 @@
                         Access</h3>
 
                     <div class="grid grid-cols-1 gap-4 relative z-10 font-sans">
+                        @can('projects.create')
                         <a href="{{ route('projects.create') }}"
                             class="flex items-center p-5 bg-gradient-to-r from-primary-600 to-primary-700 rounded-3xl hover:translate-y-[-4px] transition-all duration-300 shadow-xl shadow-primary-900/40 group">
                             <div class="p-3 bg-white/20 rounded-2xl group-hover:scale-110 transition">
@@ -406,6 +407,7 @@
                                     a new core record</span>
                             </div>
                         </a>
+                        @endcan
 
                         <a href="{{ route('projects.index') }}"
                             class="flex items-center p-5 bg-dark-800 rounded-3xl hover:bg-dark-700 transition-all group border border-white/5">
@@ -419,6 +421,7 @@
                             </div>
                         </a>
 
+                        @can('inventory.view')
                         <a href="{{ route('inventory.index') }}"
                             class="flex items-center p-5 bg-dark-800 rounded-3xl hover:bg-dark-700 transition-all group border border-white/5">
                             <div class="p-3 bg-white/5 rounded-2xl group-hover:bg-white/10 transition">
@@ -431,7 +434,9 @@
                                     inventory & stock</span>
                             </div>
                         </a>
+                        @endcan
 
+                        @can('materials.view')
                         <a href="{{ route('materials.index') }}"
                             class="flex items-center p-5 bg-dark-800 rounded-3xl hover:bg-dark-700 transition-all group border border-white/5">
                             <div class="p-3 bg-white/5 rounded-2xl group-hover:bg-white/10 transition">
@@ -445,6 +450,7 @@
                                     data management</span>
                             </div>
                         </a>
+                        @endcan
                     </div>
 
                     <div class="mt-10 p-4 bg-primary-500/5 rounded-[2rem] border border-primary-500/10">

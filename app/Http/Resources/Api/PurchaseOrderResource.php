@@ -14,6 +14,8 @@ class PurchaseOrderResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $canViewFinancials = auth()->user()?->can('financials.view') ?? false;
+
         return [
             'id' => $this->id,
             'po_number' => $this->po_number,
@@ -25,21 +27,21 @@ class PurchaseOrderResource extends JsonResource
             'expected_delivery' => $this->expected_delivery?->format('Y-m-d'),
             'status' => $this->status,
             'status_label' => $this->status_label,
-            'subtotal' => (float) $this->subtotal,
-            'tax_amount' => (float) $this->tax_amount,
-            'discount_amount' => (float) $this->discount_amount,
-            'total_amount' => (float) $this->total_amount,
+            'subtotal' => $canViewFinancials ? (float) $this->subtotal : 0,
+            'tax_amount' => $canViewFinancials ? (float) $this->tax_amount : 0,
+            'discount_amount' => $canViewFinancials ? (float) $this->discount_amount : 0,
+            'total_amount' => $canViewFinancials ? (float) $this->total_amount : 0,
             'payment_terms' => $this->payment_terms,
             'notes' => $this->notes,
-            'items' => $this->whenLoaded('items', function () {
+            'items' => $this->whenLoaded('items', function () use ($canViewFinancials) {
                 return $this->items->map(fn($item) => [
                     'id' => $item->id,
                     'material_id' => $item->material_id,
                     'material_name' => $item->material?->name,
                     'quantity' => (float) $item->quantity,
                     'unit' => $item->material?->unit ?? '-',
-                    'unit_price' => (float) $item->unit_price,
-                    'total_price' => (float) $item->total_price,
+                    'unit_price' => $canViewFinancials ? (float) $item->unit_price : 0,
+                    'total_price' => $canViewFinancials ? (float) $item->total_price : 0,
                     'notes' => $item->notes,
                 ]);
             }),

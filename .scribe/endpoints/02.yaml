@@ -109,7 +109,7 @@ endpoints:
         name: period_start
         description: 'Must be a valid date.'
         required: true
-        example: '2026-04-27T01:58:06'
+        example: '2026-04-27T12:22:41'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -161,7 +161,7 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       week_number: 16
-      period_start: '2026-04-27T01:58:06'
+      period_start: '2026-04-27T12:22:41'
       period_end: '2052-05-20'
       cover_title: 'n'
       activities: architecto
@@ -414,7 +414,7 @@ endpoints:
         name: status
         description: ''
         required: false
-        example: published
+        example: draft
         type: string
         enumValues:
           - draft
@@ -446,7 +446,7 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       cover_title: b
-      status: published
+      status: draft
     fileParameters:
       cover_image_upload: null
     responses: []

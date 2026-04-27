@@ -18,25 +18,33 @@ class RabController extends Controller
 {
     public function index(Project $project)
     {
+        $this->authorize('rab.view');
+
         $project->load(['rabSections.items']);
 
-        $totalValue = $project->rabItems()->sum('total_price');
+        $totalValue = auth()->user()->can('financials.view') 
+            ? $project->rabItems()->sum('total_price')
+            : 0;
 
         return view('projects.rab.index', compact('project', 'totalValue'));
     }
 
     public function import(Project $project)
     {
+        $this->authorize('rab.manage');
         return view('projects.rab.import', compact('project'));
     }
 
     public function processImport(Request $request, Project $project)
     {
+        $this->authorize('rab.manage');
+
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:10240',
             'clear_existing' => 'nullable|boolean',
         ]);
 
+        // ... existing logic ...
         // Clear existing RAB if requested
         if ($request->boolean('clear_existing')) {
             $project->rabItems()->delete();
@@ -60,11 +68,14 @@ class RabController extends Controller
 
     public function createSection(Project $project)
     {
+        $this->authorize('rab.manage');
         return view('projects.rab.create-section', compact('project'));
     }
 
     public function storeSection(Request $request, Project $project)
     {
+        $this->authorize('rab.manage');
+
         $validated = $request->validate([
             'code' => 'required|string|max:20',
             'name' => 'required|string|max:255',
@@ -82,11 +93,14 @@ class RabController extends Controller
 
     public function createItem(Project $project, RabSection $section)
     {
+        $this->authorize('rab.manage');
         return view('projects.rab.create-item', compact('project', 'section'));
     }
 
     public function storeItem(Request $request, Project $project, RabSection $section)
     {
+        $this->authorize('rab.manage');
+
         $validated = $request->validate([
             'code' => 'nullable|string|max:20',
             'work_name' => 'required|string|max:255',
@@ -115,12 +129,15 @@ class RabController extends Controller
 
     public function editItem(Project $project, RabItem $item)
     {
+        $this->authorize('rab.manage');
         $sections = $project->rabSections;
         return view('projects.rab.edit-item', compact('project', 'item', 'sections'));
     }
 
     public function updateItem(Request $request, Project $project, RabItem $item)
     {
+        $this->authorize('rab.manage');
+
         $validated = $request->validate([
             'rab_section_id' => 'required|exists:rab_sections,id',
             'code' => 'nullable|string|max:20',
@@ -147,6 +164,7 @@ class RabController extends Controller
 
     public function destroyItem(Project $project, RabItem $item)
     {
+        $this->authorize('rab.manage');
         $item->delete();
 
         // Recalculate weights
@@ -159,8 +177,10 @@ class RabController extends Controller
 
     public function downloadTemplate()
     {
+        $this->authorize('rab.manage');
         $templatePath = storage_path('app/templates/rab_template.xlsx');
 
+        // ... existing logic ...
         // If template doesn't exist, generate a simple one
         if (!file_exists($templatePath)) {
             return redirect()->back()->with('error', 'Template tidak tersedia.');
@@ -174,9 +194,11 @@ class RabController extends Controller
      */
     public function showAhspSelector(Project $project, RabSection $section)
     {
+        $this->authorize('rab.manage');
         $regions = AhspBasePrice::getRegions();
         $defaultRegion = array_key_first($regions) ?? 'DEFAULT';
 
+        // ... existing logic ...
         // Find matching category by section code
         $matchingCategory = null;
         $categoriesWithWorkTypes = collect();
@@ -240,6 +262,7 @@ class RabController extends Controller
      */
     protected function getAllDescendantCategoryIds(AhspCategory $category): array
     {
+        // Internal helper
         $ids = [$category->id];
 
         $children = AhspCategory::where('parent_id', $category->id)->get();
@@ -255,6 +278,7 @@ class RabController extends Controller
      */
     public function searchAhsp(Request $request, Project $project)
     {
+        $this->authorize('rab.manage');
         $term = $request->get('q', '');
 
         $workTypes = AhspWorkType::with('category')
@@ -278,6 +302,8 @@ class RabController extends Controller
      */
     public function generateFromAhsp(Request $request, Project $project, RabSection $section, RabGeneratorService $generator)
     {
+        $this->authorize('rab.manage');
+
         $validated = $request->validate([
             'items' => 'required|array|min:1',
             'items.*.work_type_id' => 'required|exists:ahsp_work_types,id',
@@ -308,6 +334,8 @@ class RabController extends Controller
      */
     public function previewAhspCalculation(Request $request, Project $project)
     {
+        $this->authorize('rab.manage');
+
         $request->validate([
             'work_type_id' => 'required|exists:ahsp_work_types,id',
             'volume' => 'required|numeric|min:0',
@@ -337,6 +365,7 @@ class RabController extends Controller
      */
     public function showTemplateGenerator(Project $project, \App\Services\RabTemplateService $templateService)
     {
+        $this->authorize('rab.manage');
         $categories = $templateService->getCategoriesWithCounts();
         $categoriesTree = $templateService->getCategoriesTree();
         $regions = AhspBasePrice::getRegions();
@@ -356,6 +385,7 @@ class RabController extends Controller
      */
     public function previewTemplate(Request $request, Project $project, \App\Services\RabTemplateService $templateService)
     {
+        $this->authorize('rab.manage');
         $request->validate([
             'category_ids' => 'required|array|min:1',
             'category_ids.*' => 'exists:ahsp_categories,id',
@@ -374,6 +404,8 @@ class RabController extends Controller
      */
     public function generateFromTemplate(Request $request, Project $project, \App\Services\RabTemplateService $templateService)
     {
+        $this->authorize('rab.manage');
+
         $validated = $request->validate([
             'category_ids' => 'required|array|min:1',
             'category_ids.*' => 'exists:ahsp_categories,id',
@@ -403,6 +435,7 @@ class RabController extends Controller
      */
     public function exportExcel(Project $project)
     {
+        $this->authorize('rab.view');
         return Excel::download(new \App\Exports\RabExport($project), 'RAB-' . $project->code . '.xlsx');
     }
 
@@ -411,6 +444,7 @@ class RabController extends Controller
      */
     public function exportPdf(Project $project)
     {
+        $this->authorize('rab.view');
         // Load root sections with recursive children and items
         $sections = $project->rabSections()
             ->whereNull('parent_id')

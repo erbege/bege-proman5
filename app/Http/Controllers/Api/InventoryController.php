@@ -15,11 +15,10 @@ class InventoryController extends Controller
 
     /**
      * List inventory items.
-     * 
-     * Get a paginated list of inventory items.
      */
     public function index(InventoryIndexRequest $request)
     {
+        $this->authorize('inventory.view');
         $validated = $request->validated();
         $query = Inventory::with(['project:id,name', 'material:id,code,name,unit']);
 
@@ -33,28 +32,38 @@ class InventoryController extends Controller
 
         $items = $query->latest()->paginate($validated['per_page'] ?? 15);
 
+        // Mask costs
+        if (!auth()->user()->can('financials.view')) {
+            $items->getCollection()->transform(function ($item) {
+                $item->makeHidden(['average_cost', 'total_value']);
+                return $item;
+            });
+        }
+
         return $this->paginatedResponse('Inventory items retrieved successfully.', $items);
     }
 
     /**
      * Get inventory item details.
-     * 
-     * Get detailed information about a specific inventory item.
      */
     public function show(Inventory $inventory)
     {
+        $this->authorize('inventory.view');
         $data = $inventory->load(['project', 'material']);
+
+        if (!auth()->user()->can('financials.view')) {
+            $data->makeHidden(['average_cost', 'total_value']);
+        }
 
         return $this->successResponse('Inventory item retrieved successfully.', $data);
     }
 
     /**
      * Get inventory history/logs.
-     * 
-     * Get a paginated list of inventory transaction logs.
      */
     public function history(InventoryHistoryRequest $request)
     {
+        $this->authorize('inventory.view');
         $validated = $request->validated();
         $query = InventoryLog::with(['inventory.material', 'inventory.project', 'user:id,name']);
 
@@ -67,6 +76,14 @@ class InventoryController extends Controller
         }
 
         $logs = $query->latest()->paginate($validated['per_page'] ?? 15);
+
+        // Mask costs in logs if they exist
+        if (!auth()->user()->can('financials.view')) {
+            $logs->getCollection()->transform(function ($log) {
+                $log->makeHidden(['unit_cost']);
+                return $log;
+            });
+        }
 
         return $this->paginatedResponse('Inventory history retrieved successfully.', $logs);
     }

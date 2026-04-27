@@ -14,6 +14,8 @@ class PurchaseRequestResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $canViewFinancials = auth()->user()?->can('financials.view') ?? false;
+
         return [
             'id' => $this->id,
             'pr_number' => $this->pr_number,
@@ -26,8 +28,8 @@ class PurchaseRequestResource extends JsonResource
             'status' => $this->status,
             'priority' => $this->priority,
             'notes' => $this->notes,
-            'total_estimated_price' => (float) $this->total_estimated_price,
-            'items' => $this->whenLoaded('items', function () {
+            'total_estimated_price' => $canViewFinancials ? (float) $this->total_estimated_price : 0,
+            'items' => $this->whenLoaded('items', function () use ($canViewFinancials) {
                 return $this->items->map(fn($item) => [
                     'id' => $item->id,
                     'material_id' => $item->material_id,
@@ -35,7 +37,7 @@ class PurchaseRequestResource extends JsonResource
                     'material_request_item_id' => $item->material_request_item_id,
                     'quantity' => (float) $item->quantity,
                     'unit' => $item->material?->unit,
-                    'estimated_price' => (float) $item->estimated_price,
+                    'estimated_price' => $canViewFinancials ? (float) $item->estimated_price : 0,
                     'notes' => $item->notes,
                 ]);
             }),

@@ -12,20 +12,27 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    @can('dashboard.view')
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         <x-heroicon-o-home class="w-5 h-5 mr-2" />
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    @endcan
+                    @can('projects.view')
                     <x-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
                         <x-heroicon-o-folder class="w-5 h-5 mr-2" />
                         {{ __('Proyek') }}
                     </x-nav-link>
+                    @endcan
+                    @can('inventory.view')
                     <x-nav-link :href="route('inventory.index')" :active="request()->routeIs('inventory.*')">
                         <x-heroicon-o-building-office-2 class="w-5 h-5 mr-2" />
                         {{ __('Gudang') }}
                     </x-nav-link>
+                    @endcan
 
                     <!-- Master Data Dropdown -->
+                    @canany(['materials.view', 'suppliers.view', 'clients.view', 'financials.view'])
                     <div class="hidden sm:flex sm:items-center" x-data="{ open: false }">
                         <div class="relative">
                             <button @click="open = !open" @click.away="open = false"
@@ -49,31 +56,40 @@
                                 class="absolute z-50 mt-2 w-48 rounded-md shadow-lg origin-top-left left-0"
                                 style="display: none;">
                                 <div class="rounded-md ring-1 ring-black ring-opacity-5 py-1 bg-white dark:bg-dark-800">
+                                    @can('materials.view')
                                     <a href="{{ route('materials.index') }}"
                                         class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-dark-700 {{ request()->routeIs('materials.*') ? 'bg-gray-100 dark:bg-dark-700' : '' }}">
                                         <x-heroicon-o-cube class="w-4 h-4 inline mr-2" />
                                         {{ __('Material') }}
                                     </a>
+                                    @endcan
+                                    @can('suppliers.view')
                                     <a href="{{ route('suppliers.index') }}"
                                         class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-dark-700 {{ request()->routeIs('suppliers.*') ? 'bg-gray-100 dark:bg-dark-700' : '' }}">
                                         <x-heroicon-o-truck class="w-4 h-4 inline mr-2" />
                                         {{ __('Supplier') }}
                                     </a>
+                                    @endcan
+                                    @can('clients.view')
                                     <a href="{{ route('clients.index') }}"
                                         class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-dark-700 {{ request()->routeIs('clients.*') ? 'bg-gray-100 dark:bg-dark-700' : '' }}">
                                         <x-heroicon-o-user-group class="w-4 h-4 inline mr-2" />
                                         {{ __('Klien') }}
                                     </a>
+                                    @endcan
+                                    @can('financials.view')
                                     <div class="border-t border-gray-100 dark:border-dark-700 my-1"></div>
                                     <a href="{{ route('ahsp.index') }}"
                                         class="block px-4 py-2 text-sm leading-5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700 focus:outline-none focus:bg-gray-100 dark:focus:bg-dark-700 {{ request()->routeIs('ahsp.*') ? 'bg-gray-100 dark:bg-dark-700' : '' }}">
                                         <x-heroicon-o-calculator class="w-4 h-4 inline mr-2" />
                                         {{ __('AHSP') }}
                                     </a>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
                     </div>
+                    @endcanany
                 </div>
             </div>
 
@@ -224,40 +240,56 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
         <div class="pt-2 pb-3 space-y-1">
+            @can('dashboard.view')
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('projects.view')
             <x-responsive-nav-link :href="route('projects.index')" :active="request()->routeIs('projects.*')">
                 {{ __('Proyek') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('inventory.view')
             <x-responsive-nav-link :href="route('inventory.index')" :active="request()->routeIs('inventory.*')">
                 {{ __('Gudang') }}
             </x-responsive-nav-link>
+            @endcan
 
             <!-- Master Data Section -->
+            @canany(['materials.view', 'suppliers.view', 'clients.view', 'financials.view'])
             <div class="px-4 py-2">
                 <span class="block text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider">Master
                     Data</span>
             </div>
+            @can('materials.view')
             <x-responsive-nav-link :href="route('materials.index')" :active="request()->routeIs('materials.*')"
                 class="pl-8">
                 <x-heroicon-o-cube class="w-4 h-4 inline mr-2" />
                 {{ __('Material') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('suppliers.view')
             <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')"
                 class="pl-8">
                 <x-heroicon-o-truck class="w-4 h-4 inline mr-2" />
                 {{ __('Supplier') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('clients.view')
             <x-responsive-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')"
                 class="pl-8">
                 <x-heroicon-o-user-group class="w-4 h-4 inline mr-2" />
                 {{ __('Klien') }}
             </x-responsive-nav-link>
+            @endcan
+            @can('financials.view')
             <x-responsive-nav-link :href="route('ahsp.index')" :active="request()->routeIs('ahsp.*')" class="pl-8">
                 <x-heroicon-o-calculator class="w-4 h-4 inline mr-2" />
                 {{ __('AHSP') }}
             </x-responsive-nav-link>
+            @endcan
+            @endcanany
         </div>
 
         <!-- Responsive Settings Options -->

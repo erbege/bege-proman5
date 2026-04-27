@@ -14,7 +14,8 @@ class ScheduleController extends Controller
 {
     public function index(Project $project)
     {
-        // Load hierarchical RAB sections
+        $this->authorize('schedule.view');
+
         // Load hierarchical RAB sections
         $rabSections = $project->rabSections()
             ->whereNull('parent_id')
@@ -28,13 +29,15 @@ class ScheduleController extends Controller
         $scurveData = $scheduleCalculator->getScurveData($project);
 
         // Check if user can edit schedule
-        $canEditSchedule = auth()->user()->hasAnyRole(['Superadmin', 'super-admin', 'project-manager']);
+        $canEditSchedule = auth()->user()->can('schedule.manage');
 
         return view('projects.schedule.index', compact('project', 'rabSections', 'scurveData', 'canEditSchedule'));
     }
 
     public function regenerate(Project $project)
     {
+        $this->authorize('schedule.manage');
+
         $scheduleCalculator = new ScheduleCalculator();
         $scheduleCalculator->generateSchedule($project);
 
@@ -45,6 +48,8 @@ class ScheduleController extends Controller
 
     public function gantt(Project $project)
     {
+        $this->authorize('schedule.view');
+
         $rabSections = $project->rabSections()
             ->whereNull('parent_id')
             ->with(['recursiveChildren', 'items'])
@@ -56,6 +61,8 @@ class ScheduleController extends Controller
 
     public function scurve(Project $project)
     {
+        $this->authorize('schedule.view');
+
         $schedules = $project->schedules()->orderBy('week_number')->get();
 
         $rabSections = $project->rabSections()
@@ -72,6 +79,8 @@ class ScheduleController extends Controller
 
     public function exportExcel(Project $project)
     {
+        $this->authorize('schedule.view');
+
         $rabSections = $project->rabSections()
             ->whereNull('parent_id')
             ->with(['recursiveChildren', 'items'])
@@ -87,6 +96,8 @@ class ScheduleController extends Controller
 
     public function exportPdf(Project $project)
     {
+        $this->authorize('schedule.view');
+
         $rabSections = $project->rabSections()
             ->whereNull('parent_id')
             ->with(['recursiveChildren', 'items'])
@@ -124,13 +135,7 @@ class ScheduleController extends Controller
 
     public function updateItemSchedule(Request $request, Project $project, RabItem $item)
     {
-        // Check authorization
-        if (!auth()->user()->hasAnyRole(['Superadmin', 'super-admin', 'project-manager'])) {
-            if ($request->ajax()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-            abort(403, 'Anda tidak memiliki akses untuk mengubah jadwal.');
-        }
+        $this->authorize('schedule.manage');
 
         // Validate that the item belongs to the project
         if ($item->project_id !== $project->id) {
@@ -175,15 +180,12 @@ class ScheduleController extends Controller
      */
     public function updateItemParallel(Request $request, $projectId, $itemId)
     {
+        $this->authorize('schedule.manage');
+
         try {
             // Manual binding to debug/avoid scoping issues
             $project = Project::findOrFail($projectId);
             $item = RabItem::findOrFail($itemId);
-
-            // Check authorization
-            if (!auth()->user()->hasAnyRole(['Superadmin', 'super-admin', 'project-manager'])) {
-                return response()->json(['error' => 'Unauthorized: Anda tidak memiliki akses.'], 403);
-            }
 
             // Validate that the item belongs to the project
             if ($item->project_id !== $project->id) {
@@ -217,10 +219,7 @@ class ScheduleController extends Controller
      */
     public function autoSchedule(Project $project)
     {
-        // Check authorization
-        if (!auth()->user()->hasAnyRole(['Superadmin', 'super-admin', 'project-manager'])) {
-            abort(403, 'Anda tidak memiliki akses untuk menggunakan fitur ini.');
-        }
+        $this->authorize('schedule.manage');
 
         // Check if project has RAB items
         $itemCount = $project->rabItems()->count();
@@ -241,13 +240,7 @@ class ScheduleController extends Controller
      */
     public function applyAutoSchedule(Request $request, Project $project)
     {
-        // Check authorization
-        if (!auth()->user()->hasAnyRole(['Superadmin', 'super-admin', 'project-manager'])) {
-            if ($request->ajax()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-            abort(403, 'Anda tidak memiliki akses untuk menggunakan fitur ini.');
-        }
+        $this->authorize('schedule.manage');
 
         $validated = $request->validate([
             'mode' => 'required|in:extend,compress,keep',

@@ -37,6 +37,7 @@ class PurchaseRequestController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('procurement.view');
         $query = PurchaseRequest::with(['project:id,name', 'requestedBy:id,name']);
 
         if ($request->has('project_id')) {
@@ -67,6 +68,7 @@ class PurchaseRequestController extends Controller
      */
     public function show(PurchaseRequest $purchaseRequest)
     {
+        $this->authorize('procurement.view');
         $user = auth()->user();
         if (!$user || !$this->canViewRequest($purchaseRequest, $user)) {
             return $this->errorResponse('Unauthorized', 403);
@@ -87,6 +89,7 @@ class PurchaseRequestController extends Controller
      */
     public function store(StorePurchaseRequestRequest $request)
     {
+        $this->authorize('procurement.manage');
         if (!$this->prService->canCreatePR(auth()->id(), $request->project_id)) {
             return $this->errorResponse('Anda tidak terdaftar dalam tim proyek ini.', 403);
         }
@@ -110,6 +113,7 @@ class PurchaseRequestController extends Controller
      */
     public function approve(PurchaseRequest $purchaseRequest)
     {
+        $this->authorize('financials.manage');
         if ($purchaseRequest->status !== 'pending') {
             return $this->errorResponse('Request is not pending', 422);
         }
@@ -133,6 +137,7 @@ class PurchaseRequestController extends Controller
      */
     public function reject(RejectPurchaseRequestRequest $request, PurchaseRequest $purchaseRequest)
     {
+        $this->authorize('financials.manage');
         if ($purchaseRequest->status !== 'pending') {
             return $this->errorResponse('Request is not pending', 422);
         }

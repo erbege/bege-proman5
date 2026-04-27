@@ -90,8 +90,13 @@
     </style>
 </head>
 
+@php
+    $canViewFinancials = auth()->user()->can('financials.view');
+@endphp
+
 <body>
     {{-- REKAPITULASI --}}
+    @if($canViewFinancials)
     <div class="header">
         <h1>DAFTAR REKAPITULASI RENCANA ANGGARAN BIAYA (RAB)</h1>
     </div>
@@ -118,58 +123,41 @@
         <tbody>
             @php
                 $romanNumerals = [
-                    'I',
-                    'II',
-                    'III',
-                    'IV',
-                    'V',
-                    'VI',
-                    'VII',
-                    'VIII',
-                    'IX',
-                    'X',
-                    'XI',
-                    'XII',
-                    'XIII',
-                    'XIV',
-                    'XV',
-                    'XVI',
-                    'XVII',
-                    'XVIII',
-                    'XIX',
-                    'XX'
+                    'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X',
+                    'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX'
                 ];
                 $index = 0;
                 $sectionLabels = [];
 
-                // Terbilang function
-                function terbilang($angka)
-                {
-                    $angka = abs($angka);
-                    $bilangan = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
+                if (!function_exists('terbilang')) {
+                    function terbilang($angka)
+                    {
+                        $angka = abs($angka);
+                        $bilangan = ['', 'satu', 'dua', 'tiga', 'empat', 'lima', 'enam', 'tujuh', 'delapan', 'sembilan', 'sepuluh', 'sebelas'];
 
-                    if ($angka < 12) {
-                        return $bilangan[$angka];
-                    } elseif ($angka < 20) {
-                        return terbilang($angka - 10) . ' belas';
-                    } elseif ($angka < 100) {
-                        return terbilang(floor($angka / 10)) . ' puluh ' . terbilang($angka % 10);
-                    } elseif ($angka < 200) {
-                        return 'seratus ' . terbilang($angka - 100);
-                    } elseif ($angka < 1000) {
-                        return terbilang(floor($angka / 100)) . ' ratus ' . terbilang($angka % 100);
-                    } elseif ($angka < 2000) {
-                        return 'seribu ' . terbilang($angka - 1000);
-                    } elseif ($angka < 1000000) {
-                        return terbilang(floor($angka / 1000)) . ' ribu ' . terbilang($angka % 1000);
-                    } elseif ($angka < 1000000000) {
-                        return terbilang(floor($angka / 1000000)) . ' juta ' . terbilang($angka % 1000000);
-                    } elseif ($angka < 1000000000000) {
-                        return terbilang(floor($angka / 1000000000)) . ' milyar ' . terbilang($angka % 1000000000);
-                    } elseif ($angka < 1000000000000000) {
-                        return terbilang(floor($angka / 1000000000000)) . ' triliun ' . terbilang($angka % 1000000000000);
+                        if ($angka < 12) {
+                            return $bilangan[$angka];
+                        } elseif ($angka < 20) {
+                            return terbilang($angka - 10) . ' belas';
+                        } elseif ($angka < 100) {
+                            return terbilang(floor($angka / 10)) . ' puluh ' . terbilang($angka % 10);
+                        } elseif ($angka < 200) {
+                            return 'seratus ' . terbilang($angka - 100);
+                        } elseif ($angka < 1000) {
+                            return terbilang(floor($angka / 100)) . ' ratus ' . terbilang($angka % 100);
+                        } elseif ($angka < 2000) {
+                            return 'seribu ' . terbilang($angka - 1000);
+                        } elseif ($angka < 1000000) {
+                            return terbilang(floor($angka / 1000)) . ' ribu ' . terbilang($angka % 1000);
+                        } elseif ($angka < 1000000000) {
+                            return terbilang(floor($angka / 1000000)) . ' juta ' . terbilang($angka % 1000000);
+                        } elseif ($angka < 1000000000000) {
+                            return terbilang(floor($angka / 1000000000)) . ' milyar ' . terbilang($angka % 1000000000);
+                        } elseif ($angka < 1000000000000000) {
+                            return terbilang(floor($angka / 1000000000000)) . ' triliun ' . terbilang($angka % 1000000000000);
+                        }
+                        return trim(preg_replace('/\s+/', ' ', terbilang($angka)));
                     }
-                    return trim(preg_replace('/\s+/', ' ', terbilang($angka)));
                 }
 
                 $ppn = $grandTotal * 0.10;
@@ -216,9 +204,10 @@
         </tr>
     </table>
 
-    {{-- RINCIAN RAB --}}
     <div class="page-break"></div>
+    @endif
 
+    {{-- RINCIAN RAB --}}
     <div class="header">
         <h1>RENCANA ANGGARAN BIAYA</h1>
         <h2>{{ $project->name }}</h2>
@@ -243,11 +232,13 @@
         <thead>
             <tr>
                 <th width="6%">NO</th>
-                <th width="40%">URAIAN PEKERJAAN</th>
+                <th width="{{ $canViewFinancials ? '40%' : '76%' }}">URAIAN PEKERJAAN</th>
                 <th width="10%">VOLUME</th>
                 <th width="8%">SATUAN</th>
+                @if($canViewFinancials)
                 <th width="16%">HARGA SATUAN (RP)</th>
                 <th width="20%">JUMLAH HARGA (RP)</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -255,60 +246,78 @@
                 $sectionLetters = range('A', 'Z');
                 $letterIndex = 0;
 
-                function renderPdfSection($section, $sectionLetters, &$letterIndex, $level = 0)
-                {
-                    $html = '';
-                    $letter = $level === 0 ? ($sectionLetters[$letterIndex] ?? ($letterIndex + 1)) : '';
-                    $headerClass = $level === 0 ? 'section-header' : 'subsection-header';
-                    $indent = str_repeat('&nbsp;&nbsp;&nbsp;', $level);
+                if (!function_exists('renderPdfSection')) {
+                    function renderPdfSection($section, $sectionLetters, &$letterIndex, $canViewFinancials, $level = 0)
+                    {
+                        $html = '';
+                        $letter = $level === 0 ? ($sectionLetters[$letterIndex] ?? ($letterIndex + 1)) : '';
+                        $headerClass = $level === 0 ? 'section-header' : 'subsection-header';
+                        $indent = str_repeat('&nbsp;&nbsp;&nbsp;', $level);
+                        $colSpan = $canViewFinancials ? 4 : 2;
 
-                    // Section header
-                    $html .= '<tr class="' . $headerClass . '">';
-                    $html .= '<td class="text-center">' . $letter . '</td>';
-                    $html .= '<td>' . $indent . strtoupper($section->name) . '</td>';
-                    $html .= '<td></td><td></td><td></td><td></td>';
-                    $html .= '</tr>';
-
-                    // Items
-                    $itemNumber = 1;
-                    foreach ($section->items->sortBy('code', SORT_NATURAL) as $item) {
-                        $html .= '<tr>';
-                        $html .= '<td class="text-center">' . $itemNumber . '</td>';
-                        $html .= '<td class="item-indent">' . $indent . '&nbsp;&nbsp;&nbsp;' . $item->work_name . '</td>';
-                        $html .= '<td class="text-right">' . number_format($item->volume, 2, ',', '.') . '</td>';
-                        $html .= '<td class="text-center">' . $item->unit . '</td>';
-                        $html .= '<td class="text-right">' . number_format($item->unit_price, 2, ',', '.') . '</td>';
-                        $html .= '<td class="text-right">' . number_format($item->total_price, 2, ',', '.') . '</td>';
+                        // Section header
+                        $html .= '<tr class="' . $headerClass . '">';
+                        $html .= '<td class="text-center">' . $letter . '</td>';
+                        $html .= '<td>' . $indent . strtoupper($section->name) . '</td>';
+                        $html .= '<td></td><td></td>';
+                        if ($canViewFinancials) {
+                            $html .= '<td></td><td></td>';
+                        }
                         $html .= '</tr>';
-                        $itemNumber++;
-                    }
 
-                    // Child sections
-                    foreach ($section->children->sortBy('code', SORT_NATURAL) as $child) {
-                        $html .= renderPdfSection($child, $sectionLetters, $letterIndex, $level + 1);
-                    }
+                        // Items
+                        $itemNumber = 1;
+                        foreach ($section->items->sortBy('code', SORT_NATURAL) as $item) {
+                            $html .= '<tr>';
+                            $html .= '<td class="text-center">' . $itemNumber . '</td>';
+                            $html .= '<td class="item-indent">' . $indent . '&nbsp;&nbsp;&nbsp;' . $item->work_name . '</td>';
+                            $html .= '<td class="text-right">' . number_format($item->volume, 2, ',', '.') . '</td>';
+                            $html .= '<td class="text-center">' . $item->unit . '</td>';
+                            if ($canViewFinancials) {
+                                $html .= '<td class="text-right">' . number_format($item->unit_price, 2, ',', '.') . '</td>';
+                                $html .= '<td class="text-right">' . number_format($item->total_price, 2, ',', '.') . '</td>';
+                            }
+                            $html .= '</tr>';
+                            $itemNumber++;
+                        }
 
-                    // Subtotal (only for level 0)
-                    if ($level === 0) {
-                        $html .= '<tr class="subtotal-row">';
-                        $html .= '<td></td><td></td><td></td><td></td>';
-                        $html .= '<td class="text-right">JUMLAH ' . $letter . '</td>';
-                        $html .= '<td class="text-right">' . number_format($section->total_price, 2, ',', '.') . '</td>';
-                        $html .= '</tr>';
-                        $letterIndex++;
-                    }
+                        // Child sections
+                        foreach ($section->children->sortBy('code', SORT_NATURAL) as $child) {
+                            $html .= renderPdfSection($child, $sectionLetters, $letterIndex, $canViewFinancials, $level + 1);
+                        }
 
-                    return $html;
+                        // Subtotal (only for level 0)
+                        if ($level === 0) {
+                            $html .= '<tr class="subtotal-row">';
+                            if ($canViewFinancials) {
+                                $html .= '<td></td><td></td><td></td><td></td>';
+                                $html .= '<td class="text-right">JUMLAH ' . $letter . '</td>';
+                                $html .= '<td class="text-right">' . number_format($section->total_price, 2, ',', '.') . '</td>';
+                            } else {
+                                $html .= '<td></td><td style="font-weight: bold;">JUMLAH ' . $letter . '</td><td></td><td></td>';
+                            }
+                            $html .= '</tr>';
+                            $letterIndex++;
+                        }
+
+                        return $html;
+                    }
                 }
             @endphp
 
             @foreach($sections as $section)
-                {!! renderPdfSection($section, $sectionLetters, $letterIndex) !!}
+                {!! renderPdfSection($section, $sectionLetters, $letterIndex, $canViewFinancials) !!}
             @endforeach
 
             <tr class="total-row">
-                <td colspan="5" class="text-right">TOTAL</td>
-                <td class="text-right">{{ number_format($grandTotal, 2, ',', '.') }}</td>
+                @if($canViewFinancials)
+                    <td colspan="5" class="text-right">TOTAL</td>
+                    <td class="text-right">{{ number_format($grandTotal, 2, ',', '.') }}</td>
+                @else
+                    <td colspan="1" class="text-center"></td>
+                    <td colspan="1" class="text-left">TOTAL</td>
+                    <td colspan="2"></td>
+                @endif
             </tr>
         </tbody>
     </table>

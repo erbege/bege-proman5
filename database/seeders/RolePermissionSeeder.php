@@ -99,6 +99,10 @@ class RolePermissionSeeder extends Seeder
             'settings.update',
             'users.manage',
             'roles.manage',
+
+            // Financials
+            'financials.view',
+            'financials.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -144,6 +148,8 @@ class RolePermissionSeeder extends Seeder
             'dashboard.view',
             'reports.view',
             'reports.export',
+            'financials.view',
+            'financials.manage',
         ]);
 
         // Site Manager
@@ -205,6 +211,7 @@ class RolePermissionSeeder extends Seeder
             'gr.view',
             'dashboard.view',
             'reports.view',
+            'financials.view',
         ]);
 
         // Estimator (Quantity Surveyor)
@@ -223,6 +230,8 @@ class RolePermissionSeeder extends Seeder
             'dashboard.view',
             'reports.view',
             'reports.export',
+            'financials.view',
+            'financials.manage',
         ]);
 
         // Engineer

@@ -20,6 +20,8 @@ class CostControlController extends Controller
      */
     public function index(Project $project)
     {
+        $this->authorize('financials.view-report');
+
         $summary = $this->costService->getProjectFinancialSummary($project);
         $details = $this->costService->generateReport($project);
 

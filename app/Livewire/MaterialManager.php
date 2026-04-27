@@ -98,6 +98,10 @@ class MaterialManager extends Component
     // Inline edit min_stock
     public function updateMinStock(int $id, $value)
     {
+        if (!auth()->user()->can('materials.manage')) {
+            abort(403);
+        }
+
         $material = Material::find($id);
         if ($material) {
             $material->update(['min_stock' => max(0, floatval($value))]);
@@ -151,6 +155,10 @@ class MaterialManager extends Component
 
     public function bulkDelete()
     {
+        if (!auth()->user()->can('materials.manage')) {
+            abort(403);
+        }
+
         $count = count($this->selectedIds);
 
         if ($count > 0) {
@@ -184,22 +192,31 @@ class MaterialManager extends Component
 
     public function save()
     {
-        $this->validate([
+        if (!auth()->user()->can('materials.manage')) {
+            abort(403);
+        }
+
+        $rules = [
             'name' => 'required|string|max:255',
             'category' => 'required|string|max:100',
             'unit' => 'required|string|max:20',
-            'unitPrice' => 'required|numeric|min:0',
             'minStock' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
             'code' => 'nullable|string|max:50|unique:materials,code',
-        ]);
+        ];
+
+        if (auth()->user()->can('financials.view')) {
+            $rules['unitPrice'] = 'required|numeric|min:0';
+        }
+
+        $this->validate($rules);
 
         Material::create([
             'code' => $this->code ?: $this->generateUniqueCode(Material::class, 'MAT'),
             'name' => $this->name,
             'category' => $this->category,
             'unit' => $this->unit,
-            'unit_price' => $this->unitPrice,
+            'unit_price' => auth()->user()->can('financials.view') ? $this->unitPrice : 0,
             'min_stock' => $this->minStock ?: 0,
             'description' => $this->description ?: null,
             'is_active' => true,
@@ -225,6 +242,10 @@ class MaterialManager extends Component
 
     public function delete()
     {
+        if (!auth()->user()->can('materials.manage')) {
+            abort(403);
+        }
+
         $material = Material::find($this->deleteId);
 
         if ($material) {
@@ -242,6 +263,10 @@ class MaterialManager extends Component
 
     public function restore(int $id)
     {
+        if (!auth()->user()->can('materials.manage')) {
+            abort(403);
+        }
+
         $material = Material::withTrashed()->find($id);
         if ($material) {
             $material->restore();
@@ -257,6 +282,10 @@ class MaterialManager extends Component
 
     public function forceDelete(int $id)
     {
+        if (!auth()->user()->can('materials.manage')) {
+            abort(403);
+        }
+
         $material = Material::withTrashed()->find($id);
 
         if ($material) {
@@ -275,6 +304,10 @@ class MaterialManager extends Component
     // Export
     public function export()
     {
+        if (!auth()->user()->can('financials.view')) {
+            abort(403);
+        }
+
         return Excel::download(new MaterialsExport, 'materials-' . date('Y-m-d') . '.xlsx');
     }
 

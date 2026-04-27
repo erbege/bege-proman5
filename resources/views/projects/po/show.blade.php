@@ -18,17 +18,21 @@
                     class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-dark-700 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-300 dark:hover:bg-dark-600">
                     ← Kembali
                 </a>
+                @can('procurement.manage')
                 @if($po->status === 'draft' || $po->status === 'sent')
                     <button type="button" onclick="document.getElementById('deletePOModal').classList.remove('hidden')"
                         class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700">
                         Hapus
                     </button>
                 @endif
+                @endcan
+                @can('financials.view')
                 <a href="{{ route('projects.po.print', [$project, $po]) }}" target="_blank"
                     class="inline-flex items-center px-4 py-2 bg-gold-500 border border-transparent rounded-md font-semibold text-xs text-gray-900 uppercase tracking-widest hover:bg-gold-600">
                     <x-heroicon-o-printer class="w-4 h-4 mr-1" />
                     Print / PDF
                 </a>
+                @endcan
             </div>
         </div>
     </x-slot>
@@ -106,8 +110,10 @@
                                 <tr>
                                     <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Material</th>
                                     <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Qty</th>
+                                    @can('financials.view')
                                     <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Satuan</th>
                                     <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total</th>
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -120,11 +126,14 @@
                                             @endif
                                         </td>
                                         <td class="px-3 py-1.5 text-right text-sm text-gray-900 dark:text-white">{{ number_format($item->quantity, 2) }} {{ $item->material->unit }}</td>
+                                        @can('financials.view')
                                         <td class="px-3 py-1.5 text-right text-sm text-gray-900 dark:text-white">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
                                         <td class="px-3 py-1.5 text-right text-sm font-bold text-gray-900 dark:text-white">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
+                                        @endcan
                                     </tr>
                                 @endforeach
                             </tbody>
+                            @can('financials.view')
                             <tfoot class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
                                     <td colspan="3" class="px-4 py-2 text-right text-sm font-medium text-gray-500">Subtotal</td>
@@ -147,6 +156,7 @@
                                     <td class="px-3 py-1.5 text-right text-base font-bold text-blue-600 dark:text-blue-400">{{ $po->formatted_total_amount }}</td>
                                 </tr>
                             </tfoot>
+                            @endcan
                         </table>
                     </div>
 
@@ -160,6 +170,7 @@
             </div>
 
             <!-- Approval Actions -->
+            @can('financials.manage')
             @if($po->status === 'pending' && !$po->is_fully_approved)
                 @php
                     $canApprove = false;
@@ -202,6 +213,7 @@
                     </div>
                 @endif
             @endif
+            @endcan
 
             <!-- Audit Trail / Approval History -->
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">

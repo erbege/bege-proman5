@@ -106,6 +106,7 @@
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3 mb-4">
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500">Kurva S</h3>
+                        @if($canEditSchedule)
                         <form action="{{ route('projects.schedule.regenerate', $project) }}" method="POST"
                             class="inline" @submit="isLoading = true; loadingMessage = 'Regenerating Jadwal'">
                             @csrf
@@ -124,6 +125,7 @@
                                 </span>
                             </button>
                         </form>
+                        @endif
                     </div>
                     <div id="mini-scurve-chart" style="height: 200px;"></div>
                 </div>

@@ -18,12 +18,14 @@
                     class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-dark-700 border border-transparent rounded-md font-semibold text-xs text-gray-700 dark:text-gray-300 uppercase tracking-widest hover:bg-gray-300 dark:hover:bg-dark-600">
                     ← Kembali
                 </a>
+                @can('procurement.manage')
                 @if($pr->status === 'draft' || $pr->status === 'pending')
                     <button type="button" onclick="document.getElementById('deletePRModal').classList.remove('hidden')"
                         class="inline-flex items-center px-4 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-700">
                         Hapus
                     </button>
                 @endif
+                @endcan
             </div>
         </div>
     </x-slot>
@@ -87,12 +89,14 @@
                                     <th
                                         class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Satuan</th>
+                                    @can('financials.view')
                                     <th
                                         class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Est. Harga</th>
                                     <th
                                         class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Subtotal</th>
+                                    @endcan
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -107,14 +111,17 @@
                                         <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-center">
                                             {{ $item->material->unit }}
                                         </td>
+                                        @can('financials.view')
                                         <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                             Rp {{ number_format($item->estimated_price, 0, ',', '.') }}
                                         </td>
                                         <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right font-bold">
                                             Rp {{ number_format($item->total_price, 0, ',', '.') }}
                                         </td>
+                                        @endcan
                                     </tr>
                                 @endforeach
+                                @can('financials.view')
                                 <tr class="bg-gray-50 dark:bg-dark-700">
                                     <td colspan="4"
                                         class="px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white text-right">
@@ -123,6 +130,7 @@
                                         Rp {{ number_format($pr->total_estimated_price, 0, ',', '.') }}
                                     </td>
                                 </tr>
+                                @endcan
                             </tbody>
                         </table>
                     </div>
@@ -154,43 +162,8 @@
                 </div>
             @endif
 
-            <!-- Items Table -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <!-- ... (Items Table Content Remains Same) ... -->
-                <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Item Pembelian</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-dark-700">
-                                <tr>
-                                    <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Material</th>
-                                    <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Qty</th>
-                                    <th class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Satuan</th>
-                                    <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Est. Harga</th>
-                                    <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach($pr->items as $item)
-                                    <tr>
-                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white font-medium">{{ $item->material->name }}</td>
-                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">{{ number_format($item->quantity, 2) }}</td>
-                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-center">{{ $item->material->unit }}</td>
-                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">Rp {{ number_format($item->estimated_price, 0, ',', '.') }}</td>
-                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right font-bold">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
-                                    </tr>
-                                @endforeach
-                                <tr class="bg-gray-50 dark:bg-dark-700">
-                                    <td colspan="4" class="px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white text-right">Total Estimasi</td>
-                                    <td class="px-3 py-1.5 text-sm font-bold text-gray-900 dark:text-white text-right">Rp {{ number_format($pr->total_estimated_price, 0, ',', '.') }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
             <!-- Approval Actions -->
+            @can('financials.manage')
             @if($pr->status === 'pending' && !$pr->is_fully_approved)
                 @php
                     $canApprove = false;
@@ -225,7 +198,7 @@
                         </div>
                     </div>
                 @else
-                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6 flex items-center">
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6 flex items-center shadow-sm">
                         <x-heroicon-o-information-circle class="w-5 h-5 text-blue-500 mr-3" />
                         <p class="text-sm text-blue-700 dark:text-blue-300">
                             Menunggu persetujuan Level {{ $pr->current_approval_level }} (Role: {{ str_replace('_', ' ', $matrix->role_name ?? 'N/A') }})
@@ -233,6 +206,7 @@
                     </div>
                 @endif
             @endif
+            @endcan
 
             <!-- Audit Trail / Approval History -->
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">

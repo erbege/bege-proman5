@@ -23,6 +23,8 @@ class PurchaseOrderController extends Controller
      */
     public function index(Project $project)
     {
+        $this->authorize('procurement.manage');
+
         $orders = $project->purchaseOrders()
             ->with(['supplier', 'createdBy'])
             ->latest()
@@ -36,6 +38,8 @@ class PurchaseOrderController extends Controller
      */
     public function create(Project $project)
     {
+        $this->authorize('procurement.manage');
+
         $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
         // Get Approved PRs that are NOT completed
@@ -53,6 +57,8 @@ class PurchaseOrderController extends Controller
      */
     public function store(Request $request, Project $project, \App\Services\PurchaseOrderService $poService)
     {
+        $this->authorize('procurement.manage');
+
         $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
             'order_date' => 'required|date',
@@ -80,6 +86,8 @@ class PurchaseOrderController extends Controller
      */
     public function show(Project $project, PurchaseOrder $po)
     {
+        $this->authorize('procurement.manage');
+
         $po->load(['items.material', 'supplier', 'createdBy', 'project', 'approvalLogs.user']);
         return view('projects.po.show', compact('project', 'po'));
     }
@@ -89,6 +97,8 @@ class PurchaseOrderController extends Controller
      */
     public function updateStatus(Request $request, Project $project, PurchaseOrder $po)
     {
+        $this->authorize('financials.manage');
+
         $request->validate([
             'status' => 'required|in:approved,rejected',
             'comment' => 'nullable|string|max:500'
@@ -112,6 +122,8 @@ class PurchaseOrderController extends Controller
      */
     public function print(Project $project, PurchaseOrder $po)
     {
+        $this->authorize('procurement.manage');
+
         if (!$po->is_fully_approved) {
             return back()->with('error', 'PO harus disetujui sepenuhnya sebelum dicetak.');
         }
@@ -124,6 +136,8 @@ class PurchaseOrderController extends Controller
      */
     public function destroy(Project $project, PurchaseOrder $po)
     {
+        $this->authorize('procurement.manage');
+
         if ($po->status !== 'draft' && $po->status !== 'pending') {
             return back()->with('error', 'Hanya PO status Draft atau Pending yang dapat dihapus.');
         }

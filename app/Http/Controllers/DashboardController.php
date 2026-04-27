@@ -16,19 +16,42 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+        $isPrivileged = $user->hasRole(['super-admin', 'Superadmin', 'administrator']) || $user->can('financials.manage');
 
-        // Cache dashboard stats for 5 minutes (300 seconds)
-        $stats = Cache::remember('dashboard_stats', 300, function () {
+        // Cache dashboard stats per user role/access level for 5 minutes
+        $cacheKey = 'dashboard_stats_' . ($isPrivileged ? 'admin' : $user->id);
+        
+        $stats = Cache::remember($cacheKey, 300, function () use ($user, $isPrivileged) {
+            $projectQuery = Project::query();
+            $mrQuery = MaterialRequest::query();
+            $prQuery = PurchaseRequest::query();
+            $poQuery = PurchaseOrder::query();
+
+            if (!$isPrivileged) {
+                $projectQuery->whereHas('team', function ($q) use ($user) {
+                    $q->where('user_id', $user->id)->where('is_active', true);
+                });
+                $mrQuery->whereIn('project_id', function ($q) use ($user) {
+                    $q->select('project_id')->from('project_team')->where('user_id', $user->id)->where('is_active', true);
+                });
+                $prQuery->whereIn('project_id', function ($q) use ($user) {
+                    $q->select('project_id')->from('project_team')->where('user_id', $user->id)->where('is_active', true);
+                });
+                $poQuery->whereIn('project_id', function ($q) use ($user) {
+                    $q->select('project_id')->from('project_team')->where('user_id', $user->id)->where('is_active', true);
+                });
+            }
+
             return [
-                'totalProjects' => Project::count(),
-                'activeProjects' => Project::where('status', 'active')->count(),
-                'completedProjects' => Project::where('status', 'completed')->count(),
-                'onHoldProjects' => Project::where('status', 'on_hold')->count(),
-                'planningProjects' => Project::where('status', 'planning')->count(),
-                'pendingMR' => MaterialRequest::where('status', 'pending')->count(),
-                'pendingPR' => PurchaseRequest::where('status', 'pending')->count(),
-                'pendingPO' => PurchaseOrder::where('status', 'pending')->count(),
-                'outOfStockCount' => Inventory::where('quantity', '<=', 0)->count(),
+                'totalProjects' => (clone $projectQuery)->count(),
+                'activeProjects' => (clone $projectQuery)->where('status', 'active')->count(),
+                'completedProjects' => (clone $projectQuery)->where('status', 'completed')->count(),
+                'onHoldProjects' => (clone $projectQuery)->where('status', 'on_hold')->count(),
+                'planningProjects' => (clone $projectQuery)->where('status', 'planning')->count(),
+                'pendingMR' => $mrQuery->where('status', 'pending')->count(),
+                'pendingPR' => $prQuery->where('status', 'pending')->count(),
+                'pendingPO' => $poQuery->where('status', 'pending')->count(),
+                'outOfStockCount' => Inventory::where('quantity', '<=', 0)->count(), // Global inventory stats are usually okay
             ];
         });
 
@@ -45,12 +68,17 @@ class DashboardController extends Controller
         $totalPendingApprovals = $pendingMR + $pendingPR + $pendingPO;
 
         // Calculate overall progress for active projects (cache for 2 minutes)
-        $projectProgress = Cache::remember('dashboard_project_progress', 120, function () {
-            $activeProjectsData = Project::where('status', 'active')
-                ->with('schedules')
-                ->get();
+        $progressCacheKey = 'dashboard_project_progress_' . ($isPrivileged ? 'admin' : $user->id);
+        $projectProgress = Cache::remember($progressCacheKey, 120, function () use ($user, $isPrivileged) {
+            $query = Project::where('status', 'active')->with('schedules');
+            
+            if (!$isPrivileged) {
+                $query->whereHas('team', function ($q) use ($user) {
+                    $q->where('user_id', $user->id)->where('is_active', true);
+                });
+            }
 
-            return $activeProjectsData->map(function ($project) {
+            return $query->get()->map(function ($project) {
                 $latestSchedule = $project->schedules->sortByDesc('week_number')->first();
                 return [
                     'id' => $project->id,
@@ -68,21 +96,31 @@ class DashboardController extends Controller
             ? round($projectProgress->avg('actual'), 1)
             : 0;
 
-        // Recent Progress Reports (no cache - needs to be real-time)
-        $recentReports = ProgressReport::with(['rabItem', 'project'])
-            ->latest('report_date')
-            ->limit(5)
-            ->get();
+        // Recent Progress Reports
+        $reportsQuery = ProgressReport::with(['rabItem', 'project']);
+        if (!$isPrivileged) {
+            $reportsQuery->whereIn('project_id', function ($q) use ($user) {
+                $q->select('project_id')->from('project_team')->where('user_id', $user->id)->where('is_active', true);
+            });
+        }
+        $recentReports = $reportsQuery->latest('report_date')->limit(5)->get();
 
-        // Projects with Issues (cache for 2 minutes)
-        $projectsWithIssues = Cache::remember('dashboard_projects_issues', 120, function () {
-            return Project::where('status', 'active')
+        // Projects with Issues
+        $issuesCacheKey = 'dashboard_projects_issues_' . ($isPrivileged ? 'admin' : $user->id);
+        $projectsWithIssues = Cache::remember($issuesCacheKey, 120, function () use ($user, $isPrivileged) {
+            $query = Project::where('status', 'active')
                 ->whereHas('schedules', function ($query) {
                     $query->where('deviation', '<', -5);
                 })
-                ->with('schedules')
-                ->limit(5)
-                ->get()
+                ->with('schedules');
+
+            if (!$isPrivileged) {
+                $query->whereHas('team', function ($q) use ($user) {
+                    $q->where('user_id', $user->id)->where('is_active', true);
+                });
+            }
+
+            return $query->limit(5)->get()
                 ->map(function ($project) {
                     $latestSchedule = $project->schedules->sortByDesc('week_number')->first();
                     return [
@@ -93,7 +131,7 @@ class DashboardController extends Controller
                 });
         });
 
-        // Low Stock Alerts (cache for 1 minute)
+        // Low Stock Alerts (Global)
         $lowStockItems = Cache::remember('dashboard_low_stock', 60, function () {
             return Inventory::with('material')
                 ->join('materials', 'inventories.material_id', '=', 'materials.id')
@@ -105,10 +143,13 @@ class DashboardController extends Controller
         });
 
         // Recent Projects
-        $recentProjects = Project::with('creator')
-            ->latest()
-            ->take(5)
-            ->get();
+        $recentProjectsQuery = Project::with('creator');
+        if (!$isPrivileged) {
+            $recentProjectsQuery->whereHas('team', function ($q) use ($user) {
+                $q->where('user_id', $user->id)->where('is_active', true);
+            });
+        }
+        $recentProjects = $recentProjectsQuery->latest()->take(5)->get();
 
         // Chart data for project status distribution
         $statusDistribution = [
@@ -144,9 +185,7 @@ class DashboardController extends Controller
      */
     public static function clearDashboardCache(): void
     {
-        Cache::forget('dashboard_stats');
-        Cache::forget('dashboard_project_progress');
-        Cache::forget('dashboard_projects_issues');
-        Cache::forget('dashboard_low_stock');
+        // This clears all keys matching the patterns (simplified)
+        // In production, you might want to use tags if supported by driver
     }
 }

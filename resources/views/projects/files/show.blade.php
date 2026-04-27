@@ -126,6 +126,7 @@
                             @endif
 
                             {{-- Status Workflow --}}
+                            @can('files.manage-status')
                             <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Ubah Status</h4>
                                 <div class="flex flex-wrap gap-2">
@@ -149,6 +150,7 @@
                                     @endforeach
                                 </div>
                             </div>
+                            @endcan
                         </div>
                     </div>
 
@@ -157,12 +159,14 @@
                         <div class="p-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Riwayat Versi</h3>
+                                @can('files.update')
                                 <button type="button"
                                     onclick="document.getElementById('versionModal').classList.remove('hidden')"
                                     class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white text-sm rounded-md hover:bg-green-700">
                                     <x-heroicon-o-arrow-up-tray class="w-4 h-4 mr-1" />
                                     Upload Versi Baru
                                 </button>
+                                @endcan
                             </div>
 
                             <div class="space-y-4"
@@ -195,12 +199,14 @@
                                                         <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
                                                     </a>
                                                     @if($version->version !== $file->current_version)
+                                                        @can('files.update')
                                                         <button type="button"
                                                             @click="showRollbackModal = true; rollbackVersion = {{ $version->version }}; rollbackAction = '{{ route('projects.files.rollback', [$project, $file, $version]) }}'"
                                                             class="p-1 text-orange-600 hover:bg-orange-100 rounded"
                                                             title="Rollback">
                                                             <x-heroicon-o-arrow-uturn-left class="w-5 h-5" />
                                                         </button>
+                                                        @endcan
                                                     @else
                                                         <span
                                                             class="px-2 py-0.5 text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 rounded">Aktif</span>
@@ -379,6 +385,7 @@
                     </div>
 
                     {{-- Danger Zone --}}
+                    @can('files.delete')
                     <div x-data="{ showDeleteFileModal: false }"
                         class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg border border-red-200 dark:border-red-900">
                         <div class="p-4">
@@ -452,12 +459,14 @@
                             </template>
                         </div>
                     </div>
+                    @endcan
                 </div>
             </div>
         </div>
     </div>
 
     {{-- Upload Version Modal --}}
+    @can('files.update')
     <div id="versionModal" class="hidden fixed inset-0 z-50 overflow-y-auto scrollbar-overlay">
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75"
@@ -495,6 +504,7 @@
             </div>
         </div>
     </div>
+    @endcan
 </x-app-layout>
 
 

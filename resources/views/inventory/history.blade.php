@@ -53,6 +53,9 @@
                                 <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Material</th>
                                 <th class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tipe</th>
                                 <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Jumlah</th>
+                                @can('financials.view')
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Harga Satuan</th>
+                                @endcan
                                 <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
                                 <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Catatan</th>
                             </tr>
@@ -81,6 +84,11 @@
                                     <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-bold text-gray-900 dark:text-white">
                                         {{ number_format($log->quantity, 2) }} {{ $log->inventory->material->unit ?? '' }}
                                     </td>
+                                    @can('financials.view')
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm text-gray-500 dark:text-gray-400">
+                                        Rp {{ number_format($log->unit_cost ?? 0, 0, ',', '.') }}
+                                    </td>
+                                    @endcan
                                     <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $log->createdBy->name ?? 'System' }}
                                     </td>

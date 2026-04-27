@@ -59,11 +59,19 @@
                                         class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Jumlah</th>
                                     <th
-                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Satuan</th>
-                                    <th
-                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Catatan</th>
+                                         class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                         Satuan</th>
+                                     @can('financials.view')
+                                     <th
+                                         class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                         Unit Cost</th>
+                                     <th
+                                         class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                         Subtotal</th>
+                                     @endcan
+                                     <th
+                                         class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                         Catatan</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -78,6 +86,14 @@
                                         <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                             {{ $item->material->unit }}
                                         </td>
+                                        @can('financials.view')
+                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
+                                            Rp {{ number_format($item->unit_cost, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right font-bold">
+                                            Rp {{ number_format($item->total_cost, 0, ',', '.') }}
+                                        </td>
+                                        @endcan
                                         <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                             {{ $item->notes ?? '-' }}
                                         </td>

@@ -31,7 +31,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::resource('clients', App\Http\Controllers\ClientController::class)->except(['show', 'create', 'edit']);
 
     // AHSP (Analisa Harga Satuan Pekerjaan)
-    Route::prefix('ahsp')->name('ahsp.')->group(function () {
+    Route::prefix('ahsp')->name('ahsp.')->middleware('can:financials.view')->group(function () {
         // Static routes FIRST (before parameter routes)
         Route::get('/', [AhspController::class, 'index'])->name('index');
         Route::get('/create', [AhspController::class, 'create'])->name('create');
@@ -76,39 +76,42 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::post('/inventory/{inventory}/adjust', [App\Http\Controllers\InventoryController::class, 'adjust'])->name('inventory.adjust');
 
     // RAB (nested under projects)
-    Route::prefix('projects/{project}')->name('projects.')->group(function () {
+    Route::prefix('projects/{project}')->name('projects.')->middleware('project_member')->group(function () {
         // Team Management
         Route::get('/team', [App\Http\Controllers\ProjectTeamController::class, 'index'])->name('team.index');
 
         // RAB Management
         Route::get('/rab', [RabController::class, 'index'])->name('rab.index');
-        Route::get('/rab/export-excel', [RabController::class, 'exportExcel'])->name('rab.export-excel');
-        Route::get('/rab/export-pdf', [RabController::class, 'exportPdf'])->name('rab.export-pdf');
-        Route::get('/rab/import', [RabController::class, 'import'])->name('rab.import');
-        Route::post('/rab/import', [RabController::class, 'processImport'])->name('rab.process-import');
-        Route::get('/rab/template', [RabController::class, 'downloadTemplate'])->name('rab.template');
+        Route::get('/rab/export-excel', [RabController::class, 'exportExcel'])->name('rab.export-excel')->middleware('can:financials.view');
+        Route::get('/rab/export-pdf', [RabController::class, 'exportPdf'])->name('rab.export-pdf')->middleware('can:financials.view');
+        Route::get('/rab/import', [RabController::class, 'import'])->name('rab.import')->middleware('can:financials.manage');
+        Route::post('/rab/import', [RabController::class, 'processImport'])->name('rab.process-import')->middleware('can:financials.manage');
+        Route::get('/rab/template', [RabController::class, 'downloadTemplate'])->name('rab.template')->middleware('can:financials.manage');
 
-        // RAB Sections
-        Route::get('/rab/sections/create', [RabController::class, 'createSection'])->name('rab.sections.create');
-        Route::post('/rab/sections', [RabController::class, 'storeSection'])->name('rab.sections.store');
+        // RAB Sections & Items Management
+        Route::middleware('can:financials.manage')->group(function () {
+            // RAB Sections
+            Route::get('/rab/sections/create', [RabController::class, 'createSection'])->name('rab.sections.create');
+            Route::post('/rab/sections', [RabController::class, 'storeSection'])->name('rab.sections.store');
 
-        // RAB Items
-        Route::get('/rab/sections/{section}/items/create', [RabController::class, 'createItem'])->name('rab.items.create');
-        Route::post('/rab/sections/{section}/items', [RabController::class, 'storeItem'])->name('rab.items.store');
-        Route::get('/rab/items/{item}/edit', [RabController::class, 'editItem'])->name('rab.items.edit');
-        Route::put('/rab/items/{item}', [RabController::class, 'updateItem'])->name('rab.items.update');
-        Route::delete('/rab/items/{item}', [RabController::class, 'destroyItem'])->name('rab.items.destroy');
+            // RAB Items
+            Route::get('/rab/sections/{section}/items/create', [RabController::class, 'createItem'])->name('rab.items.create');
+            Route::post('/rab/sections/{section}/items', [RabController::class, 'storeItem'])->name('rab.items.store');
+            Route::get('/rab/items/{item}/edit', [RabController::class, 'editItem'])->name('rab.items.edit');
+            Route::put('/rab/items/{item}', [RabController::class, 'updateItem'])->name('rab.items.update');
+            Route::delete('/rab/items/{item}', [RabController::class, 'destroyItem'])->name('rab.items.destroy');
 
-        // RAB from AHSP
-        Route::get('/rab/sections/{section}/ahsp', [RabController::class, 'showAhspSelector'])->name('rab.ahsp.selector');
-        Route::post('/rab/sections/{section}/ahsp', [RabController::class, 'generateFromAhsp'])->name('rab.ahsp.generate');
-        Route::get('/rab/ahsp/search', [RabController::class, 'searchAhsp'])->name('rab.ahsp.search');
-        Route::post('/rab/ahsp/preview', [RabController::class, 'previewAhspCalculation'])->name('rab.ahsp.preview');
+            // RAB from AHSP
+            Route::get('/rab/sections/{section}/ahsp', [RabController::class, 'showAhspSelector'])->name('rab.ahsp.selector');
+            Route::post('/rab/sections/{section}/ahsp', [RabController::class, 'generateFromAhsp'])->name('rab.ahsp.generate');
+            Route::get('/rab/ahsp/search', [RabController::class, 'searchAhsp'])->name('rab.ahsp.search');
+            Route::post('/rab/ahsp/preview', [RabController::class, 'previewAhspCalculation'])->name('rab.ahsp.preview');
 
-        // RAB Template Generator from AHSP Categories
-        Route::get('/rab/template-generator', [RabController::class, 'showTemplateGenerator'])->name('rab.template-generator');
-        Route::post('/rab/template-generator/preview', [RabController::class, 'previewTemplate'])->name('rab.template-generator.preview');
-        Route::post('/rab/template-generator', [RabController::class, 'generateFromTemplate'])->name('rab.template-generator.generate');
+            // RAB Template Generator from AHSP Categories
+            Route::get('/rab/template-generator', [RabController::class, 'showTemplateGenerator'])->name('rab.template-generator');
+            Route::post('/rab/template-generator/preview', [RabController::class, 'previewTemplate'])->name('rab.template-generator.preview');
+            Route::post('/rab/template-generator', [RabController::class, 'generateFromTemplate'])->name('rab.template-generator.generate');
+        });
 
         // Schedule & S-Curve (using RAB data instead of WBS)
         Route::get('/schedule', [ScheduleController::class, 'index'])->name('schedule.index');
@@ -123,18 +126,23 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::post('/schedule/items/{item}/parallel', [ScheduleController::class, 'updateItemParallel'])->name('schedule.update-item-parallel');
 
         // Material Analysis (AI & Local)
-        Route::get('/analysis', [MaterialAnalysisController::class, 'index'])->name('analysis.index');
-        Route::post('/analysis/analyze-all', [MaterialAnalysisController::class, 'analyzeAll'])->name('analysis.analyze-all');
-        Route::match(['get', 'post'], '/analysis/analyze-all-local', [MaterialAnalysisController::class, 'analyzeAllLocal'])->name('analysis.analyze-all-local');
-        Route::post('/analysis/{item}/analyze', [MaterialAnalysisController::class, 'analyze'])->name('analysis.analyze');
-        Route::post('/analysis/{item}/analyze-local', [MaterialAnalysisController::class, 'analyzeLocal'])->name('analysis.analyze-local');
-        Route::get('/analysis/{item}', [MaterialAnalysisController::class, 'showItem'])->name('analysis.show');
-        Route::post('/analysis/{item}/reanalyze', [MaterialAnalysisController::class, 'reanalyze'])->name('analysis.reanalyze');
-        Route::post('/analysis/{item}/reanalyze-local', [MaterialAnalysisController::class, 'reanalyzeLocal'])->name('analysis.reanalyze-local');
-        Route::post('/analysis/forecast/{forecast}/mapping', [MaterialAnalysisController::class, 'updateMapping'])->name('analysis.update-mapping');
-        Route::post('/analysis/bulk-delete', [MaterialAnalysisController::class, 'bulkDeleteForecasts'])->name('analysis.bulk-delete');
-        Route::post('/analysis/bulk-delete-materials', [MaterialAnalysisController::class, 'bulkDeleteMaterials'])->name('analysis.bulk-delete-materials');
-        Route::delete('/analysis/forecast/{forecast}', [MaterialAnalysisController::class, 'deleteForecast'])->name('analysis.delete-forecast');
+        Route::prefix('analysis')->name('analysis.')->middleware('can:financials.view')->group(function () {
+            Route::get('/', [MaterialAnalysisController::class, 'index'])->name('index');
+            Route::get('/{item}', [MaterialAnalysisController::class, 'showItem'])->name('analysis.show');
+
+            Route::middleware('can:financials.manage')->group(function () {
+                Route::post('/analyze-all', [MaterialAnalysisController::class, 'analyzeAll'])->name('analyze-all');
+                Route::match(['get', 'post'], '/analyze-all-local', [MaterialAnalysisController::class, 'analyzeAllLocal'])->name('analyze-all-local');
+                Route::post('/{item}/analyze', [MaterialAnalysisController::class, 'analyze'])->name('analyze');
+                Route::post('/{item}/analyze-local', [MaterialAnalysisController::class, 'analyzeLocal'])->name('analyze-local');
+                Route::post('/{item}/reanalyze', [MaterialAnalysisController::class, 'reanalyze'])->name('reanalyze');
+                Route::post('/{item}/reanalyze-local', [MaterialAnalysisController::class, 'reanalyzeLocal'])->name('reanalyze-local');
+                Route::post('/forecast/{forecast}/mapping', [MaterialAnalysisController::class, 'updateMapping'])->name('update-mapping');
+                Route::post('/bulk-delete', [MaterialAnalysisController::class, 'bulkDeleteForecasts'])->name('bulk-delete');
+                Route::post('/bulk-delete-materials', [MaterialAnalysisController::class, 'bulkDeleteMaterials'])->name('bulk-delete-materials');
+                Route::delete('/forecast/{forecast}', [MaterialAnalysisController::class, 'deleteForecast'])->name('delete-forecast');
+            });
+        });
 
         // Material Requests (MR)
         Route::get('/mr', [App\Http\Controllers\MaterialRequestController::class, 'index'])->name('mr.index');
@@ -217,7 +225,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::post('/files/{file}/comments', [App\Http\Controllers\ProjectFileController::class, 'storeComment'])->name('files.comments.store');
         Route::post('/files/{file}/comments/{comment}/toggle', [App\Http\Controllers\ProjectFileController::class, 'toggleResolveComment'])->name('files.comments.toggle');
         // Cost Control / Financial
-        Route::get('/financial', [App\Http\Controllers\CostControlController::class, 'index'])->name('financial.index');
+        Route::get('/financial', [App\Http\Controllers\CostControlController::class, 'index'])->name('financial.index')->middleware('can:financials.view');
     });
 });
 

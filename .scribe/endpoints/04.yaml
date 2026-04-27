@@ -1,19 +1,19 @@
-name: 'Procurement: Purchase Requests'
+name: 'Procurement: Material Requests'
 description: ''
 endpoints:
   -
     custom: []
     httpMethods:
       - GET
-    uri: api/purchase-requests
+    uri: api/material-requests
     metadata:
       custom: []
-      groupName: 'Procurement: Purchase Requests'
+      groupName: 'Procurement: Material Requests'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'List purchase requests.'
-      description: 'Get a paginated list of purchase requests.'
+      title: 'List material requests.'
+      description: 'Get a paginated list of material requests.'
       authenticated: true
       deprecated: false
     headers:
@@ -49,15 +49,15 @@ endpoints:
     custom: []
     httpMethods:
       - GET
-    uri: 'api/purchase-requests/{purchaseRequest_id}'
+    uri: 'api/material-requests/{materialRequest_id}'
     metadata:
       custom: []
-      groupName: 'Procurement: Purchase Requests'
+      groupName: 'Procurement: Material Requests'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Get purchase request details.'
-      description: 'Get detailed information about a specific purchase request.'
+      title: 'Get material request details.'
+      description: 'Get detailed information about a specific material request.'
       authenticated: true
       deprecated: false
     headers:
@@ -65,10 +65,10 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      purchaseRequest_id:
+      materialRequest_id:
         custom: []
-        name: purchaseRequest_id
-        description: 'The ID of the purchaseRequest.'
+        name: materialRequest_id
+        description: 'The ID of the materialRequest.'
         required: true
         example: 1
         type: integer
@@ -77,7 +77,7 @@ endpoints:
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      purchaseRequest_id: 1
+      materialRequest_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -105,15 +105,15 @@ endpoints:
     custom: []
     httpMethods:
       - POST
-    uri: api/purchase-requests
+    uri: api/material-requests
     metadata:
       custom: []
-      groupName: 'Procurement: Purchase Requests'
+      groupName: 'Procurement: Material Requests'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Create new purchase request.'
-      description: 'Create a new purchase request using the service layer.'
+      title: 'Create new material request.'
+      description: 'Create a new material request for a project.'
       authenticated: true
       deprecated: false
     headers:
@@ -135,6 +135,17 @@ endpoints:
         enumValues: []
         exampleWasSpecified: false
         nullable: false
+        deprecated: false
+      request_date:
+        custom: []
+        name: request_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-04-27T12:22:41'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
         deprecated: false
       notes:
         custom: []
@@ -170,17 +181,6 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
-      'items[].material_request_item_id':
-        custom: []
-        name: 'items[].material_request_item_id'
-        description: 'The <code>id</code> of an existing record in the material_request_items table.'
-        required: false
-        example: null
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
       'items[].quantity':
         custom: []
         name: 'items[].quantity'
@@ -192,131 +192,26 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
-      'items[].estimated_price':
+      'items[].unit':
         custom: []
-        name: 'items[].estimated_price'
-        description: 'Must be at least 0.'
+        name: 'items[].unit'
+        description: 'Must not be greater than 50 characters.'
         required: false
-        example: 84
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-    cleanBodyParameters:
-      project_id: architecto
-      notes: architecto
-      items:
-        -
-          material_id: architecto
-          quantity: 39
-          estimated_price: 84
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - POST
-    uri: 'api/purchase-requests/{purchaseRequest_id}/approve'
-    metadata:
-      custom: []
-      groupName: 'Procurement: Purchase Requests'
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Approve purchase request.'
-      description: 'Approve a pending purchase request.'
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      purchaseRequest_id:
-        custom: []
-        name: purchaseRequest_id
-        description: 'The ID of the purchaseRequest.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      purchaseRequest_id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses: []
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - POST
-    uri: 'api/purchase-requests/{purchaseRequest_id}/reject'
-    metadata:
-      custom: []
-      groupName: 'Procurement: Purchase Requests'
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Reject purchase request.'
-      description: 'Reject a pending purchase request.'
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      purchaseRequest_id:
-        custom: []
-        name: purchaseRequest_id
-        description: 'The ID of the purchaseRequest.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      purchaseRequest_id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      reason:
-        custom: []
-        name: reason
-        description: 'Must not be greater than 255 characters.'
-        required: false
-        example: b
+        example: g
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      reason: b
+      project_id: architecto
+      request_date: '2026-04-27T12:22:41'
+      notes: architecto
+      items:
+        -
+          material_id: architecto
+          quantity: 39
+          unit: g
     fileParameters: []
     responses: []
     responseFields: []

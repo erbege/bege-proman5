@@ -54,6 +54,10 @@
                                 <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Proyek</th>
                                 <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Material</th>
                                 <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Stok Saat Ini</th>
+                                @can('financials.view')
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Harga Rata-rata</th>
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Total Nilai</th>
+                                @endcan
                                 <th class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Aksi</th>
                             </tr>
                             </thead>
@@ -74,12 +78,22 @@
                                     <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-bold text-gray-900 dark:text-white">
                                         {{ number_format($inventory->quantity, 2) }} {{ $inventory->material?->unit ?? '' }}
                                     </td>
+                                    @can('financials.view')
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm text-gray-500 dark:text-gray-400">
+                                        Rp {{ number_format($inventory->average_cost, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-bold text-gray-900 dark:text-white">
+                                        Rp {{ number_format($inventory->total_value, 0, ',', '.') }}
+                                    </td>
+                                    @endcan
                                     <td class="px-3 py-1.5 whitespace-nowrap text-center text-sm font-medium">
+                                        @can('inventory.update')
                                         <button x-data=""
                                                 x-on:click.prevent="$dispatch('open-modal', 'adjust-stock-{{ $inventory->id }}')"
                                                 class="text-gold-600 dark:text-gold-400 hover:text-indigo-900 dark:hover:text-indigo-300">
                                             Sesuaikan
                                         </button>
+                                        @endcan
 
                                         <!-- Adjustment Modal -->
                                         <x-modal name="adjust-stock-{{ $inventory->id }}" focusable>

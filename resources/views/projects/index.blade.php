@@ -46,9 +46,11 @@
                                 <th
                                     class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Status</th>
+                                @can('financials.view')
                                 <th
                                     class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Nilai Kontrak</th>
+                                @endcan
                                 <th
                                     class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                     Aksi</th>
@@ -84,9 +86,11 @@
                                             {{ ucfirst(str_replace('_', ' ', $project->status)) }}
                                         </span>
                                     </td>
+                                    @can('financials.view')
                                     <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $project->formatted_contract_value }}
                                     </td>
+                                    @endcan
                                     <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                         <a href="{{ route('projects.show', $project) }}"
                                             class="text-blue-600 hover:text-blue-900 dark:text-blue-400 mr-3">Lihat</a>
@@ -96,7 +100,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-3 py-1.5 text-center text-gray-500 dark:text-gray-400">
+                                    <td colspan="{{ auth()->user()->can('financials.view') ? 7 : 6 }}" class="px-3 py-1.5 text-center text-gray-500 dark:text-gray-400">
                                         Belum ada proyek. <a href="{{ route('projects.create') }}"
                                             class="text-blue-600 hover:underline">Buat proyek baru</a>
                                     </td>

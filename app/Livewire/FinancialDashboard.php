@@ -15,12 +15,18 @@ class FinancialDashboard extends Component
 
     public function mount(Project $project)
     {
+        if (!auth()->user()->can('financials.view-report')) {
+            abort(403);
+        }
         $this->project = $project;
         $this->refreshData();
     }
 
     public function refreshData()
     {
+        if (!auth()->user()->can('financials.view-report')) {
+            abort(403);
+        }
         $costService = app(CostControlService::class);
         $this->summary = $costService->getProjectFinancialSummary($this->project);
         $this->details = $costService->generateReport($this->project);

@@ -122,10 +122,13 @@ class RabManager extends Component
 
     public function saveSection()
     {
+        $this->authorize('rab.manage');
+
         $this->validate([
             'sectionCode' => 'required|string|max:20',
             'sectionName' => 'required|string|max:255',
         ]);
+        // ... rest of method ...
 
         // Helper to ensure parent sections exist recursively (from AHSP category)
         $ensureParentSectionFromAhsp = function ($ahspParentId) use (&$ensureParentSectionFromAhsp) {
@@ -290,6 +293,8 @@ class RabManager extends Component
 
     public function saveItem()
     {
+        $this->authorize('rab.manage');
+
         $this->validate([
             'itemSectionId' => 'required|exists:rab_sections,id',
             'itemCode' => 'nullable|string|max:20',
@@ -391,6 +396,8 @@ class RabManager extends Component
 
     public function delete()
     {
+        $this->authorize('rab.manage');
+
         if ($this->deleteType === 'section') {
             $section = RabSection::find($this->deleteId);
 
@@ -454,6 +461,8 @@ class RabManager extends Component
 
     public function executeBulkDelete()
     {
+        $this->authorize('rab.manage');
+
         $count = RabItem::whereIn('id', $this->selectedItems)->delete();
 
         $this->project->calculateTotalWeight();
@@ -478,6 +487,8 @@ class RabManager extends Component
 
     public function import()
     {
+        $this->authorize('rab.manage');
+
         $this->validate([
             'importFile' => 'required|mimes:xlsx,xls,csv|max:10240',
         ]);

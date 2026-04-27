@@ -52,6 +52,10 @@ class InventoryManager extends Component
     // Adjustment Modal
     public function openAdjustModal(int $inventoryId)
     {
+        if (!auth()->user()->can('inventory.adjust')) {
+            abort(403);
+        }
+
         $inventory = Inventory::with('material')->find($inventoryId);
         $this->adjustingInventoryId = $inventoryId;
         $this->adjustingMaterialName = $inventory->material->name;
@@ -70,6 +74,10 @@ class InventoryManager extends Component
 
     public function saveAdjustment()
     {
+        if (!auth()->user()->can('inventory.adjust')) {
+            abort(403);
+        }
+
         $this->validate([
             'adjustQuantity' => 'required|numeric|min:0.01',
             'adjustType' => 'required|in:in,out,adjustment',

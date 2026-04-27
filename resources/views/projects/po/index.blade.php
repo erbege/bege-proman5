@@ -15,11 +15,13 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->code }}</p>
             </div>
+            @can('procurement.manage')
             <a href="{{ route('projects.po.create', $project) }}"
                 class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                 <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                 Buat PO Baru
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -52,9 +54,11 @@
                                         <th
                                             class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Tgl Kirim</th>
+                                        @can('financials.view')
                                         <th
                                             class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Total</th>
+                                        @endcan
                                         <th
                                             class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Status</th>
@@ -79,10 +83,12 @@
                                             <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                                 {{ $po->expected_delivery->format('d M Y') }}
                                             </td>
+                                            @can('financials.view')
                                             <td
                                                 class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-medium text-gray-900 dark:text-white">
                                                 {{ $po->formatted_total_amount }}
                                             </td>
+                                            @endcan
                                             <td class="px-3 py-1.5 whitespace-nowrap">
                                                 @php
                                                     $colors = [
@@ -115,11 +121,13 @@
                             <x-heroicon-o-shopping-bag class="mx-auto h-12 w-12 text-gray-400" />
                             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada Purchase Order</h3>
                             <div class="mt-6">
+                                @can('procurement.manage')
                                 <a href="{{ route('projects.po.create', $project) }}"
                                     class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                                     <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                                     Buat PO Baru
                                 </a>
+                                @endcan
                             </div>
                         </div>
                     @endif

@@ -15,9 +15,13 @@
             </p>
         </div>
         <div class="flex items-center space-x-3">
+            @can('financials.view')
             <span class="text-base font-bold text-gray-900 dark:text-white">
                 Rp {{ number_format($section->total_price, 2, ',', '.') }}
             </span>
+            @endcan
+            
+            @can('rab.manage')
             <a href="{{ route('projects.rab.ahsp.selector', [$project, $section]) }}"
                 class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400" title="Generate dari AHSP">
                 <x-heroicon-o-calculator class="w-6 h-6" />
@@ -34,6 +38,7 @@
                 class="text-red-600 hover:text-red-800 dark:text-red-400" title="Hapus Bagian">
                 <x-heroicon-o-trash class="w-5 h-5" />
             </button>
+            @endcan
         </div>
     </div>
 
@@ -79,10 +84,12 @@
                             Volume</th>
                         <th class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Satuan</th>
+                        @can('financials.view')
                         <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Harga Satuan</th>
                         <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Jumlah</th>
+                        @endcan
                         <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                             Bobot</th>
                         <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
@@ -102,17 +109,20 @@
                                 {{ number_format($item->volume, 2) }}
                             </td>
                             <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-center">{{ $item->unit }}</td>
+                            @can('financials.view')
                             <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                 {{ number_format($item->unit_price, 2, ',', '.') }}
                             </td>
                             <td class="px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white text-right">
                                 {{ number_format($item->total_price, 2, ',', '.') }}
                             </td>
+                            @endcan
                             <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                 {{ number_format($item->weight_percentage, 2) }}%
                             </td>
                             <td class="px-3 py-1.5 text-sm text-right">
                                 <div class="flex items-center justify-end gap-2">
+                                    @can('rab.manage')
                                     <button wire:click="openItemModal({{ $section->id }}, {{ $item->id }})" title="Edit"
                                         class="text-gold-600 hover:text-gold-800 dark:text-gold-400"><x-heroicon-o-pencil-square
                                             class="w-5 h-5" /></button>
@@ -120,6 +130,9 @@
                                         title="Hapus"
                                         class="text-red-600 hover:text-red-800 dark:text-red-400"><x-heroicon-o-trash
                                             class="w-5 h-5" /></button>
+                                    @else
+                                    <span class="text-xs text-gray-400">View Only</span>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

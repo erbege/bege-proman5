@@ -103,8 +103,10 @@
                                         <span class="text-gray-500 dark:text-gray-400">{{ $inventory->material->unit }}</span>
                                     </td>
                                     <td class="px-3 py-1.5 whitespace-nowrap text-center">
+                                        @can('inventory.adjust')
                                         <button wire:click="openAdjustModal({{ $inventory->id }})"
                                             class="text-gold-600 hover:text-gold-900 dark:text-gold-400 text-sm font-medium">Sesuaikan</button>
+                                        @endcan
                                     </td>
                                 </tr>
                             @empty

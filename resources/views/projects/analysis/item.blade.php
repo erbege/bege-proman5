@@ -40,13 +40,21 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Harga Satuan</p>
+                        @can('financials.view')
                         <p class="font-semibold text-gray-900 dark:text-white">
                             {{ $item->formatted_unit_price ?? 'Rp ' . number_format($item->unit_price, 0, ',', '.') }}
                         </p>
+                        @else
+                        <p class="font-semibold text-gray-400 dark:text-gray-500 italic text-xs">Akses Terbatas</p>
+                        @endcan
                     </div>
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Total Harga</p>
+                        @can('financials.view')
                         <p class="font-semibold text-gray-900 dark:text-white">{{ $item->formatted_total_price }}</p>
+                        @else
+                        <p class="font-semibold text-gray-400 dark:text-gray-500 italic text-xs">Akses Terbatas</p>
+                        @endcan
                     </div>
                 </div>
             </div>
@@ -55,10 +63,12 @@
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Material yang Dibutuhkan</h3>
+                    @can('analysis.run-ai')
                     <button type="button" onclick="document.getElementById('reanalyzeModal').classList.remove('hidden')"
                         class="text-orange-600 hover:text-orange-800 dark:text-orange-400 text-sm">
                         Re-analisis
                     </button>
+                    @endcan
                 </div>
 
                 @if($item->materialForecasts->count() > 0)

@@ -65,6 +65,9 @@ class ProjectTeamManager extends Component
     // Modal CRUD
     public function openModal(?int $id = null)
     {
+        if (!auth()->user()->can('financials.manage')) {
+            return;
+        }
         $this->resetValidation();
         $this->reset(['userId', 'role', 'assignedFrom', 'assignedUntil', 'isActive', 'editingId']);
 
@@ -95,6 +98,9 @@ class ProjectTeamManager extends Component
 
     public function save()
     {
+        if (!auth()->user()->can('financials.manage')) {
+            abort(403);
+        }
         $rules = [
             'userId' => 'required|exists:users,id',
             'role' => 'required|string|in:' . implode(',', array_keys(ProjectTeam::getRoles())),
@@ -149,6 +155,9 @@ class ProjectTeamManager extends Component
     // Delete
     public function confirmDelete(int $id, string $name)
     {
+        if (!auth()->user()->can('financials.manage')) {
+            return;
+        }
         $this->deleteId = $id;
         $this->deleteName = $name;
         $this->showDeleteModal = true;
@@ -162,6 +171,9 @@ class ProjectTeamManager extends Component
 
     public function delete()
     {
+        if (!auth()->user()->can('financials.manage')) {
+            abort(403);
+        }
         ProjectTeam::find($this->deleteId)?->delete();
         session()->flash('success', 'Anggota tim berhasil dihapus.');
         $this->closeDeleteModal();
@@ -169,6 +181,9 @@ class ProjectTeamManager extends Component
 
     public function toggleStatus(int $id)
     {
+        if (!auth()->user()->can('financials.manage')) {
+            return;
+        }
         $member = ProjectTeam::find($id);
         if ($member) {
             $member->update(['is_active' => !$member->is_active]);

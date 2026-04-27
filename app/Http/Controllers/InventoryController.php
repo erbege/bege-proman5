@@ -13,6 +13,7 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
+        $this->authorize('inventory.view');
         $query = Inventory::with(['material', 'project']);
 
         if ($request->has('project_id')) {
@@ -34,6 +35,7 @@ class InventoryController extends Controller
 
     public function history(Request $request)
     {
+        $this->authorize('inventory.view');
         $query = InventoryLog::with(['inventory.material', 'inventory.project', 'user'])->latest();
 
         if ($request->filled('project_id')) {
@@ -55,6 +57,7 @@ class InventoryController extends Controller
     // Manual adjustment endpoint (Stock Opname)
     public function adjust(Request $request, Inventory $inventory)
     {
+        $this->authorize('inventory.update');
         $request->validate([
             'quantity' => 'required|numeric',
             'type' => 'required|in:in,out,adjustment',

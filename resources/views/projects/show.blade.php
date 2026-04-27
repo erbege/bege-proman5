@@ -88,6 +88,7 @@
                     </div>
 
                     <!-- RAB Summary -->
+                    @can('financials.view')
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ringkasan RAB</h3>
@@ -126,17 +127,20 @@
                             </div>
                         @endif
                     </div>
+                    @endcan
                 </div>
 
                 <!-- Sidebar -->
                 <div class="space-y-4">
                     <!-- Contract Value -->
+                    @can('financials.view')
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
                         <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Nilai Kontrak</h3>
                         <p class="text-xl font-black text-blue-600 dark:text-blue-400">
                             {{ $project->formatted_contract_value }}
                         </p>
                     </div>
+                    @endcan
 
                     <!-- Total Progress Circular Indicator -->
                     @php $totalProgress = $project->total_progress ?? 0; @endphp
@@ -189,6 +193,7 @@
                     </div>
 
                     <!-- Financial Health -->
+                    @can('financials.view')
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 border-l-4 {{ $financialMetrics['cost_variance'] >= 0 ? 'border-green-500' : 'border-red-500' }}">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kesehatan Keuangan</h3>
                         <div class="space-y-4">
@@ -225,11 +230,13 @@
                             </div>
                         </div>
                     </div>
+                    @endcan
 
                     <!-- Quick Actions -->
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
                         <div class="space-y-2">
+                            @can('financials.manage')
                             <a href="{{ route('projects.rab.import', $project) }}"
                                 class="flex items-center p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">
                                 <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor"
@@ -240,6 +247,7 @@
                                 <span class="ml-3 text-sm font-medium text-blue-700 dark:text-blue-300">Import
                                     RAB</span>
                             </a>
+                            @endcan
                             <a href="{{ route('projects.schedule.scurve', $project) }}"
                                 class="flex items-center p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/50 transition">
                                 <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none"

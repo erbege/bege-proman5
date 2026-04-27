@@ -15,6 +15,7 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->code }}</p>
             </div>
+            @can('procurement.manage')
             <div class="flex gap-2">
                 <div x-data="{ open: false }" class="relative">
                     <button @click="open = !open"
@@ -42,6 +43,7 @@
                     Buat PR Baru
                 </a>
             </div>
+            @endcan
         </div>
     </x-slot>
 
@@ -141,6 +143,7 @@
                             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada Purchase Request
                             </h3>
                             <div class="mt-6 flex justify-center gap-2">
+                                @can('procurement.manage')
                                 <div x-data="{ open: false }" class="relative text-left">
                                     <button @click="open = !open"
                                         class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
@@ -166,6 +169,9 @@
                                     <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                                     Buat PR Baru
                                 </a>
+                                @else
+                                <p class="text-sm text-gray-500">Anda tidak memiliki hak akses untuk membuat Purchase Request.</p>
+                                @endcan
                             </div>
                         </div>
                     @endif

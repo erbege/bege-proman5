@@ -613,7 +613,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Get project RAB (Budget).'
-      description: 'Get all RAB sections and items for a project.'
+      description: ''
       authenticated: true
       deprecated: false
     headers:
@@ -669,7 +669,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Get single RAB item.'
-      description: 'Get detailed information about a specific RAB item.'
+      description: ''
       authenticated: true
       deprecated: false
     headers:
@@ -1013,7 +1013,7 @@ endpoints:
         name: report_date
         description: 'Must be a valid date.'
         required: true
-        example: '2026-04-27T01:58:06'
+        example: '2026-04-27T12:22:41'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1057,7 +1057,7 @@ endpoints:
         name: weather
         description: ''
         required: false
-        example: stormy
+        example: rainy
         type: string
         enumValues:
           - sunny
@@ -1080,11 +1080,11 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       rab_item_id: architecto
-      report_date: '2026-04-27T01:58:06'
+      report_date: '2026-04-27T12:22:41'
       progress_percentage: 22
       description: 'Eius et animi quos velit et.'
       issues: architecto
-      weather: stormy
+      weather: rainy
       workers_count: 39
     fileParameters: []
     responses: []
@@ -1193,7 +1193,7 @@ endpoints:
         name: usage_date
         description: 'Must be a valid date.'
         required: true
-        example: '2026-04-27T01:58:07'
+        example: '2026-04-27T12:22:41'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1267,7 +1267,7 @@ endpoints:
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      usage_date: '2026-04-27T01:58:07'
+      usage_date: '2026-04-27T12:22:41'
       notes: architecto
       items:
         -
@@ -1572,7 +1572,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'List inventory items.'
-      description: 'Get a paginated list of inventory items.'
+      description: ''
       authenticated: true
       deprecated: false
     headers:
@@ -1652,7 +1652,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Get inventory history/logs.'
-      description: 'Get a paginated list of inventory transaction logs.'
+      description: ''
       authenticated: true
       deprecated: false
     headers:
@@ -1732,7 +1732,7 @@ endpoints:
       subgroup: ''
       subgroupDescription: ''
       title: 'Get inventory item details.'
-      description: 'Get detailed information about a specific inventory item.'
+      description: ''
       authenticated: true
       deprecated: false
     headers:
@@ -1827,7 +1827,7 @@ endpoints:
         name: platform
         description: ''
         required: false
-        example: ios
+        example: android
         type: string
         enumValues:
           - web
@@ -1839,7 +1839,7 @@ endpoints:
     cleanBodyParameters:
       token: b
       device_name: 'n'
-      platform: ios
+      platform: android
     fileParameters: []
     responses: []
     responseFields: []

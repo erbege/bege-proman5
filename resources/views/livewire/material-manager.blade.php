@@ -25,16 +25,20 @@
                     <x-heroicon-o-arrow-down-tray class="w-4 h-4 mr-2" />
                     Export
                 </button>
+                @can('materials.manage')
                 <button wire:click="openAddModal" type="button"
                     class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                     Tambah
                 </button>
+                @endcan
+                @can('financials.view')
                 <a href="{{ route('ahsp.prices.index') }}"
                     class="inline-flex items-center px-4 py-2 bg-gold-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gold-600 focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     <x-heroicon-o-arrow-path class="w-4 h-4 mr-2" />
                     Kelola AHSP
                 </a>
+                @endcan
             </div>
         </div>
 
@@ -149,9 +153,11 @@
                                 <th
                                     class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Satuan</th>
+                                @can('financials.view')
                                 <th
                                     class="px-3 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Harga</th>
+                                @endcan
                                 <th
                                     class="px-3 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Min Stok</th>
@@ -196,9 +202,11 @@
                                 <td class="px-3 py-2 text-sm text-gray-900 dark:text-white text-center">
                                     {{ $material->unit }}
                                 </td>
+                                @can('financials.view')
                                 <td class="px-3 py-2 text-sm text-gray-900 dark:text-white text-right">
                                     Rp {{ number_format($material->unit_price ?? 0, 0, ',', '.') }}
                                 </td>
+                                @endcan
                                 <td class="px-3 py-2 text-center"
                                     x-data="{ editing: false, value: {{ $material->min_stock ?? 0 }} }">
                                     @if(!$material->trashed())
@@ -229,6 +237,7 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-2 text-right text-sm space-x-2">
+                                    @can('materials.manage')
                                     @if ($material->trashed())
                                         <button wire:click="restore({{ $material->id }})" title="Restore"
                                             class="text-green-600 hover:text-green-900 dark:text-green-400">
@@ -250,6 +259,12 @@
                                             <x-heroicon-o-trash class="w-5 h-5" />
                                         </button>
                                     @endif
+                                    @else
+                                        <button wire:click="showDetail({{ $material->id }})" title="Lihat Detail"
+                                            class="text-blue-600 hover:text-blue-900 dark:text-blue-400">
+                                            <x-heroicon-o-eye class="w-5 h-5" />
+                                        </button>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty
@@ -332,6 +347,7 @@
                                         class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Satuan</label>
                                     <p class="text-gray-900 dark:text-white">{{ $viewingMaterial->unit }}</p>
                                 </div>
+                                @can('financials.view')
                                 <div>
                                     <label class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Harga
                                         Satuan</label>
@@ -339,6 +355,7 @@
                                         {{ number_format($viewingMaterial->unit_price ?? 0, 0, ',', '.') }}
                                     </p>
                                 </div>
+                                @endcan
                             </div>
 
                             @if($viewingMaterial->region_name || $viewingMaterial->region_code)

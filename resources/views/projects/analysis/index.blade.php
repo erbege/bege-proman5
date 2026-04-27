@@ -18,12 +18,15 @@
             @if($unanalyzedCount > 0)
                 <div class="flex items-center space-x-2">
                     {{-- Local Analysis Button --}}
+                    @can('analysis.manage')
                     <button type="button" onclick="window.dispatchEvent(new CustomEvent('open-local-analysis-modal'))"
                         class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700">
                         <x-heroicon-o-cpu-chip class="w-4 h-4 mr-2" />
                         Lokal ({{ $unanalyzedCount }})
                     </button>
+                    @endcan
                     {{-- AI Analysis Button --}}
+                    @can('analysis.run-ai')
                     @if(count($providers) > 0)
                         <button type="button" @if($aiDisabled) disabled @else
                         onclick="window.dispatchEvent(new CustomEvent('open-ai-analysis-modal'))" @endif
@@ -33,6 +36,7 @@
                             AI ({{ $unanalyzedCount }})
                         </button>
                     @endif
+                    @endcan
                 </div>
             @endif
         </div>
@@ -232,6 +236,7 @@
                                             {{ $item->unit }}
                                         </td>
                                         <td class="px-3 py-1.5 text-right">
+                                            @canany(['analysis.run-ai', 'analysis.manage'])
                                             <div x-data="{ open: false, loading: false, loadingText: '' }"
                                                 class="relative inline-block text-left">
                                                 <button @click="open = !open" type="button" x-show="!loading"
@@ -256,6 +261,7 @@
                                                     class="origin-top-right absolute right-0 mt-1 w-48 rounded-md shadow-lg bg-white dark:bg-dark-700 ring-1 ring-black ring-opacity-5 z-10">
                                                     <div class="py-1">
                                                         {{-- Local Matching - Always Available --}}
+                                                        @can('analysis.manage')
                                                         <form
                                                             action="{{ route('projects.analysis.analyze-local', [$project, $item]) }}"
                                                             method="POST" @submit="loading = true; loadingText = 'Local...'">
@@ -266,6 +272,9 @@
                                                                 Local Matching
                                                             </button>
                                                         </form>
+                                                        @endcan
+                                                        
+                                                        @can('analysis.run-ai')
                                                         @if(count($providers) > 0)
                                                             <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
                                                             @foreach($providers as $key => $name)
@@ -285,9 +294,13 @@
                                                                 </form>
                                                             @endforeach
                                                         @endif
+                                                        @endcan
                                                     </div>
                                                 </div>
                                             </div>
+                                            @else
+                                            <span class="text-xs text-gray-400">View Only</span>
+                                            @endcanany
                                         </td>
                                     </tr>
                                 @endforeach
@@ -349,11 +362,13 @@
                                 <span class="text-sm text-gray-500 font-medium"><span x-text="selectedItems.length"></span>
                                     item
                                     dipilih</span>
+                                @can('analysis.manage')
                                 <button type="button" @click="showResetModal = true"
                                     class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm transition-colors">
                                     <x-heroicon-o-arrow-path class="w-4 h-4 mr-2" />
                                     Reset Analisis
                                 </button>
+                                @endcan
                             </div>
                         </div>
                     </div>
@@ -460,15 +475,18 @@
                                                 </a>
 
                                                 <div x-data="{ open: false }" class="relative inline-block text-left">
+                                                    @canany(['analysis.run-ai', 'analysis.manage'])
                                                     <button @click="open = !open" type="button"
                                                         class="text-sm font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 flex items-center transition-colors">
                                                         Re-analisis
                                                         <x-heroicon-s-chevron-down class="w-3 h-3 ml-1" />
                                                     </button>
+                                                    @endcanany
                                                     <!-- Dropdown Menu -->
                                                     <div x-show="open" @click.away="open = false" style="display: none;"
                                                         class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-dark-700 ring-1 ring-black ring-opacity-5 z-20">
                                                         <div class="py-1">
+                                                            @can('analysis.manage')
                                                             <button type="button"
                                                                 @click="open = false; window.dispatchEvent(new CustomEvent('open-reanalyze-modal', { detail: { itemId: {{ $item->id }}, method: 'local', methodName: 'Local Matching' } }))"
                                                                 class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600">
@@ -476,6 +494,8 @@
                                                                     class="w-4 h-4 inline mr-2 text-blue-500" />
                                                                 Local Matching
                                                             </button>
+                                                            @endcan
+                                                            @can('analysis.run-ai')
                                                             @foreach($providers as $key => $name)
                                                                 <button type="button" @if($aiDisabled) disabled
                                                                     class="w-full text-left px-4 py-2 text-sm text-gray-400 dark:text-gray-500 cursor-not-allowed"
@@ -490,6 +510,7 @@
                                                                     @endif
                                                                 </button>
                                                             @endforeach
+                                                            @endcan
                                                         </div>
                                                     </div>
                                                 </div>
@@ -596,6 +617,7 @@
                                                         </div>
                                                         <div class="flex-shrink-0 flex items-center gap-2 ml-2">
                                                             {{-- Edit Button --}}
+                                                            @can('analysis.manage')
                                                             @if($forecast->status_color !== 'green' || $forecast->analysis_source === 'manual_override')
                                                                 <div x-data="{ open: false, selectedMaterial: {{ $forecast->material_id ?? 'null' }} }"
                                                                     class="relative">
@@ -634,7 +656,9 @@
                                                                     </div>
                                                                 </div>
                                                             @endif
+                                                            @endcan
                                                             {{-- Delete Button --}}
+                                                            @can('analysis.manage')
                                                             <div x-data="{ confirmDelete: false, deleting: false }" class="relative">
                                                                 <button @click="confirmDelete = true" x-show="!deleting"
                                                                     class="text-red-400 hover:text-red-600 dark:hover:text-red-300"
@@ -674,6 +698,7 @@
                                                                     </div>
                                                                 </div>
                                                             </div>
+                                                            @endcan
                                                         </div>
                                                     </div>
                                                 @endforeach

@@ -35,6 +35,7 @@ class PurchaseOrderController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('procurement.view');
         $query = PurchaseOrder::with(['project:id,name', 'supplier:id,name', 'createdBy:id,name']);
 
         if ($request->has('project_id')) {
@@ -64,6 +65,7 @@ class PurchaseOrderController extends Controller
      */
     public function show(PurchaseOrder $purchaseOrder)
     {
+        $this->authorize('procurement.view');
         $purchaseOrder->load(['project', 'supplier', 'items.material', 'createdBy', 'approvalLogs', 'purchaseRequests']);
         
         return $this->successResponse(
@@ -79,6 +81,7 @@ class PurchaseOrderController extends Controller
      */
     public function store(StorePurchaseOrderRequest $request)
     {
+        $this->authorize('procurement.manage');
         $project = Project::findOrFail($request->input('project_id'));
         
         $purchaseOrder = $this->poService->createPurchaseOrder(

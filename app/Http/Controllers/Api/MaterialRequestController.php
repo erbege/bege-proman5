@@ -36,6 +36,7 @@ class MaterialRequestController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('mr.view');
         $query = MaterialRequest::with(['project:id,name', 'requestedBy:id,name']);
 
         if ($request->has('project_id')) {
@@ -66,6 +67,7 @@ class MaterialRequestController extends Controller
      */
     public function show(MaterialRequest $materialRequest)
     {
+        $this->authorize('mr.view');
         $user = auth()->user();
         if (!$user || !$this->canViewRequest($materialRequest, $user)) {
             return $this->errorResponse('Unauthorized', 403);
@@ -86,6 +88,7 @@ class MaterialRequestController extends Controller
      */
     public function store(StoreMaterialRequestRequest $request)
     {
+        $this->authorize('mr.manage');
         if (!$this->mrService->canCreateRequest(auth()->id(), $request->project_id)) {
             return $this->errorResponse('Anda tidak terdaftar dalam tim proyek ini.', 403);
         }

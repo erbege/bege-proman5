@@ -23,6 +23,8 @@ class PurchaseRequestController extends Controller
      */
     public function index(Project $project)
     {
+        $this->authorize('procurement.manage');
+
         $query = $project->purchaseRequests()->with(['requestedBy', 'approvedBy', 'items']);
         
         $user = auth()->user();
@@ -41,7 +43,10 @@ class PurchaseRequestController extends Controller
      */
     public function create(Project $project)
     {
+        $this->authorize('procurement.manage');
+
         $materials = Material::orderBy('name')->get();
+        // ... rest of create logic ...
         $availableMrItems = \App\Models\MaterialRequestItem::whereHas('materialRequest', function ($q) use ($project) {
                 $q->where('project_id', $project->id)
                   ->where('status', 'approved');
@@ -82,6 +87,8 @@ class PurchaseRequestController extends Controller
      */
     public function store(Request $request, Project $project)
     {
+        $this->authorize('procurement.manage');
+
         $validated = $request->validate([
             'required_date' => 'required|date',
             'priority' => 'required|in:low,normal,high,urgent',
@@ -115,6 +122,8 @@ class PurchaseRequestController extends Controller
      */
     public function show(Project $project, PurchaseRequest $pr)
     {
+        $this->authorize('procurement.manage');
+
         $user = auth()->user();
         if (($user->hasRole('supervisor') || $user->getProjectRole($project) === 'supervisor') && $pr->requested_by !== $user->id) {
             abort(403, 'Anda tidak memiliki akses ke Purchase Request ini.');
@@ -129,6 +138,8 @@ class PurchaseRequestController extends Controller
      */
     public function updateStatus(Request $request, Project $project, PurchaseRequest $pr)
     {
+        $this->authorize('financials.manage');
+
         $request->validate([
             'status' => 'required|in:approved,rejected',
             'comment' => 'nullable|string|max:500'

@@ -14,6 +14,8 @@ class MaterialUsageController extends Controller
 {
     public function index(Project $project)
     {
+        $this->authorize('procurement.view');
+
         $usages = $project->materialUsages()
             ->with(['items.material', 'createdBy'])
             ->latest('usage_date')
@@ -24,6 +26,8 @@ class MaterialUsageController extends Controller
 
     public function create(Project $project)
     {
+        $this->authorize('procurement.manage');
+
         // Get materials that have stock in this project
         $inventories = Inventory::where('project_id', $project->id)
             ->where('quantity', '>', 0)
@@ -51,6 +55,8 @@ class MaterialUsageController extends Controller
 
     public function store(Request $request, Project $project)
     {
+        $this->authorize('procurement.manage');
+
         $validated = $request->validate([
             'usage_date' => 'required|date',
             'rab_item_id' => 'nullable|exists:rab_items,id',
@@ -119,6 +125,7 @@ class MaterialUsageController extends Controller
 
     public function show(Project $project, MaterialUsage $usage)
     {
+        $this->authorize('procurement.view');
         $usage->load(['items.material', 'createdBy', 'rabItem']);
         return view('projects.usage.show', compact('project', 'usage'));
     }

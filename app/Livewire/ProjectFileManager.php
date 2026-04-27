@@ -106,6 +106,11 @@ class ProjectFileManager extends Component
 
     public function uploadFile()
     {
+        if (!auth()->user()->can('files.create')) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk mengunggah file.');
+            return;
+        }
+
         $maxSize = SystemSetting::getMaxFileSize();
         $maxSizeKb = (int) ($maxSize / 1024);
 
@@ -181,6 +186,11 @@ class ProjectFileManager extends Component
 
     public function editFolder(int $folderId)
     {
+        if (!auth()->user()->can('files.update')) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk mengedit folder.');
+            return;
+        }
+
         $folder = ProjectFile::findOrFail($folderId);
         $this->editingFolderId = $folder->id;
         $this->folderName = $folder->name;
@@ -189,6 +199,12 @@ class ProjectFileManager extends Component
 
     public function saveFolder()
     {
+        $permission = $this->editingFolderId ? 'files.update' : 'files.create';
+        if (!auth()->user()->can($permission)) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk menyimpan folder.');
+            return;
+        }
+
         $this->validate([
             'folderName' => 'required|string|max:255',
         ]);
@@ -222,6 +238,11 @@ class ProjectFileManager extends Component
 
     public function deleteFolder(int $folderId)
     {
+        if (!auth()->user()->can('files.delete')) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk menghapus folder.');
+            return;
+        }
+
         $folder = ProjectFile::withCount('children')->findOrFail($folderId);
 
         if ($folder->children_count > 0) {
@@ -235,6 +256,11 @@ class ProjectFileManager extends Component
 
     public function openMoveModal(int $fileId)
     {
+        if (!auth()->user()->can('files.update')) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk memindahkan file.');
+            return;
+        }
+
         $this->movingFileId = $fileId;
         $this->targetFolderId = null;
         $this->showMoveModal = true;
@@ -248,12 +274,23 @@ class ProjectFileManager extends Component
 
     public function moveFile()
     {
+        if (!auth()->user()->can('files.update')) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk memindahkan file.');
+            return;
+        }
+
         $this->validate([
             'movingFileId' => 'required|exists:project_files,id',
             'targetFolderId' => 'nullable|exists:project_files,id',
         ]);
 
         $file = ProjectFile::findOrFail($this->movingFileId);
+
+        // Protect FINAL files
+        if ($file->status === 'final' && !auth()->user()->hasRole(['Superadmin', 'super-admin', 'project-manager'])) {
+            session()->flash('error', 'File berstatus FINAL tidak dapat dipindahkan.');
+            return;
+        }
 
         // Prevent moving folder into itself or its children (basic check)
         if ($file->isFolder() && $file->id == $this->targetFolderId) {
@@ -283,6 +320,11 @@ class ProjectFileManager extends Component
 
     public function confirmDelete(int $fileId)
     {
+        if (!auth()->user()->can('files.delete')) {
+            session()->flash('error', 'Anda tidak memiliki izin untuk menghapus file.');
+            return;
+        }
+
         $this->deletingFileId = $fileId;
         $this->showDeleteModal = true;
     }
@@ -295,10 +337,22 @@ class ProjectFileManager extends Component
 
     public function deleteFile()
     {
+        if (!auth()->user()->can('files.delete')) {
+            return;
+        }
+
         if (!$this->deletingFileId)
             return;
 
         $file = ProjectFile::findOrFail($this->deletingFileId);
+
+        // Protect FINAL files
+        if ($file->status === 'final' && !auth()->user()->hasRole(['Superadmin', 'super-admin', 'project-manager'])) {
+            session()->flash('error', 'File berstatus FINAL tidak dapat dihapus.');
+            $this->cancelDelete();
+            return;
+        }
+
         $file->delete();
 
         $this->cancelDelete();

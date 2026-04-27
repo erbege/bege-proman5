@@ -32,10 +32,67 @@ Diperlukan permission tambahan untuk membedakan antara akses operasional dan aks
 
 ---
 
-## 4. Rencana Implementasi Teknis
+## Status Implementasi & Hardening
 
-### 1. Update Database Seeder (`RolePermissionSeeder.php`)
-Tambahkan permission `financials.view` dan distribusikan hanya ke role yang relevan.
+### 1. Visibilitas Data Finansial (Rp)
+Membatasi akses terhadap nilai uang (Rupiah) berdasarkan role menggunakan directive `@can('financials.view')`.
+
+| Modul | Status | Deskripsi |
+| :--- | :--- | :--- |
+| **Project Overview** | ✅ Selesai | Nilai Kontrak hanya terlihat oleh PM/Estimator. |
+| **RAB Detail** | ✅ Selesai | Harga Satuan dan Total Harga di-masking untuk Site Team. |
+| **Material Master** | ✅ Selesai | Harga Satuan Material di-masking di list, detail, dan form. |
+| **Purchase Request** | ✅ Selesai | Estimasi Harga dan Subtotal disembunyikan dari modul PR. |
+| **Purchase Order** | ✅ Selesai | Total Amount dan fitur Cetak PO dibatasi. |
+| **Inventory** | ✅ Selesai | Average Cost di-masking di backend dan UI penyesuaian stok. |
+| **Material Analysis** | ✅ Selesai | Seluruh modul analisis (RAB vs Realisasi) diproteksi penuh. |
+| **Weekly Report** | ✅ Selesai | Fokus pada progress fisik (%), tidak menampilkan nilai Rp. |
+| **Dashboard** | ✅ Selesai | Chart dan statistik fokus pada volume dan progress %, bukan nilai uang. |
+
+### 2. Hardening Backend (Livewire & Controller)
+Memastikan endpoint tidak bisa ditembak via JS/Postman oleh user tanpa izin menggunakan `authorize()` dan `middleware`.
+
+| Fitur | Status | Deskripsi |
+| :--- | :--- | :--- |
+| **Material Manager** | ✅ Selesai | Validasi `financials.view` dan `manage` di setiap method. |
+| **Inventory Manager** | ✅ Selesai | Authorize pada method `adjustStock`. |
+| **Analysis Module** | ✅ Selesai | Middleware `can:financials.view` pada grup route. |
+| **PO Actions** | ✅ Selesai | Fitur cetak/PDF divalidasi di controller. |
+| **RAB Import** | ✅ Selesai | Dibatasi hanya untuk role dengan `financials.manage`. |
+
+---
+
+## Migration Plan untuk Aplikasi Launch
+Karena aplikasi sudah launch, perubahan permission dilakukan via migration file untuk menjaga integritas data.
+
+**Migration File Created:** `database/migrations/2026_04_27_090500_add_financial_permissions.php`
+- Menambahkan permission `financials.view` dan `financials.manage`.
+- Memberikan permission secara otomatis kepada role `Superadmin`, `Estimator`, `Project Manager`, dan `Purchasing`.
+- Mengosongkan permission ini untuk role `Logistik`, `Site Manager`, dan `Supervisor`.
+
+```php
+// database/migrations/2026_04_27_090500_add_financial_permissions.php
+public function up()
+{
+    app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+    // Buat permission baru
+    $p1 = Permission::create(['name' => 'financials.view']);
+    $p2 = Permission::create(['name' => 'financials.manage']);
+
+    // Assign ke role yang ada
+    $roles = ['Superadmin', 'super-admin', 'project-manager', 'estimator', 'purchasing'];
+    foreach ($roles as $roleName) {
+        $role = Role::where('name', $roleName)->first();
+        if ($role) {
+            $role->givePermissionTo([$p1, $p2]);
+        }
+    }
+}
+```
+
+### 2. Update Database Seeder (`RolePermissionSeeder.php`)
+Tambahkan permission `financials.view` dan distribusikan hanya ke role yang relevan untuk instalasi baru.
 
 ```php
 // Tambahkan di array $permissions
@@ -110,5 +167,22 @@ Route::middleware(['can:settings.view'])->group(function () {
 3. **Server-side Validation**: Jangan hanya menyembunyikan di UI (CSS `hidden`), tapi pastikan data tidak dikirim ke client jika user tidak berhak (Server-side rendering).
 4. **Scoping Data**: Untuk Site Manager atau Supervisor, tambahkan scope pada Query sehingga mereka hanya melihat proyek yang ditugaskan kepada mereka (`ProjectTeam`).
 
-## 6. Kesimpulan
-Implementasi ini akan meningkatkan integritas data dan kerahasiaan nilai bisnis perusahaan. Langkah awal yang direkomendasikan adalah melakukan migrasi penambahan permission dan segera mengupdate file `navigation.blade.php` serta view RAB utama.
+## 7. Status Implementasi
+
+Seluruh rencana di atas telah diimplementasikan pada codebase:
+
+1.  **Database Migration** [DONE]: File migrasi `2026_04_27_090500_add_financial_permissions.php` telah dibuat untuk menambah permission `financials.view` dan `financials.manage` serta mendistribusikannya ke role yang relevan.
+2.  **UI Hardening** [DONE]:
+    *   **Navigasi**: Menu utama dan tab navigasi proyek telah dibatasi berdasarkan permission.
+    *   **Project**: Nilai Kontrak dan ringkasan finansial disembunyikan bagi user tanpa `financials.view`.
+    *   **RAB**: Kolom harga satuan dan total harga disembunyikan.
+    *   **Master Data**: Harga material disembunyikan dan fitur manajemen (Tambah/Hapus) dibatasi.
+    *   **Logistik (PR/PO)**: Nilai estimasi dan total belanja disembunyikan dari staf logistik. Tombol cetak PO dibatasi.
+3.  **Backend Hardening** [DONE]:
+    *   **Middleware**: Rute AHSP, RAB, dan Analisis Material telah diproteksi dengan middleware `can`.
+    *   **Authorization**: Controller (`ProjectController`, `MaterialManager`, dll) telah ditambahkan pengecekan permission manual sebelum menyimpan data finansial.
+4.  **Material Analysis** [DONE]: Akses ke modul analisis material dan fitur auto-analyze telah dibatasi.
+
+**Langkah Selanjutnya bagi Pengguna:**
+*   Jalankan perintah `php artisan migrate` untuk menerapkan permission baru ke database produksi.
+*   Lakukan `php artisan permission:cache-reset` (jika diperlukan) untuk memastikan cache permission terupdate.

@@ -1,0 +1,410 @@
+<!DOCTYPE html []>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="MarkdownViewer++" />
+    <title>PERMISSION_MATRIX.md</title>
+    <style type="text/css">
+            
+/* Avoid page breaks inside the most common attributes, especially for exports (i.e. PDF) */
+td, h1, h2, h3, h4, h5, p, ul, ol, li {
+    page-break-inside: avoid; 
+}
+
+        </style>
+  </head>
+  <body>
+    <h1 id="matriks-hak-akses-permission-matrix-proman5">Matriks Hak Akses (Permission Matrix) - ProMan5</h1>
+    <p>Dokumen ini merinci hak akses untuk setiap peran (role) dalam sistem ProMan5, dikelompokkan berdasarkan modul fungsional, termasuk dampaknya pada API Endpoints.</p>
+    <h2 id="peran-utama">Peran Utama</h2>
+    <ol>
+      <li>
+        <strong>Superadmin / PM</strong>: Kontrol penuh atas seluruh aspek proyek &amp; finansial.</li>
+      <li>
+        <strong>Estimator / QS</strong>: Fokus pada perencanaan budget (RAB) dan analisis material. Memiliki akses ke harga satuan.</li>
+      <li>
+        <strong>Site Manager / Engineer</strong>: Fokus pada operasional lapangan, request material, dan jadwal. <strong>Tidak memiliki akses ke harga satuan.</strong></li>
+      <li>
+        <strong>Logistik / Purchasing</strong>: Fokus pada pengadaan barang, stok, dan administrasi PR/PO.</li>
+    </ol>
+    <hr />
+    <h2 id="modul-analisis-proyek-project-analysis">1. Modul Analisis Proyek (Project Analysis)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>analysis.view</code>
+          </td>
+          <td style="text-align: left;">Melihat tab Analisis</td>
+          <td style="text-align: left;">
+            <code>GET /api/projects/{p}/analysis</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>analysis.manage</code>
+          </td>
+          <td style="text-align: left;">Pemetaan manual</td>
+          <td style="text-align: left;">
+            <code>POST /api/projects/{p}/analysis/map</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>analysis.run-ai</code>
+          </td>
+          <td style="text-align: left;">Run AI Matching</td>
+          <td style="text-align: left;">
+            <code>POST /api/projects/{p}/analysis/run-ai</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="modul-finansial-cost-control">2. Modul Finansial &amp; Cost Control</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>financials.view</code>
+          </td>
+          <td style="text-align: left;">Melihat Harga Satuan</td>
+          <td style="text-align: left;">(Dampak pada filter JSON di semua modul)</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>financials.view-report</code>
+          </td>
+          <td style="text-align: left;">Dashboard Cost Control</td>
+          <td style="text-align: left;">
+            <code>GET /api/projects/{p}/financial-stats</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>financials.manage</code>
+          </td>
+          <td style="text-align: left;">Approval PR/PO</td>
+          <td style="text-align: left;">
+            <code>POST /api/purchase-requests/{id}/approve</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="modul-rab-budget">3. Modul RAB (Budget)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>rab.view</code>
+          </td>
+          <td style="text-align: left;">Melihat rincian RAB</td>
+          <td style="text-align: left;">
+            <code>GET /api/projects/{p}/rab</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>rab.manage</code>
+          </td>
+          <td style="text-align: left;">Kelola AHSP &amp; RAB</td>
+          <td style="text-align: left;">
+            <code>POST /api/projects/{p}/rab/import</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="modul-jadwal-schedule">4. Modul Jadwal (Schedule)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>schedule.view</code>
+          </td>
+          <td style="text-align: left;">Melihat S-Curve</td>
+          <td style="text-align: left;">
+            <code>GET /api/projects/{p}/schedule/scurve</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>schedule.manage</code>
+          </td>
+          <td style="text-align: left;">Edit Progress</td>
+          <td style="text-align: left;">
+            <code>POST /api/projects/{p}/progress</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="modul-pengadaan-procurement">5. Modul Pengadaan (Procurement)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>procurement.view</code>
+          </td>
+          <td style="text-align: left;">List PR/PO</td>
+          <td style="text-align: left;">
+            <code>GET /api/purchase-requests</code>, <code>/api/purchase-orders</code></td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>procurement.manage</code>
+          </td>
+          <td style="text-align: left;">Create PR/PO</td>
+          <td style="text-align: left;">
+            <code>POST /api/purchase-requests</code>, <code>/api/purchase-orders</code></td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="modul-permintaan-material-mr">6. Modul Permintaan Material (MR)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>mr.view</code>
+          </td>
+          <td style="text-align: left;">List MR</td>
+          <td style="text-align: left;">
+            <code>GET /api/material-requests</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>mr.manage</code>
+          </td>
+          <td style="text-align: left;">Create MR</td>
+          <td style="text-align: left;">
+            <code>POST /api/material-requests</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="modul-stok-inventaris-inventory">7. Modul Stok &amp; Inventaris (Inventory)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>inventory.view</code>
+          </td>
+          <td style="text-align: left;">List Stok</td>
+          <td style="text-align: left;">
+            <code>GET /api/inventory</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>inventory.manage</code>
+          </td>
+          <td style="text-align: left;">Stock Opname</td>
+          <td style="text-align: left;">
+            <code>POST /api/inventory/adjust</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+      </tbody>
+    </table>
+    <h2 id="modul-file-proyek-project-files">8. Modul File Proyek (Project Files)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Permission</th>
+          <th style="text-align: left;">Deskripsi</th>
+          <th style="text-align: left;">API Endpoints Affected</th>
+          <th style="text-align: center;">SA/PM</th>
+          <th style="text-align: center;">Est</th>
+          <th style="text-align: center;">SM</th>
+          <th style="text-align: center;">Log</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">
+            <code>files.view</code>
+          </td>
+          <td style="text-align: left;">Download File</td>
+          <td style="text-align: left;">
+            <code>GET /api/projects/{p}/files/{id}/download</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>files.upload</code>
+          </td>
+          <td style="text-align: left;">Upload File</td>
+          <td style="text-align: left;">
+            <code>POST /api/projects/{p}/files/upload</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">✅</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">
+            <code>files.manage</code>
+          </td>
+          <td style="text-align: left;">Delete File</td>
+          <td style="text-align: left;">
+            <code>DELETE /api/projects/{p}/files/{id}</code>
+          </td>
+          <td style="text-align: center;">✅</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+          <td style="text-align: center;">❌</td>
+        </tr>
+      </tbody>
+    </table>
+    <hr />
+    <p>
+      <strong>Catatan Teknis</strong>:</p>
+    <ul>
+      <li>Implementasi API menggunakan <code>middleware('can:permission_name')</code> atau <code>Gate::authorize()</code> di dalam Controller.</li>
+      <li>JSON Response akan secara dinamis menyembunyikan field <code>unit_price</code> dan <code>total_price</code> jika user tidak memiliki permission <code>financials.view</code>.</li>
+    </ul>
+  </body>
+</html>
