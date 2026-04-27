@@ -32,11 +32,11 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="componentManager()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4" x-data="componentManager()">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <!-- Region Selector & Price Summary -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
-                <div class="p-6">
+                <div class="p-4">
                     <div class="flex flex-wrap items-center gap-4 mb-6">
                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Wilayah Harga:</label>
                         <form method="GET" class="flex items-center gap-2">
@@ -87,7 +87,7 @@
 
             <!-- Component Breakdown -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Rincian Komponen</h3>
 
                     <div class="overflow-x-auto">
@@ -95,28 +95,28 @@
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         No</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Uraian</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Kode</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Sat.</th>
                                     <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Koefisien</th>
                                     <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Harga Satuan</th>
                                     <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Jumlah Harga</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Aksi</th>
                                 </tr>
                             </thead>
@@ -361,10 +361,10 @@
                                 </tr>
                                 <tr class="bg-indigo-100 dark:bg-indigo-900/40">
                                     <td colspan="6"
-                                        class="px-4 py-3 text-right font-bold text-indigo-800 dark:text-indigo-200 text-lg">
+                                        class="px-3 py-1.5 text-right font-bold text-indigo-800 dark:text-indigo-200 text-lg">
                                         F. Harga Satuan Pekerjaan (D + E)</td>
                                     <td
-                                        class="px-4 py-3 text-right font-bold text-indigo-800 dark:text-indigo-200 text-lg">
+                                        class="px-3 py-1.5 text-right font-bold text-indigo-800 dark:text-indigo-200 text-lg">
                                         {{ number_format($calculation['unit_price'], 2, ',', '.') }}
                                     </td>
                                     <td></td>
@@ -650,3 +650,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

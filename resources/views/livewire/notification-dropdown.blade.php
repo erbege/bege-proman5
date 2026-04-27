@@ -24,7 +24,7 @@
         style="display: none;">
         
         {{-- Header --}}
-        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-dark-700">
+        <div class="flex items-center justify-between px-3 py-1.5 border-b border-gray-100 dark:border-dark-700">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notifikasi</h3>
             @if($unreadCount > 0)
                 <button wire:click="markAllAsRead" 
@@ -40,7 +40,7 @@
                 <div class="relative group {{ is_null($notification->read_at) ? 'bg-gold-50 dark:bg-gold-900/10' : '' }}">
                     <a href="{{ $notification->data['url'] ?? '#' }}" 
                        wire:click="markAsRead('{{ $notification->id }}')"
-                       class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                       class="block px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
                         <div class="flex items-start gap-3">
                             {{-- Icon based on type --}}
                             <div class="flex-shrink-0 mt-0.5">
@@ -137,3 +137,5 @@
         @endif
     </div>
 </div>
+
+

@@ -26,15 +26,15 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="templateGenerator()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4" x-data="templateGenerator()">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <form action="{{ route('projects.rab.template-generator.generate', $project) }}" method="POST"
                 @submit="return selectedCategories.length > 0">
                 @csrf
 
                 {{-- Settings Panel --}}
-                <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {{-- Region Selector --}}
                         <div>
                             <x-input-label for="region_code" value="Wilayah Harga" />
@@ -67,7 +67,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {{-- Categories Tree --}}
                     <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg">
                         <div class="p-4 border-b border-gray-200 dark:border-dark-700">
@@ -134,7 +134,7 @@
                         </div>
                         <div class="p-4 max-h-[500px] overflow-y-auto">
                             <template x-if="selectedCategories.length === 0">
-                                <div class="text-center text-gray-400 py-12">
+                                <div class="text-center text-gray-400 py-4">
                                     <x-heroicon-o-folder-open class="w-12 h-12 mx-auto mb-2 opacity-50" />
                                     <p>Pilih kategori di sebelah kiri untuk melihat preview</p>
                                 </div>
@@ -186,7 +186,7 @@
                             </template>
 
                             <template x-if="previewLoading">
-                                <div class="text-center py-12">
+                                <div class="text-center py-4">
                                     <x-heroicon-o-arrow-path class="w-8 h-8 mx-auto animate-spin text-gray-400" />
                                     <p class="text-gray-500 mt-2">Memuat preview...</p>
                                 </div>
@@ -196,7 +196,7 @@
                         {{-- Generate Button --}}
                         <div class="p-4 border-t border-gray-200 dark:border-dark-700">
                             <button type="submit" :disabled="selectedCategories.length === 0"
-                                class="w-full px-4 py-3 bg-gold-600 text-white rounded-md hover:bg-gold-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition flex items-center justify-center gap-2">
+                                class="w-full px-3 py-1.5 bg-gold-600 text-white rounded-md hover:bg-gold-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition flex items-center justify-center gap-2">
                                 <x-heroicon-o-bolt class="w-5 h-5" />
                                 <span x-show="selectedCategories.length > 0">
                                     Generate RAB (<span x-text="totalWorkTypes"></span> item pekerjaan)
@@ -263,3 +263,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

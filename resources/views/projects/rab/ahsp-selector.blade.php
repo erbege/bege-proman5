@@ -25,13 +25,13 @@
         </div>
     </x-slot>
 
-    <div class="py-6" x-data="ahspSelector()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4" x-data="ahspSelector()">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <form action="{{ route('projects.rab.ahsp.generate', [$project, $section]) }}" method="POST">
                 @csrf
 
                 <!-- Region Selector -->
-                <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg mb-6 p-6">
+                <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg mb-6 p-4">
                     <div class="flex items-center gap-4">
                         <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Wilayah Harga:</label>
                         <select name="region_code" x-model="regionCode"
@@ -52,19 +52,19 @@
                 </div>
 
                 <!-- Search & Available AHSP -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <!-- Available AHSP -->
                     <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg">
-                        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Daftar AHSP</h3>
+                        <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+                            <h3 class="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500">Daftar AHSP</h3>
                             @if($matchingCategory)
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                     Kategori: {{ $matchingCategory->code }} - {{ $matchingCategory->name }}
                                 </p>
                             @endif
                             <input type="text" placeholder="Cari pekerjaan..." x-model="searchTerm"
                                 @input.debounce.300ms="filterItems()"
-                                class="mt-2 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 text-sm">
+                                class="mt-2 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 text-xs">
                         </div>
                         <div class="p-4 max-h-[500px] overflow-y-auto">
                             @forelse($categoriesWithWorkTypes as $category)
@@ -87,23 +87,20 @@
                                     </div>
                                     
                                     <!-- Work Types in Category -->
-                                    <div class="space-y-1 bg-gray-50 dark:bg-gray-700/50 rounded-b p-2">
+                                    <div class="space-y-1 bg-gray-50 dark:bg-gray-700/50 rounded-b p-1">
                                         @forelse($category->workTypes as $wt)
-                                            <div class="flex items-center justify-between p-2 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                                            <div class="flex items-center justify-between p-1.5 bg-white dark:bg-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
                                                 x-show="isItemVisible('{{ addslashes($wt->code) }}', '{{ addslashes($wt->name) }}')"
                                                 @click="addItem({{ $wt->id }}, '{{ $wt->code }}', '{{ addslashes($wt->name) }}', '{{ $wt->unit }}')">
                                                 <div class="flex-1 min-w-0">
-                                                    <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                    <div class="text-xs font-black text-gray-900 dark:text-gray-100 truncate">
                                                         {{ $wt->code }}</div>
-                                                    <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                        {{ Str::limit($wt->name, 60) }}</div>
+                                                    <div class="text-[10px] text-gray-500 dark:text-gray-400 truncate leading-tight">
+                                                        {{ $wt->name }}</div>
                                                 </div>
-                                                <div class="ml-2 text-xs text-gray-400">{{ $wt->unit }}</div>
+                                                <div class="ml-2 text-[10px] font-bold text-gray-400">{{ $wt->unit }}</div>
                                                 <button type="button" class="ml-2 text-indigo-600 hover:text-indigo-800">
-                                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                                    </svg>
+                                                    <x-heroicon-o-plus-circle class="w-4 h-4" />
                                                 </button>
                                             </div>
                                         @empty
@@ -124,9 +121,9 @@
 
                     <!-- Selected Items -->
                     <div class="bg-white dark:bg-gray-800 shadow-xl sm:rounded-lg">
-                        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                Item Terpilih <span class="text-sm font-normal text-gray-500"
+                        <div class="p-3 border-b border-gray-200 dark:border-gray-700">
+                            <h3 class="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500">
+                                Item Terpilih <span class="text-xs font-normal"
                                     x-text="'(' + selectedItems.length + ')'"></span>
                             </h3>
                         </div>
@@ -138,21 +135,17 @@
                             </template>
                             <div class="space-y-3">
                                 <template x-for="(item, index) in selectedItems" :key="index">
-                                    <div class="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg">
+                                    <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 rounded border border-indigo-100 dark:border-indigo-800">
                                         <div class="flex items-start justify-between">
-                                            <div class="flex-1">
-                                                <div class="text-sm font-medium text-indigo-900 dark:text-indigo-200"
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-xs font-black text-indigo-900 dark:text-indigo-200"
                                                     x-text="item.code"></div>
-                                                <div class="text-xs text-indigo-600 dark:text-indigo-300"
+                                                <div class="text-[10px] text-indigo-600 dark:text-indigo-300 leading-tight"
                                                     x-text="item.name"></div>
                                             </div>
                                             <button type="button" @click="removeItem(index)"
-                                                class="text-red-500 hover:text-red-700">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                                                    viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                        stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                                </svg>
+                                                class="text-red-500 hover:text-red-700 ml-2">
+                                                <x-heroicon-o-x-circle class="w-4 h-4" />
                                             </button>
                                         </div>
                                         <div class="mt-2 flex items-center gap-2">
@@ -160,9 +153,9 @@
                                                 :value="item.id">
                                             <input type="number" :name="'items[' + index + '][volume]'"
                                                 x-model="item.volume" step="0.0001" min="0.0001" required
-                                                class="w-24 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 text-sm"
+                                                class="w-20 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 text-xs px-2 py-1"
                                                 placeholder="Volume">
-                                            <span class="text-sm text-gray-500" x-text="item.unit"></span>
+                                            <span class="text-[10px] font-bold text-gray-500" x-text="item.unit"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -244,3 +237,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

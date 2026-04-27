@@ -26,7 +26,7 @@
                 {{ __('Streamlined Project & Material Management for Modern Enterprise') }}
             </p>
 
-            <div class="mt-16 grid grid-cols-3 gap-8 opacity-40">
+            <div class="mt-16 grid grid-cols-3 gap-4 opacity-40">
                 <div class="flex flex-col items-center">
                     <x-heroicon-o-shield-check class="w-10 h-10 text-primary-500 mb-2" />
                     <span class="text-xs text-gray-400 font-semibold uppercase tracking-widest">Secure</span>
@@ -50,7 +50,7 @@
     </div>
 
     <!-- Right Side: Form Content -->
-    <div class="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-gray-50 dark:bg-dark-950 relative">
+    <div class="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-12 bg-gray-50 dark:bg-dark-950 relative">
         <!-- Subtle mobile background element -->
         <div class="lg:hidden absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-bl-full blur-2xl"></div>
 
@@ -65,7 +65,7 @@
 
             <!-- Auth Card -->
             <div
-                class="bg-white dark:bg-dark-900 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2rem] overflow-hidden border border-gray-100 dark:border-dark-800/50 p-8 sm:p-12 transition-all duration-300 hover:shadow-[0_30px_60px_rgba(0,0,0,0.12)]">
+                class="bg-white dark:bg-dark-900 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-[2rem] overflow-hidden border border-gray-100 dark:border-dark-800/50 p-4 sm:p-12 transition-all duration-300 hover:shadow-[0_30px_60px_rgba(0,0,0,0.12)]">
                 <div class="animate-fade-in">
                     {{ $slot }}
                 </div>
@@ -84,3 +84,5 @@
         </div>
     </div>
 </div>
+
+

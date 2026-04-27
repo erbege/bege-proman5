@@ -1,8 +1,8 @@
 <div>
     @include('projects.navigation')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if (session()->has('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
@@ -10,7 +10,7 @@
             @endif
 
             {{-- Header --}}
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Penerimaan Barang -
                         {{ $project->name }}
@@ -39,7 +39,7 @@
             </div>
 
             {{-- Filter --}}
-            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-4">
+            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-4 p-4">
                 <div class="relative max-w-md">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <x-heroicon-o-magnifying-glass class="h-5 w-5 text-gray-400" />
@@ -57,25 +57,25 @@
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     No. GR</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     No. PO</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Supplier</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Tanggal</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     No. Surat Jalan</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Item</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Diterima Oleh</th>
                             </tr>
                         </thead>
@@ -83,26 +83,26 @@
                             @forelse($receipts as $gr)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $gr->gr_number }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $gr->purchaseOrder->po_number ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $gr->purchaseOrder->supplier->name ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $gr->receipt_date->format('d M Y') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $gr->delivery_note_number }}
                                     </td>
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">
+                                        class="px-3 py-1.5 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">
                                         {{ $gr->items->count() }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $gr->receivedBy->name ?? '-' }}
                                     </td>
                                 </tr>
@@ -130,7 +130,7 @@
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
                     <form wire:submit="save">
                         <div
-                            class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6 max-h-[80vh] overflow-y-auto scrollbar-overlay">
+                            class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4 max-h-[80vh] overflow-y-auto scrollbar-overlay">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Terima Barang</h3>
                                 <button type="button" wire:click="closeModal"
@@ -187,7 +187,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                             <x-primary-button type="submit" class="sm:ml-3"
                                 wire:loading.attr="disabled">Simpan</x-primary-button>
                             <button type="button" wire:click="closeModal"
@@ -199,3 +199,5 @@
         </div>
     @endif
 </div>
+
+

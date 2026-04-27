@@ -1,10 +1,10 @@
 @props(['section', 'project', 'canEditSchedule'])
 
 {{-- Section Row --}}
-<tr class="bg-gray-100 dark:bg-gray-600">
+<tr class="bg-gray-100 dark:bg-gray-700">
     <td colspan="{{ $canEditSchedule ? 8 : 6 }}"
-        class="px-4 py-2 font-semibold text-gray-900 dark:text-white {{ $section->level > 0 ? 'border-l-4 border-gray-300 dark:border-dark-600' : '' }}"
-        style="padding-left: {{ ($section->level * 0.75) + 1 }}rem;">
+        class="px-3 py-1.5 text-xs font-black uppercase text-gray-700 dark:text-gray-200 {{ $section->level > 0 ? 'border-l-4 border-gray-300 dark:border-dark-600' : '' }}"
+        style="padding-left: {{ ($section->level * 0.75) + 0.75 }}rem;">
         {{ $section->code }}. {{ $section->name }}
     </td>
 </tr>
@@ -25,3 +25,5 @@
 @foreach($section->recursiveChildren as $childSection)
     @include('projects.schedule.partials.recursive-index-row', ['section' => $childSection, 'project' => $project, 'canEditSchedule' => $canEditSchedule])
 @endforeach
+
+

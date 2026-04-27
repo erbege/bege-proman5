@@ -18,9 +18,11 @@
 
     @include('projects.navigation')
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <livewire:project-file-manager :project="$project" :folder="request()->query('folder')" />
         </div>
     </div>
 </x-app-layout>
+
+

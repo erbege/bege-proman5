@@ -14,15 +14,15 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="p-4 text-gray-900 dark:text-gray-100">
                     <form action="{{ route('projects.usage.store', $project) }}" method="POST" x-data="usageForm()">
                         @csrf
 
                         @if($errors->any())
-                            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-3 py-1.5 rounded relative">
                                 <strong class="font-bold">Error!</strong>
                                 <ul>
                                     @foreach($errors->all() as $error)
@@ -33,7 +33,7 @@
                         @endif
 
                         <!-- Header Form -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
                                 <x-input-label for="usage_date" value="Tanggal Penggunaan" />
                                 <x-text-input id="usage_date" type="date" name="usage_date" class="mt-1 block w-full"
@@ -181,3 +181,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

@@ -14,11 +14,11 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="grForm()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4" x-data="grForm()">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <!-- Header Info -->
             <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg mb-6">
-                <div class="p-6">
+                <div class="p-4">
                     <div class="flex justify-between items-center mb-4">
                         <div>
                             <span class="text-gray-500 dark:text-gray-400 text-sm">Referensi PO</span>
@@ -36,8 +36,8 @@
                 @csrf
                 <input type="hidden" name="purchase_order_id" value="{{ $po->id }}">
 
-                <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-6 mb-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
                             <x-input-label for="receipt_date" value="Tanggal Penerimaan" />
                             <x-text-input id="receipt_date" name="receipt_date" type="date" class="mt-1 block w-full"
@@ -126,3 +126,5 @@
         }
     </script>
 </x-app-layout>
+
+

@@ -32,7 +32,7 @@
         <div x-show="isSubmitting" x-cloak x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center">
-            <div class="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-2xl text-center max-w-sm mx-4">
+            <div class="bg-white dark:bg-dark-800 rounded-xl p-4 shadow-2xl text-center max-w-sm mx-4">
                 <div
                     class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4">
                 </div>
@@ -42,10 +42,10 @@
             </div>
         </div>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="py-4">
+            <div class="max-w-full mx-auto sm:px-6 lg:px-8">
                 <!-- Summary Card -->
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 mb-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Ringkasan Perhitungan</h3>
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
@@ -109,29 +109,29 @@
                 </div>
 
                 <!-- Preview Table -->
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 mb-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Preview Jadwal</h3>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         No</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Pekerjaan</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Bobot</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Durasi</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Mulai</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Selesai</th>
                                 </tr>
                             </thead>
@@ -176,7 +176,7 @@
                 </div>
 
                 <!-- Action Options -->
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Pilih Tindakan</h3>
 
                     <form action="{{ route('projects.schedule.auto.apply', $project) }}" method="POST"
@@ -288,3 +288,5 @@
         </div>
     </div>{{-- Close x-data wrapper --}}
 </x-app-layout>
+
+

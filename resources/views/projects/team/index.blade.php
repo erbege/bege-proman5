@@ -23,3 +23,5 @@
 
     <livewire:project-team-manager :project-id="$project->id" />
 </x-app-layout>
+
+

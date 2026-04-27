@@ -14,10 +14,10 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="p-4 text-gray-900 dark:text-gray-100">
                     <form action="{{ route('projects.pr.store', $project) }}" method="POST" x-data="prForm()">
                         @csrf
                         
@@ -31,7 +31,7 @@
                         @endif
 
                         <!-- Header Form -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
                                 <x-input-label for="required_date" value="Tanggal Dibutuhkan (Required Date)" />
                                 <x-text-input id="required_date" name="required_date" type="date" class="mt-1 block w-full" :value="old('required_date', date('Y-m-d', strtotime('+7 days')))" required />
@@ -141,7 +141,7 @@
                                 </div>
                                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                                 <div x-show="showMrModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-                                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
                                         <div class="flex justify-between items-center mb-4">
                                             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Pilih Item dari Material Request</h3>
                                             <button type="button" @click="showMrModal = false" class="text-gray-400 hover:text-gray-500">
@@ -185,7 +185,7 @@
                                             </table>
                                         </div>
                                     </div>
-                                    <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                                         <button type="button" @click="addSelectedMrItems()" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
                                             Tambah Terpilih
                                         </button>
@@ -260,3 +260,5 @@
         }
     </script>
 </x-app-layout>
+
+

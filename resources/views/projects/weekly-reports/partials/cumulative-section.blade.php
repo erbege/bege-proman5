@@ -64,3 +64,5 @@
         @include('projects.weekly-reports.partials.cumulative-section', ['section' => $child, 'level' => $level + 1])
     @endforeach
 @endif
+
+

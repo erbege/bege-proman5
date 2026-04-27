@@ -14,9 +14,9 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                 <form action="{{ route('projects.weekly-reports.store', $project) }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
@@ -184,3 +184,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

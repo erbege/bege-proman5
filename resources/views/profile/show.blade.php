@@ -16,16 +16,16 @@
                 </p>
             </div>
             <div class="flex items-center space-x-3">
-                <div class="px-4 py-2 bg-white dark:bg-dark-800 rounded-xl border border-gray-100 dark:border-dark-700 shadow-sm flex items-center">
-                    <x-heroicon-o-user class="w-5 h-5 text-primary-500 mr-2" />
+                <div class="px-2 py-1 bg-white dark:bg-dark-800 rounded-lg border border-gray-100 dark:border-dark-700 shadow-sm flex items-center">
+                    <x-heroicon-o-user class="w-4 h-4 text-primary-500 mr-2" />
                     <span class="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest">{{ Auth::user()->name }}</span>
                 </div>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8 bg-gray-50/50 dark:bg-dark-950/50">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-10">
+    <div class="py-2 bg-gray-50/50 dark:bg-dark-950/50">
+        <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             @if (Laravel\Fortify\Features::canUpdateProfileInformation())
                 @livewire('profile.update-profile-information-form')
 
@@ -62,3 +62,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

@@ -1,8 +1,8 @@
 <div>
     @include('projects.navigation')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if (session()->has('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
@@ -13,7 +13,7 @@
             @endif
 
             {{-- Header --}}
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Purchase Orders -
                         {{ $project->name }}
@@ -27,7 +27,7 @@
             </div>
 
             {{-- Filters --}}
-            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-4">
+            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-4 p-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2">
                         <div class="relative">
@@ -58,22 +58,22 @@
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     No. PO</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Supplier</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Tanggal</th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Total</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Status</th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Aksi</th>
                             </tr>
                         </thead>
@@ -81,24 +81,24 @@
                             @forelse($orders as $po)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $po->po_number }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $po->supplier->name ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $po->order_date->format('d M Y') }}
                                     </td>
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
+                                        class="px-3 py-1.5 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
                                         Rp {{ number_format($po->total_amount, 0, ',', '.') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-center">
                                         @php $statusColors = ['draft' => 'bg-gray-100 text-gray-800', 'sent' => 'bg-blue-100 text-blue-800', 'partial' => 'bg-yellow-100 text-yellow-800', 'completed' => 'bg-green-100 text-green-800', 'cancelled' => 'bg-red-100 text-red-800']; @endphp
                                         <span
                                             class="px-2 py-1 text-xs font-medium rounded-full {{ $statusColors[$po->status] ?? 'bg-gray-100 text-gray-800' }}">{{ ucfirst($po->status) }}</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm space-x-2">
                                         <a href="{{ route('projects.po.show', [$project, $po]) }}" title="Detail"
                                             class="text-blue-600 hover:text-blue-900 dark:text-blue-400"><x-heroicon-o-eye
                                                 class="w-5 h-5" /></a>
@@ -140,7 +140,7 @@
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-5xl sm:w-full">
                     <form wire:submit="save">
                         <div
-                            class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6 max-h-[80vh] overflow-y-auto scrollbar-overlay">
+                            class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4 max-h-[80vh] overflow-y-auto scrollbar-overlay">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Buat Purchase Order</h3>
                                 class="text-gray-400 hover:text-gray-500"><x-heroicon-o-x-circle class="w-6 h-6" /></button>
@@ -253,7 +253,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                             <x-primary-button type="submit" class="sm:ml-3"
                                 wire:loading.attr="disabled">Simpan</x-primary-button>
                             <button type="button" wire:click="closeModal"
@@ -265,3 +265,5 @@
         </div>
     @endif
 </div>
+
+

@@ -1,5 +1,5 @@
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-4">
+    <div class="max-w-full mx-auto sm:px-6 lg:px-8">
         {{-- Flash Messages --}}
         @if (session()->has('success'))
             <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">{{ session('success') }}
@@ -10,7 +10,7 @@
         @endif
 
         {{-- Header --}}
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Manajemen Role</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">Kelola role dan assign permissions</p>
@@ -22,7 +22,7 @@
         </div>
 
         {{-- Filters --}}
-        <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6">
+        <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-4">
             <div class="p-4">
                 <div class="relative max-w-md">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -42,38 +42,38 @@
                     <thead class="bg-gray-50 dark:bg-dark-700">
                         <tr>
                             <th
-                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                 Nama Role</th>
                             <th
-                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                 Permissions</th>
                             <th
-                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                 Users</th>
                             <th
-                                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                 Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                         @forelse($roles as $role)
                             <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
-                                <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                                <td class="px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white">
                                     <span
                                         class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300">
                                         {{ $role->name }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-center">
+                                <td class="px-3 py-1.5 text-sm text-center">
                                     <button wire:click="viewPermissions({{ $role->id }}, '{{ $role->name }}')"
                                         class="text-blue-600 hover:underline">
                                         {{ $role->permissions_count }} permissions
                                     </button>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-center text-gray-500 dark:text-gray-400">
+                                <td class="px-3 py-1.5 text-sm text-center text-gray-500 dark:text-gray-400">
                                     {{ $role->users_count }} users
                                 </td>
-                                <td class="px-4 py-3 text-right text-sm space-x-1">
+                                <td class="px-3 py-1.5 text-right text-sm space-x-1">
                                     <button wire:click="openModal({{ $role->id }})" title="Edit"
                                         class="text-gold-600 hover:text-gold-900 dark:text-gold-400">
                                         <x-heroicon-o-pencil-square class="w-5 h-5 inline" />
@@ -108,7 +108,7 @@
                 <div
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
                     <form wire:submit="save">
-                        <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                        <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                                     {{ $editingId ? 'Edit Role' : 'Tambah Role' }}</h3>
@@ -148,7 +148,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                             <x-primary-button type="submit" class="sm:ml-3"
                                 wire:loading.attr="disabled">Simpan</x-primary-button>
                             <button type="button" wire:click="closeModal"
@@ -168,7 +168,7 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                 <div
                     class="relative inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                         <div class="sm:flex sm:items-start">
                             <div
                                 class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -181,7 +181,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button wire:click="delete"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">Hapus</button>
                         <button wire:click="closeDeleteModal"
@@ -200,7 +200,7 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
                 <div
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white">
                                 Permissions: <span class="text-purple-600">{{ $viewRoleName }}</span>
@@ -228,7 +228,7 @@
                             @endforeach
                         </div>
                     </div>
-                    <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" wire:click="closePermissionsModal"
                             class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:w-auto sm:text-sm dark:bg-dark-800 dark:text-gray-300 dark:border-dark-600">Tutup</button>
                     </div>
@@ -237,3 +237,5 @@
         </div>
     @endif
 </div>
+
+

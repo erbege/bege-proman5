@@ -3,7 +3,7 @@
 ])
 
 @if(count($items) > 0)
-    <nav class="flex mb-4 border-b border-gray-100 dark:border-dark-800 py-2" aria-label="Breadcrumb">
+    <nav class="flex mb-2 border-b border-gray-100 dark:border-dark-800 py-1" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-2">
             {{-- Home --}}
             <li class="inline-flex items-center">
@@ -32,3 +32,5 @@
         </ol>
     </nav>
 @endif
+
+

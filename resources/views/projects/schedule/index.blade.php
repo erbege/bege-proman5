@@ -48,7 +48,7 @@
         <div x-show="isLoading" x-cloak x-transition:enter="transition ease-out duration-200"
             x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
             class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center">
-            <div class="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-2xl text-center max-w-sm mx-4">
+            <div class="bg-white dark:bg-dark-800 rounded-xl p-4 shadow-2xl text-center max-w-sm mx-4">
                 <div
                     class="animate-spin rounded-full h-16 w-16 border-4 border-gold-500 border-t-transparent mx-auto mb-4">
                 </div>
@@ -58,8 +58,8 @@
             </div>
         </div>
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="py-4">
+            <div class="max-w-full mx-auto sm:px-6 lg:px-8">
                 @if(session('success'))
                     <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                         {{ session('success') }}
@@ -73,67 +73,65 @@
                 @endif
 
                 <!-- Project Timeline -->
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timeline Proyek</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3 mb-4">
+                    <h3 class="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500 mb-3">Timeline Proyek</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Tanggal Mulai</p>
-                            <p class="font-semibold text-gray-900 dark:text-white">
+                            <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Mulai</p>
+                            <p class="text-sm font-black text-gray-900 dark:text-white">
                                 {{ $project->start_date->format('d M Y') }}
                             </p>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Tanggal Selesai</p>
-                            <p class="font-semibold text-gray-900 dark:text-white">
+                            <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Selesai</p>
+                            <p class="text-sm font-black text-gray-900 dark:text-white">
                                 {{ $project->end_date->format('d M Y') }}
                             </p>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Durasi</p>
-                            <p class="font-semibold text-gray-900 dark:text-white">{{ $project->duration_weeks }} Minggu
+                            <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Durasi</p>
+                            <p class="text-sm font-black text-gray-900 dark:text-white">{{ $project->duration_weeks }} Minggu
                             </p>
                         </div>
                         <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Item dengan Jadwal</p>
-                            <p class="font-semibold text-gray-900 dark:text-white">
-                                {{ $project->rabItems()->withSchedule()->count() }} /
-                                {{ $project->rabItems()->count() }}
+                            <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Item Jadwal</p>
+                            <p class="text-sm font-black text-gray-900 dark:text-white">
+                                {{ $project->rabItems()->withSchedule()->count() }} / {{ $project->rabItems()->count() }}
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Mini S-Curve -->
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Kurva S</h3>
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3 mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500">Kurva S</h3>
                         <form action="{{ route('projects.schedule.regenerate', $project) }}" method="POST"
                             class="inline" @submit="isLoading = true; loadingMessage = 'Regenerating Jadwal'">
                             @csrf
                             <button type="submit" :disabled="isLoading"
                                 :class="{ 'opacity-50 cursor-not-allowed': isLoading }"
-                                class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 inline-flex items-center">
-                                <span x-show="!isLoading">Regenerate Jadwal</span>
+                                class="text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-800 dark:text-blue-400 inline-flex items-center">
+                                <span x-show="!isLoading">Regenerate</span>
                                 <span x-show="isLoading" class="flex items-center">
-                                    <svg class="animate-spin h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24">
+                                    <svg class="animate-spin h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
                                             stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor"
                                             d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
                                         </path>
                                     </svg>
-                                    Memproses...
                                 </span>
                             </button>
                         </form>
                     </div>
-                    <div id="mini-scurve-chart" style="height: 250px;"></div>
+                    <div id="mini-scurve-chart" style="height: 200px;"></div>
                 </div>
 
                 <!-- RAB Items with Schedule -->
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Item Pekerjaan</h3>
+                        <h3 class="text-[10px] font-bold uppercase text-gray-400 dark:text-gray-500">Item Pekerjaan</h3>
                         @if($canEditSchedule)
                             <span class="text-xs text-gray-500 dark:text-gray-400">
                                 <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,13 +147,13 @@
                             <thead class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Pekerjaan</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Bobot</th>
                                     @if($canEditSchedule)
-                                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase w-16"
+                                        <th class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase w-16"
                                             title="Item dapat dikerjakan paralel dengan item sebelumnya">
                                             <span class="inline-flex items-center">
                                                 <x-heroicon-o-arrows-right-left class="w-3 h-3 mr-1" />
@@ -164,20 +162,20 @@
                                         </th>
                                     @endif
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Mulai</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Selesai</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Progress</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Status</th>
                                     @if($canEditSchedule)
                                         <th
-                                            class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase w-20">
+                                            class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase w-20">
                                             Aksi</th>
                                     @endif
                                 </tr>
@@ -214,7 +212,7 @@
                         data: @json($scurveData['actual'])
                     }],
                     chart: {
-                        height: 250,
+                        height: 200,
                         type: 'area',
                         toolbar: { show: false },
                         background: 'transparent',
@@ -396,3 +394,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

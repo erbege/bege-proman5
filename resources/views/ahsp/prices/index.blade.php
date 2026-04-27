@@ -53,7 +53,7 @@
                      x-transition:leave-end="opacity-0"
                      class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm"
                      style="display: none;">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6" @click.away="confirmOpen = false">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-4" @click.away="confirmOpen = false">
                         <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 dark:bg-green-900 rounded-full mb-4">
                             <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -87,7 +87,7 @@
                      x-transition:leave-end="opacity-0"
                      class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm"
                      style="display: none;">
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-sm w-full mx-4">
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-2xl flex flex-col items-center max-w-sm w-full mx-4">
                         <!-- Circular Progress -->
                         <div class="relative w-32 h-32 mb-4">
                             <svg class="w-full h-full transform -rotate-90">
@@ -133,11 +133,11 @@
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <!-- Search & Filter -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
-                <div class="p-6">
+                <div class="p-4">
                     <form method="GET" class="flex flex-wrap gap-4">
                         <div class="flex-1 min-w-[200px]">
                             <input type="text" name="search" value="{{ request('search') }}"
@@ -172,47 +172,47 @@
 
             <!-- Prices Table -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Nama</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Kode</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Tipe</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Satuan</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Wilayah</th>
                                     <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Harga (Rp)</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Berlaku</th>
                                     <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Aksi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @forelse($prices as $price)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100">
+                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100">
                                             {{ Str::limit($price->name, 40) }}
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                             {{ $price->code ?? '-' }}
                                         </td>
-                                        <td class="px-4 py-3 text-sm">
+                                        <td class="px-3 py-1.5 text-sm">
                                             <span class="px-2 py-1 text-xs rounded-full 
                                                         {{ $price->component_type == 'labor' ? 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100' : '' }}
                                                         {{ $price->component_type == 'material' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : '' }}
@@ -221,19 +221,19 @@
                                                 {{ $price->type_label }}
                                             </span>
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{{ $price->unit }}
+                                        <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">{{ $price->unit }}
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                             {{ $price->region_name ?? $price->region_code }}
                                         </td>
                                         <td
-                                            class="px-4 py-3 text-sm text-gray-900 dark:text-gray-100 text-right font-medium">
+                                            class="px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100 text-right font-medium">
                                             {{ number_format($price->price, 0, ',', '.') }}
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                             {{ $price->effective_date->format('d/m/Y') }}
                                         </td>
-                                        <td class="px-4 py-3 text-right">
+                                        <td class="px-3 py-1.5 text-right">
                                             <button
                                                 onclick="editPrice({{ $price->id }}, '{{ $price->name }}', {{ $price->price }})"
                                                 class="text-indigo-600 hover:text-indigo-900 text-sm">Edit</button>
@@ -241,7 +241,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="px-4 py-4 text-center text-gray-500">
+                                        <td colspan="8" class="px-3 py-2 text-center text-gray-500">
                                             Belum ada data harga. <a href="{{ route('ahsp.prices.import') }}"
                                                 class="text-indigo-600 hover:underline">Import sekarang</a>
                                         </td>
@@ -258,7 +258,7 @@
 
     <!-- Edit Price Modal -->
     <div id="editPriceModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 p-4">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Edit Harga</h3>
             <form id="editPriceForm" method="POST">
                 @csrf
@@ -306,3 +306,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

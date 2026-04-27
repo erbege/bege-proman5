@@ -8,7 +8,7 @@
 
 
     {{-- Breadcrumbs --}}
-    <div class="mb-6">
+    <div class="mb-4">
         <nav class="flex" aria-label="Breadcrumb">
             <ol class="inline-flex items-center space-x-1 md:space-x-3">
                 <li class="inline-flex items-center">
@@ -36,9 +36,9 @@
 
     {{-- Files Grid --}}
     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-        <div class="p-6">
+        <div class="p-4">
             {{-- Toolbar --}}
-            <div class="mb-6 flex flex-wrap justify-between items-center gap-4">
+            <div class="mb-4 flex flex-wrap justify-between items-center gap-4">
                 {{-- Actions --}}
                 <div class="flex items-center gap-2">
                     <button wire:click="openUploadModal"
@@ -83,8 +83,8 @@
             @else
                 {{-- Folders --}}
                 @if($folders->isNotEmpty())
-                    <div class="mb-6">
-                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Folder</h3>
+                    <div class="mb-4">
+                        <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Folder</h3>
                         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                             @foreach($folders as $folder)
                                 <div class="relative group">
@@ -113,49 +113,49 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">File</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Versi</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ukuran</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Updated</th>
-                                <th class="px-4 py-3"></th>
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">File</th>
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Kategori</th>
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Versi</th>
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Ukuran</th>
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Updated</th>
+                                <th class="px-3 py-1.5"></th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach($files as $file)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-dark-700" wire:key="file-{{ $file->id }}">
-                                    <td class="px-4 py-3">
-                                        <a href="{{ route('projects.files.show', [$project, $file]) }}" class="flex items-center" wire:navigate>
-                                            <x-heroicon-o-document class="w-8 h-8 text-gray-400 mr-3" />
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $file->name }}</div>
-                                                <div class="text-xs text-gray-500">{{ $file->original_name }}</div>
-                                            </div>
-                                        </a>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ $file->category_label }}</span>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="px-2 py-1 text-xs font-medium rounded-full 
-                                            {{ $file->status === 'draft' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' : '' }}
-                                            {{ $file->status === 'review' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : '' }}
-                                            {{ $file->status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : '' }}
-                                            {{ $file->status === 'final' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' : '' }}">
-                                            {{ $file->status_label }}
-                                        </span>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-sm text-gray-600 dark:text-gray-400">v{{ $file->current_version }}</span>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ $file->latestVersion?->file_size_formatted ?? '-' }}</span>
-                                    </td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ $file->updated_at->diffForHumans() }}</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-right">
+                                <td class="px-3 py-1.5">
+                                    <a href="{{ route('projects.files.show', [$project, $file]) }}" class="flex items-center" wire:navigate>
+                                        <x-heroicon-o-document class="w-8 h-8 text-gray-400 mr-3" />
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $file->name }}</div>
+                                            <div class="text-xs text-gray-500">{{ $file->original_name }}</div>
+                                        </div>
+                                    </a>
+                                </td>
+                                <td class="px-3 py-1.5">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ $file->category_label }}</span>
+                                </td>
+                                <td class="px-3 py-1.5">
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full 
+                                        {{ $file->status === 'draft' ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' : '' }}
+                                        {{ $file->status === 'review' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' : '' }}
+                                        {{ $file->status === 'approved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : '' }}
+                                        {{ $file->status === 'final' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300' : '' }}">
+                                        {{ $file->status_label }}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-1.5">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">v{{ $file->current_version }}</span>
+                                </td>
+                                <td class="px-3 py-1.5">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ $file->latestVersion?->file_size_formatted ?? '-' }}</span>
+                                </td>
+                                <td class="px-3 py-1.5">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ $file->updated_at->diffForHumans() }}</span>
+                                </td>
+                                <td class="px-3 py-1.5 text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             <a href="{{ route('projects.files.download', [$project, $file]) }}" class="text-blue-600 hover:text-blue-800 dark:text-blue-400" title="Download">
                                                 <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
@@ -187,7 +187,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto" @keydown.escape.window="$wire.closeUploadModal()">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeUploadModal"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-lg w-full p-4">
                     <button type="button" wire:click="closeUploadModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500">
                         <x-heroicon-o-x-circle class="w-6 h-6" />
                     </button>
@@ -245,7 +245,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto" @keydown.escape.window="$wire.closeFolderModal()">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeFolderModal"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-4">
                     <button type="button" wire:click="closeFolderModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500">
                         <x-heroicon-o-x-circle class="w-6 h-6" />
                     </button>
@@ -271,7 +271,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto" @keydown.escape.window="$wire.closeMoveModal()">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeMoveModal"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-4">
                     <button type="button" wire:click="closeMoveModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-500">
                         <x-heroicon-o-x-circle class="w-6 h-6" />
                     </button>
@@ -302,7 +302,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto" @keydown.escape.window="$wire.cancelDelete()">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="cancelDelete"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-sm w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-sm w-full p-4">
                     <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full dark:bg-red-900">
                         <x-heroicon-o-exclamation-triangle class="w-6 h-6 text-red-600 dark:text-red-400" />
                     </div>
@@ -331,3 +331,5 @@
         </div>
     @endif
 </div>
+
+

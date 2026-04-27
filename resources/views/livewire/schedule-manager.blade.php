@@ -2,7 +2,7 @@
     {{-- Loading Overlay - Positioned at root level for proper z-index --}}
     <div wire:loading.delay wire:target="regenerateSchedule"
         class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center">
-        <div class="bg-white dark:bg-dark-800 rounded-xl p-8 shadow-2xl text-center max-w-sm mx-4">
+        <div class="bg-white dark:bg-dark-800 rounded-xl p-4 shadow-2xl text-center max-w-sm mx-4">
             <div class="animate-spin rounded-full h-16 w-16 border-4 border-gold-500 border-t-transparent mx-auto mb-4">
             </div>
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Regenerating Jadwal</h3>
@@ -13,15 +13,15 @@
 
     @include('projects.navigation')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if (session()->has('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Time Schedule -
                         {{ $project->name }}
@@ -38,7 +38,7 @@
             </div>
 
             {{-- View Mode Tabs --}}
-            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6">
+            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-4">
                 <div class="border-b border-gray-200 dark:border-gray-700">
                     <nav class="flex space-x-8 px-4">
                         <button wire:click="setViewMode('table')"
@@ -65,25 +65,25 @@
                             <thead class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Minggu</th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Periode</th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Rencana (%)</th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Kumulatif Rencana</th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Realisasi (%)</th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Kumulatif Realisasi</th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Deviasi</th>
                                 </tr>
                             </thead>
@@ -91,28 +91,28 @@
                                 @forelse($schedules as $schedule)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
                                         <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                            class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                             Minggu {{ $schedule->week_number }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $schedule->start_date?->format('d/m') ?? '-' }} -
                                             {{ $schedule->end_date?->format('d/m/Y') ?? '-' }}
                                         </td>
                                         <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
+                                            class="px-3 py-1.5 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
                                             {{ number_format($schedule->planned_progress, 2) }}%
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-blue-600">
+                                        <td class="px-3 py-1.5 whitespace-nowrap text-sm text-right font-medium text-blue-600">
                                             {{ number_format($schedule->cumulative_planned, 2) }}%
                                         </td>
                                         <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
+                                            class="px-3 py-1.5 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
                                             {{ number_format($schedule->actual_progress ?? 0, 2) }}%
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-green-600">
+                                        <td class="px-3 py-1.5 whitespace-nowrap text-sm text-right font-medium text-green-600">
                                             {{ number_format($schedule->cumulative_actual ?? 0, 2) }}%
                                         </td>
                                         <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium {{ ($schedule->cumulative_actual ?? 0) >= $schedule->cumulative_planned ? 'text-green-600' : 'text-red-600' }}">
+                                            class="px-3 py-1.5 whitespace-nowrap text-sm text-right font-medium {{ ($schedule->cumulative_actual ?? 0) >= $schedule->cumulative_planned ? 'text-green-600' : 'text-red-600' }}">
                                             {{ number_format(($schedule->cumulative_actual ?? 0) - $schedule->cumulative_planned, 2) }}%
                                         </td>
                                     </tr>
@@ -130,7 +130,7 @@
 
             {{-- Gantt View --}}
             @if($viewMode === 'gantt')
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Gantt Chart</h3>
                     @if(count($ganttItems) > 0)
                         <div class="overflow-x-auto">
@@ -168,7 +168,7 @@
 
             {{-- S-Curve View --}}
             @if($viewMode === 'scurve')
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">S-Curve Progress</h3>
                     @if(!empty($scurveData['labels']))
                         <div class="h-96" x-data="{
@@ -225,3 +225,5 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endpush
+
+

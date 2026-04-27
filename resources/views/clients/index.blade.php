@@ -33,7 +33,7 @@
                     @csrf
                     <input type="hidden" name="_method" id="clientFormMethod" value="POST">
 
-                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
                                 id="clientModalTitle">
@@ -104,7 +104,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                         <x-primary-button type="submit" class="sm:ml-3">
                             Simpan
                         </x-primary-button>
@@ -118,8 +118,8 @@
         </div>
     </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
@@ -127,50 +127,50 @@
             @endif
 
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Kode</th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Nama</th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Kontak</th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Telepon</th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Kota</th>
                                 <th
-                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Status</th>
                                 <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($clients as $client)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                                    <td class="px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $client->code }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ $client->name }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white">{{ $client->name }}</td>
+                                    <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                         {{ $client->contact_person ?? '-' }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                         {{ $client->phone ?? '-' }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                         {{ $client->city ?? '-' }}
                                     </td>
-                                    <td class="px-4 py-3 text-center">
+                                    <td class="px-3 py-1.5 text-center">
                                         @if($client->is_active)
                                             <span
                                                 class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Aktif</span>
@@ -179,7 +179,7 @@
                                                 class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">Nonaktif</span>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-right text-sm">
+                                    <td class="px-3 py-1.5 text-right text-sm">
                                         <button type="button" onclick="editClient({{ json_encode($client) }})"
                                             class="text-gold-600 hover:text-gold-900 dark:text-gold-400">Edit</button>
                                     </td>
@@ -272,3 +272,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

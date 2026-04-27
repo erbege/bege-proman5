@@ -32,11 +32,11 @@
         </div>
     </x-slot>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <!-- Search & Filter -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg mb-6">
-                <div class="p-6">
+                <div class="p-4">
                     <form method="GET" action="{{ route('ahsp.index') }}" class="flex flex-wrap gap-4">
                         <div class="flex-1 min-w-[200px]">
                             <input type="text" name="search" value="{{ request('search') }}"
@@ -66,28 +66,28 @@
 
             <!-- Work Types Table -->
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Kode</th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Nama Pekerjaan</th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Satuan</th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Kategori</th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Sumber</th>
                                     <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                         Aksi</th>
                                 </tr>
                             </thead>
@@ -95,28 +95,28 @@
                                 @forelse($workTypes as $workType)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
                                         <td
-                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
+                                            class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
                                             {{ $workType->code }}
                                         </td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-gray-100">
                                             <a href="{{ route('ahsp.show', $workType) }}"
                                                 class="text-indigo-600 dark:text-indigo-400 hover:underline">
                                                 {{ Str::limit($workType->name, 60) }}
                                             </a>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $workType->unit }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             {{ $workType->category?->name ?? '-' }}
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                             <span
                                                 class="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-100">
                                                 {{ $workType->source }}
                                             </span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('ahsp.show', $workType) }}"
                                                 class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 mr-3">
                                                 Lihat
@@ -129,7 +129,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                                        <td colspan="6" class="px-3 py-1.5 text-center text-gray-500 dark:text-gray-400">
                                             Belum ada data AHSP. <a href="{{ route('ahsp.create') }}"
                                                 class="text-indigo-600 hover:underline">Tambah sekarang</a>
                                         </td>
@@ -148,3 +148,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

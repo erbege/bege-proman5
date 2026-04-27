@@ -24,7 +24,7 @@
 
             <div>
                 <x-label for="email" value="{{ __('Email Address') }}" class="text-gray-700 dark:text-gray-300 font-semibold mb-1.5" />
-                <x-input id="email" class="block w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="email" name="email" :value="old('email')" required
+                <x-input id="email" class="block w-full px-3 py-1.5 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="email" name="email" :value="old('email')" required
                     autofocus autocomplete="username" placeholder="name@company.com" />
             </div>
 
@@ -42,3 +42,5 @@
         </form>
     </x-authentication-card>
 </x-guest-layout>
+
+

@@ -16,26 +16,26 @@
 
             <div>
                 <x-label for="name" value="{{ __('Full Name') }}" class="text-gray-700 dark:text-gray-300 font-semibold mb-1.5" />
-                <x-input id="name" class="block w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="text" name="name" :value="old('name')" required
+                <x-input id="name" class="block w-full px-3 py-1.5 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="text" name="name" :value="old('name')" required
                     autofocus autocomplete="name" placeholder="John Doe" />
             </div>
 
             <div>
                 <x-label for="email" value="{{ __('Email Address') }}" class="text-gray-700 dark:text-gray-300 font-semibold mb-1.5" />
-                <x-input id="email" class="block w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="email" name="email" :value="old('email')" required
+                <x-input id="email" class="block w-full px-3 py-1.5 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="email" name="email" :value="old('email')" required
                     autocomplete="username" placeholder="name@company.com" />
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <x-label for="password" value="{{ __('Password') }}" class="text-gray-700 dark:text-gray-300 font-semibold mb-1.5" />
-                    <x-input id="password" class="block w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="password" name="password" required
+                    <x-input id="password" class="block w-full px-3 py-1.5 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="password" name="password" required
                         autocomplete="new-password" placeholder="••••••••" />
                 </div>
 
                 <div>
                     <x-label for="password_confirmation" value="{{ __('Confirm') }}" class="text-gray-700 dark:text-gray-300 font-semibold mb-1.5" />
-                    <x-input id="password_confirmation" class="block w-full px-4 py-3 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="password"
+                    <x-input id="password_confirmation" class="block w-full px-3 py-1.5 bg-gray-50 dark:bg-dark-800 border-gray-200 dark:border-dark-700 focus:ring-primary-500 focus:border-primary-500 rounded-xl transition duration-200" type="password"
                         name="password_confirmation" required autocomplete="new-password" placeholder="••••••••" />
                 </div>
             </div>
@@ -71,3 +71,5 @@
         </form>
     </x-authentication-card>
 </x-guest-layout>
+
+

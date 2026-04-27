@@ -1,7 +1,7 @@
-<div x-data="{ localSelectedItems: @entangle('selectedItems') }">
+<div x-data="{ localSelectedItems: @entangle('selectedItems') }" class="py-4 max-w-full mx-auto sm:px-6 lg:px-8">
     {{-- Loading Overlay --}}
     <div wire:loading.flex class="fixed inset-0 bg-black/30 z-40 items-center justify-center">
-        <div class="bg-white dark:bg-dark-800 rounded-lg px-6 py-4 shadow-xl flex items-center gap-3">
+        <div class="bg-white dark:bg-dark-800 rounded-lg px-3 py-1.5 shadow-xl flex items-center gap-3">
             <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none"
                 viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -21,31 +21,31 @@
     @endif
 
     {{-- Summary Card --}}
-    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3 mb-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Total Bagian</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $sections->count() }}</p>
+                <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Total Bagian</p>
+                <p class="text-lg font-black text-gray-900 dark:text-white">{{ $sections->count() }}</p>
             </div>
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Total Item</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalItemsCount }}</p>
+                <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Total Item</p>
+                <p class="text-lg font-black text-gray-900 dark:text-white">{{ $totalItemsCount }}</p>
             </div>
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Nilai RAB</p>
-                <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">Rp
-                    {{ number_format($totalValue, 2, ',', '.') }}
+                <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Nilai RAB</p>
+                <p class="text-lg font-black text-blue-600 dark:text-blue-400">
+                    Rp {{ number_format($totalValue, 0, ',', '.') }}
                 </p>
             </div>
             <div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Nilai Kontrak</p>
-                <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $project->formatted_contract_value }}</p>
+                <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Nilai Kontrak</p>
+                <p class="text-lg font-black text-gray-900 dark:text-white">{{ $project->formatted_contract_value }}</p>
             </div>
         </div>
     </div>
 
     {{-- Toolbar --}}
-    <div class="mb-6 flex justify-end gap-2">
+    <div class="mb-4 flex justify-end gap-2">
         <a href="{{ route('projects.rab.export-excel', $project) }}" target="_blank"
             class="inline-flex items-center px-4 py-2 border border-green-700 text-green-700 dark:text-green-500 dark:border-green-500 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 text-sm font-medium transition-colors">
             <x-heroicon-o-document-text class="w-4 h-4 mr-2" />
@@ -77,12 +77,12 @@
     @forelse($sections as $section)
         <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-4 {{ $section->level > 0 ? 'border-l-4 border-gray-300 dark:border-dark-600' : '' }}"
             style="margin-left: {{ $section->level * 2 }}rem;" wire:key="section-{{ $section->id }}">
-            <div class="p-4 bg-gray-50 dark:bg-dark-700 border-b dark:border-dark-600 flex justify-between items-center">
+            <div class="p-3 bg-gray-50 dark:bg-dark-700 border-b dark:border-dark-600 flex justify-between items-center">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                    <h3 class="text-base font-bold text-gray-900 dark:text-white leading-tight">
                         {{ $section->code }}. {{ $section->name }}
                     </h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $section->items->count() }} item | Bobot:
+                    <p class="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">{{ $section->items->count() }} item | Bobot:
                         {{ number_format($section->weight_percentage, 2) }}%
                     </p>
                 </div>
@@ -130,7 +130,7 @@
                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
-                                <th class="px-2 py-2 text-center">
+                                <th class="px-2 py-1.5 text-center">
                                     <input type="checkbox" @click="(() => {
                                                                             const ids = {{ json_encode($sectionItemIds) }};
                                                                             const allSelected = ids.length > 0 && ids.every(id => localSelectedItems.includes(id));
@@ -143,48 +143,48 @@
                                         :checked="(() => { const ids = {{ json_encode($sectionItemIds) }}; return ids.length > 0 && ids.every(id => localSelectedItems.includes(id)); })()"
                                         class="rounded border-gray-300 dark:border-dark-700 text-red-600 shadow-sm focus:ring-red-500">
                                 </th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     No</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Uraian Pekerjaan</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Volume</th>
                                 <th
-                                    class="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Satuan</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Harga Satuan</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Jumlah</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Bobot</th>
-                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach($section->items as $index => $item)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700" wire:key="item-{{ $item->id }}">
-                                    <td class="px-2 py-2 text-center">
+                                    <td class="px-2 py-1.5 text-center">
                                         <input type="checkbox" x-model="localSelectedItems" value="{{ $item->id }}"
                                             class="rounded border-gray-300 dark:border-dark-700 text-red-600 shadow-sm focus:ring-red-500">
                                     </td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ $index + 1 }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">{{ $item->work_name }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white">{{ $index + 1 }}</td>
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white">{{ $item->work_name }}</td>
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                         {{ number_format($item->volume, 2) }}
                                     </td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-white text-center">{{ $item->unit }}</td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-center">{{ $item->unit }}</td>
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                         {{ number_format($item->unit_price, 0, ',', '.') }}
                                     </td>
-                                    <td class="px-4 py-2 text-sm font-medium text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white text-right">
                                         {{ number_format($item->total_price, 0, ',', '.') }}
                                     </td>
-                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                         {{ number_format($item->weight_percentage, 2) }}%
                                     </td>
-                                    <td class="px-4 py-2 text-sm text-right">
+                                    <td class="px-3 py-1.5 text-sm text-right">
                                         <div class="flex items-center justify-end gap-2">
                                             <button wire:click="openItemModal({{ $section->id }}, {{ $item->id }})" title="Edit"
                                                 class="text-gold-600 hover:text-gold-800 dark:text-gold-400"><x-heroicon-o-pencil-square
@@ -234,7 +234,7 @@
             @keydown.escape.window="$wire.closeSectionModal()">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeSectionModal"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-4">
                     <div class="absolute top-0 right-0 pt-4 pr-4">
                         <button type="button" wire:click="closeSectionModal" class="text-gray-400 hover:text-gray-500">
                             <x-heroicon-o-x-circle class="w-6 h-6" />
@@ -316,7 +316,7 @@
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeItemModal"></div>
                 <div
-                    class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto scrollbar-overlay">
+                    class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-2xl w-full p-4 max-h-[90vh] overflow-y-auto scrollbar-overlay">
                     <div class="absolute top-0 right-0 pt-4 pr-4">
                         <button type="button" wire:click="closeItemModal" class="text-gray-400 hover:text-gray-500">
                             <x-heroicon-o-x-circle class="w-6 h-6" />
@@ -458,7 +458,7 @@
             <div class="flex items-center justify-center min-h-screen px-4 py-8">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeImportModal"></div>
                 <div
-                    class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto scrollbar-overlay">
+                    class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-2xl w-full p-4 max-h-[90vh] overflow-y-auto scrollbar-overlay">
                     <div class="absolute top-0 right-0 pt-4 pr-4">
                         <button type="button" wire:click="closeImportModal" class="text-gray-400 hover:text-gray-500">
                             <x-heroicon-o-x-circle class="w-6 h-6" />
@@ -562,7 +562,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto scrollbar-overlay">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeDeleteModal"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-4">
                     <div class="absolute top-0 right-0 pt-4 pr-4">
                         <button type="button" wire:click="closeDeleteModal" class="text-gray-400 hover:text-gray-500">
                             <x-heroicon-o-x-circle class="w-6 h-6" />
@@ -591,7 +591,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto scrollbar-overlay">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeBulkDeleteModal"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-md w-full p-4">
                     <div class="absolute top-0 right-0 pt-4 pr-4">
                         <button type="button" wire:click="closeBulkDeleteModal" class="text-gray-400 hover:text-gray-500">
                             <x-heroicon-o-x-circle class="w-6 h-6" />
@@ -615,3 +615,5 @@
         </div>
     @endif
 </div>
+
+

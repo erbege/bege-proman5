@@ -23,10 +23,10 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <!-- Item Details -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 mb-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Info Pekerjaan</h3>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
@@ -52,7 +52,7 @@
             </div>
 
             <!-- Material Forecasts -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Material yang Dibutuhkan</h3>
                     <button type="button" onclick="document.getElementById('reanalyzeModal').classList.remove('hidden')"
@@ -67,37 +67,37 @@
                             <thead class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Material</th>
                                     <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Qty</th>
                                     <th
-                                        class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Satuan</th>
                                     <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Koefisien</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Match</th>
                                     <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                         Catatan</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach($item->materialForecasts as $forecast)
                                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white">
                                             {{ $forecast->raw_material_name }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-right font-medium">
+                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right font-medium">
                                             {{ number_format($forecast->estimated_qty, 2) }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-center">
+                                        <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-center">
                                             {{ $forecast->unit }}</td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-right">
+                                        <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 text-right">
                                             {{ number_format($forecast->coefficient, 4) }}</td>
-                                        <td class="px-4 py-3 text-sm">
+                                        <td class="px-3 py-1.5 text-sm">
                                             @if($forecast->material)
                                                 <span
                                                     class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
@@ -107,7 +107,7 @@
                                                 <span class="text-gray-400 text-xs">-</span>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                        <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                             {{ $forecast->notes ?? '-' }}</td>
                                     </tr>
                                 @endforeach
@@ -136,4 +136,6 @@
         </form>
     </x-confirm-modal>
 </x-app-layout>
+
+
 

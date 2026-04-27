@@ -43,8 +43,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if (session('success'))
                 <div
                     class="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 rounded-lg">
@@ -93,7 +93,7 @@
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <!-- Bulk Actions Bar -->
                         <div id="bulk-actions"
-                            class="hidden px-6 py-3 bg-gray-50 dark:bg-dark-700 border-b border-gray-200 dark:border-gray-600">
+                            class="hidden px-3 py-1.5 bg-gray-50 dark:bg-dark-700 border-b border-gray-200 dark:border-gray-600">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-gray-600 dark:text-gray-300">
                                     <span id="selected-count">0</span> item dipilih
@@ -113,28 +113,28 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead class="bg-gray-50 dark:bg-dark-700">
                                     <tr>
-                                        <th class="px-4 py-3 text-center w-12">
+                                        <th class="px-3 py-1.5 text-center w-12">
                                             <input type="checkbox" id="select-all"
                                                 class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-dark-700">
                                         </th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Week
                                         </th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Periode
                                         </th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Title
                                         </th>
                                         <th
-                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Status
                                         </th>
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                            class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                             Actions
                                         </th>
                                     </tr>
@@ -142,31 +142,31 @@
                                 <tbody class="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-gray-700">
                                     @forelse($reports as $report)
                                         <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
-                                            <td class="px-4 py-4 text-center">
+                                            <td class="px-3 py-1.5 text-center">
                                                 <input type="checkbox" name="ids[]" value="{{ $report->id }}"
                                                     class="report-checkbox rounded border-gray-300 text-primary-600 focus:ring-primary-500 dark:border-gray-600 dark:bg-dark-700">
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
+                                            <td class="px-3 py-1.5 whitespace-nowrap">
                                                 <span
-                                                    class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-100 font-bold">
+                                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-100 font-bold text-xs">
                                                     {{ $report->week_number }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                                 {{ $report->period_label }}
                                             </td>
-                                            <td class="px-6 py-4 text-sm text-gray-900 dark:text-white">
+                                            <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white">
                                                 {{ $report->cover_title ?? 'Weekly Report Week ' . $report->week_number }}
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-center">
                                                 <span
                                                     class="px-2 py-1 text-xs font-medium rounded-full 
-                                                                        @if($report->status === 'published') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                                                                        @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 @endif">
+                                                                         @if($report->status === 'published') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                                         @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 @endif">
                                                     {{ $report->status_label }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                                 <div class="flex justify-end space-x-2">
                                                     <a href="{{ route('projects.weekly-reports.show', [$project, $report]) }}"
                                                         class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
@@ -205,7 +205,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                                            <td colspan="6" class="px-3 py-1.5 text-center text-gray-500 dark:text-gray-400">
                                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none"
                                                     stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -224,7 +224,7 @@
                         </div>
 
                         @if ($reports->hasPages())
-                            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                            <div class="px-3 py-1.5 border-t border-gray-200 dark:border-gray-700">
                                 {{ $reports->links() }}
                             </div>
                         @endif
@@ -247,7 +247,7 @@
                                             <x-heroicon-o-x-circle class="w-6 h-6" />
                                         </button>
                                     </div>
-                                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                                         <div class="sm:flex sm:items-start">
                                             <div
                                                 class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -272,7 +272,7 @@
                                         </div>
                                     </div>
                                     <div
-                                        class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                        class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                                         <button type="submit" form="bulk-delete-form"
                                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
                                             Hapus
@@ -324,3 +324,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

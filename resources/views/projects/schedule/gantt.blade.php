@@ -23,9 +23,9 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-full mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                 <div class="overflow-x-auto">
                     @php
                         $startDate = $project->start_date;
@@ -106,7 +106,7 @@
                         <x-heroicon-o-x-circle class="w-6 h-6" />
                     </button>
                 </div>
-                <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                     <div class="sm:flex sm:items-start">
                         <div
                             class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-gold-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -169,7 +169,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                     <button type="button" onclick="hideItemDetail()"
                         class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 sm:w-auto sm:text-sm dark:bg-dark-800 dark:text-gray-300 dark:border-dark-600 dark:hover:bg-gray-700">
                         Tutup
@@ -222,3 +222,5 @@
         }
     </script>
 </x-app-layout>
+
+

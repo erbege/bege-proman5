@@ -11,12 +11,12 @@
         </div>
     @endif
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {{-- Left: File Info & Versions --}}
-        <div class="lg:col-span-2 space-y-6">
+        <div class="lg:col-span-2 space-y-4">
             {{-- File Info Card --}}
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <div class="flex items-start justify-between mb-4">
                         <div>
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Informasi File</h3>
@@ -82,7 +82,7 @@
 
             {{-- Version History --}}
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white">Riwayat Versi</h3>
                         <button wire:click="openVersionModal"
@@ -95,7 +95,7 @@
                     <div class="space-y-4">
                         @foreach($file->versions->sortByDesc('version') as $version)
                             <div wire:key="version-{{ $version->id }}"
-                                class="flex items-start p-4 rounded-lg border {{ $version->version === $file->current_version ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700' }}">
+                                class="flex items-start p-2 rounded-lg border {{ $version->version === $file->current_version ? 'border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20' : 'border-gray-200 dark:border-gray-700' }}">
                                 <div class="flex-shrink-0 mr-4">
                                     <div
                                         class="w-10 h-10 rounded-full flex items-center justify-center {{ $version->version === $file->current_version ? 'bg-green-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' }}">
@@ -140,9 +140,9 @@
         </div>
 
         {{-- Right: Comments --}}
-        <div class="space-y-6">
+        <div class="space-y-4">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                         Feedback & Komentar
                         @php
@@ -242,7 +242,7 @@
             {{-- Danger Zone --}}
             <div
                 class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg border border-red-200 dark:border-red-900">
-                <div class="p-6">
+                <div class="p-4">
                     <h3 class="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Danger Zone</h3>
                     <button wire:click="deleteFile"
                         wire:confirm="Yakin ingin menghapus file ini? Semua versi akan ikut terhapus."
@@ -259,7 +259,7 @@
         <div class="fixed inset-0 z-50 overflow-y-auto" @keydown.escape.window="$wire.closeVersionModal()">
             <div class="flex items-center justify-center min-h-screen px-4">
                 <div class="fixed inset-0 bg-gray-500 bg-opacity-75" wire:click="closeVersionModal"></div>
-                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+                <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-lg w-full p-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Upload Versi Baru</h3>
                     <form wire:submit="uploadVersion">
                         <div class="space-y-4">
@@ -308,3 +308,5 @@
         </div>
     @endif
 </div>
+
+

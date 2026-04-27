@@ -34,3 +34,5 @@
         @include('projects.weekly-reports.partials.pdf-cumulative-section', ['section' => $child, 'level' => $level + 1])
     @endforeach
 @endif
+
+

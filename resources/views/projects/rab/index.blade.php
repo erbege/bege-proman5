@@ -20,8 +20,8 @@
 
     @include('projects.navigation')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <livewire:rab-manager :project="$project" />
 
             <!-- Back Button -->
@@ -34,3 +34,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

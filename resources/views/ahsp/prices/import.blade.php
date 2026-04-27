@@ -13,10 +13,10 @@
         </h2>
     </x-slot>
 
-    <div class="py-6">
+    <div class="py-4">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6">
+                <div class="p-4">
                     <form action="{{ route('ahsp.prices.import.process') }}" method="POST" enctype="multipart/form-data"
                         x-data="{ 
                             uploading: false, 
@@ -43,7 +43,7 @@
                             class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm"
                             style="display: none;">
                             <div
-                                class="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-2xl flex flex-col items-center max-w-sm w-full mx-4">
+                                class="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-2xl flex flex-col items-center max-w-sm w-full mx-4">
                                 <!-- Circular Progress -->
                                 <div class="relative w-32 h-32 mb-4">
                                     <svg class="w-full h-full transform -rotate-90">
@@ -141,3 +141,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

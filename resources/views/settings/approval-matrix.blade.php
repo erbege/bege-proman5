@@ -19,8 +19,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <!-- Info Card -->
             <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 mb-6 rounded shadow-sm">
                 <div class="flex">
@@ -36,10 +36,10 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 @foreach(['MR' => 'Material Request', 'PR' => 'Purchase Request', 'PO' => 'Purchase Order'] as $type => $label)
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg border border-gray-100 dark:border-dark-700">
-                        <div class="p-6">
+                        <div class="p-4">
                             <div class="flex items-center justify-between mb-4 border-b pb-2 dark:border-dark-700">
                                 <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center">
                                     <span class="w-2 h-6 bg-gold-500 rounded mr-2"></span>
@@ -99,7 +99,7 @@
 
     <!-- Add Matrix Modal -->
     <x-confirm-modal id="addMatrixModal" title="Tambah Aturan Approval" message="Tentukan tingkatan level dan role yang bertanggung jawab." confirmColor="gold" icon="shield-check">
-        <form action="{{ route('settings.approval-matrix.store') }}" method="POST" class="p-6 text-left">
+        <form action="{{ route('settings.approval-matrix.store') }}" method="POST" class="p-4 text-left">
             @csrf
             <div class="grid grid-cols-2 gap-4">
                 <div class="col-span-2 md:col-span-1">
@@ -146,7 +146,7 @@
 
     <!-- Edit Matrix Modal -->
     <x-confirm-modal id="editMatrixModal" title="Edit Aturan Approval" message="Perbarui peran atau ambang batas nominal." confirmColor="blue" icon="pencil-square">
-        <form id="editMatrixForm" method="POST" class="p-6 text-left">
+        <form id="editMatrixForm" method="POST" class="p-4 text-left">
             @csrf
             @method('PUT')
             <div class="space-y-4">
@@ -210,3 +210,5 @@
         }
     </script>
 </x-app-layout>
+
+

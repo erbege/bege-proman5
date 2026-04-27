@@ -33,10 +33,10 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">            <!-- Approval Progress -->
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">            <!-- Approval Progress -->
             @if($po->status !== 'draft' && $po->status !== 'rejected')
-                <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-6">
+                <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-4">
                     <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Progres Persetujuan</h3>
                     <div class="relative">
                         <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200 dark:bg-dark-700">
@@ -60,9 +60,9 @@
             @endif
 
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="p-4 text-gray-900 dark:text-gray-100">
                     <!-- PO Header Info -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Supplier</p>
                             <p class="font-bold text-lg text-gold-600">{{ $po->supplier->name }}</p>
@@ -104,24 +104,24 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Material</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Qty</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Satuan</th>
-                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total</th>
+                                    <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Material</th>
+                                    <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Qty</th>
+                                    <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Satuan</th>
+                                    <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach($po->items as $item)
                                     <tr>
-                                        <td class="px-4 py-3">
+                                        <td class="px-3 py-1.5">
                                             <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $item->material->name }}</div>
                                             @if($item->notes)
                                                 <div class="text-xs text-gray-500">{{ $item->notes }}</div>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-3 text-right text-sm text-gray-900 dark:text-white">{{ number_format($item->quantity, 2) }} {{ $item->material->unit }}</td>
-                                        <td class="px-4 py-3 text-right text-sm text-gray-900 dark:text-white">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
-                                        <td class="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
+                                        <td class="px-3 py-1.5 text-right text-sm text-gray-900 dark:text-white">{{ number_format($item->quantity, 2) }} {{ $item->material->unit }}</td>
+                                        <td class="px-3 py-1.5 text-right text-sm text-gray-900 dark:text-white">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                                        <td class="px-3 py-1.5 text-right text-sm font-bold text-gray-900 dark:text-white">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -143,8 +143,8 @@
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td colspan="3" class="px-4 py-3 text-right text-base font-bold text-gray-900 dark:text-white">Total Akhir</td>
-                                    <td class="px-4 py-3 text-right text-base font-bold text-blue-600 dark:text-blue-400">{{ $po->formatted_total_amount }}</td>
+                                    <td colspan="3" class="px-3 py-1.5 text-right text-base font-bold text-gray-900 dark:text-white">Total Akhir</td>
+                                    <td class="px-3 py-1.5 text-right text-base font-bold text-blue-600 dark:text-blue-400">{{ $po->formatted_total_amount }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -173,7 +173,7 @@
                 @endphp
 
                 @if($canApprove)
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6 border-l-4 border-gold-500">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 mb-6 border-l-4 border-gold-500">
                         <div class="flex justify-between items-center">
                             <div>
                                 <h3 class="text-md font-bold text-gray-900 dark:text-white">Menunggu Persetujuan Anda</h3>
@@ -205,7 +205,7 @@
 
             <!-- Audit Trail / Approval History -->
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
+                <div class="p-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
                         <x-heroicon-o-clock class="w-5 h-5 mr-2 text-gray-400" />
                         Riwayat Persetujuan & Aktivitas
@@ -292,7 +292,7 @@
     <!-- Approve PO Modal -->
     <x-confirm-modal id="approvePOModal" title="Approve Purchase Order"
         message="Apakah Anda yakin ingin menyetujui PO ini untuk Level {{ $po->current_approval_level }}?" confirmColor="green" icon="check">
-        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-6">
+        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-4">
             @csrf
             <input type="hidden" name="status" value="approved">
             
@@ -313,7 +313,7 @@
     <!-- Reject PO Modal -->
     <x-confirm-modal id="rejectPOModal" title="Reject Purchase Order"
         message="Harap masukkan alasan penolakan PO ini." confirmColor="red" icon="x-mark">
-        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-6">
+        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-4">
             @csrf
             <input type="hidden" name="status" value="rejected">
             
@@ -331,3 +331,5 @@
         </form>
     </x-confirm-modal>
 </x-app-layout>t>
+
+

@@ -18,3 +18,5 @@
     <livewire:material-usage-manager :project="$project" />
 
 </x-app-layout>
+
+

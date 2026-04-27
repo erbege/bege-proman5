@@ -20,28 +20,28 @@
 
     @include('projects.navigation')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <!-- Project Info -->
-                <div class="lg:col-span-2 space-y-6">
+                <div class="lg:col-span-2 space-y-4">
                     <!-- Overview Card -->
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Informasi Proyek</h3>
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Informasi Proyek</h3>
                             <a href="{{ route('projects.edit', $project) }}"
                                 class="inline-flex items-center px-3 py-1.5 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition ease-in-out duration-150">
                                 <x-heroicon-o-pencil-square class="w-4 h-4 mr-1" />
                                 Edit
                             </a>
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             <div>
                                 <p class="text-sm text-gray-500 dark:text-gray-400">Tipe</p>
                                 <p class="font-medium text-gray-900 dark:text-white">{{ ucfirst($project->type) }}</p>
@@ -74,8 +74,8 @@
                                     Minggu</p>
                             </div>
                             <div>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Lokasi</p>
-                                <p class="font-medium text-gray-900 dark:text-white">{{ $project->location ?? '-' }}</p>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold">Lokasi</p>
+                                <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $project->location ?? '-' }}</p>
                             </div>
                         </div>
 
@@ -88,7 +88,7 @@
                     </div>
 
                     <!-- RAB Summary -->
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Ringkasan RAB</h3>
                             <a href="{{ route('projects.rab.index', $project) }}"
@@ -96,9 +96,9 @@
                         </div>
 
                         @if($project->rabSections->count() > 0)
-                            <div class="space-y-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 @foreach($project->rabSections as $section)
-                                    <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                                    <div class="flex justify-between items-center p-2 bg-gray-50 dark:bg-dark-700/50 rounded-lg border border-gray-100 dark:border-dark-700">
                                         <div>
                                             <p class="font-medium text-gray-900 dark:text-white">{{ $section->code }}.
                                                 {{ $section->name }}
@@ -129,18 +129,18 @@
                 </div>
 
                 <!-- Sidebar -->
-                <div class="space-y-6">
+                <div class="space-y-4">
                     <!-- Contract Value -->
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Nilai Kontrak</h3>
-                        <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
+                        <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mb-1">Nilai Kontrak</h3>
+                        <p class="text-xl font-black text-blue-600 dark:text-blue-400">
                             {{ $project->formatted_contract_value }}
                         </p>
                     </div>
 
                     <!-- Total Progress Circular Indicator -->
                     @php $totalProgress = $project->total_progress ?? 0; @endphp
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">Progress Keseluruhan</h3>
                         <div class="flex flex-col items-center justify-center">
                             <!-- Circular Progress SVG -->
@@ -189,7 +189,7 @@
                     </div>
 
                     <!-- Financial Health -->
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 {{ $financialMetrics['cost_variance'] >= 0 ? 'border-green-500' : 'border-red-500' }}">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 border-l-4 {{ $financialMetrics['cost_variance'] >= 0 ? 'border-green-500' : 'border-red-500' }}">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kesehatan Keuangan</h3>
                         <div class="space-y-4">
                             <div>
@@ -227,7 +227,7 @@
                     </div>
 
                     <!-- Quick Actions -->
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>
                         <div class="space-y-2">
                             <a href="{{ route('projects.rab.import', $project) }}"
@@ -264,12 +264,12 @@
                     </div>
 
                     <!-- Team Members -->
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Tim Proyek</h3>
                         @if($project->team->count() > 0)
                             <div class="space-y-3">
                                 @foreach($project->team as $member)
-                                    <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                                    <div class="flex items-center justify-between p-2 bg-gray-50 dark:bg-dark-700 rounded-lg">
                                         <div class="flex items-center">
                                             <div class="w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center text-white text-sm font-medium">
                                                 {{ strtoupper(substr($member->name, 0, 1)) }}
@@ -299,7 +299,7 @@
                     </div>
 
                     <!-- Created By -->
-                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                         <p class="text-sm text-gray-500 dark:text-gray-400">Dibuat oleh</p>
                         <p class="font-medium text-gray-900 dark:text-white">{{ $project->creator->name }}</p>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -311,3 +311,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

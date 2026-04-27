@@ -14,8 +14,8 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="poForm()">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4" x-data="poForm()">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <form action="{{ route('projects.po.store', $project) }}" method="POST">
                 @csrf
 
@@ -24,11 +24,11 @@
                     <input type="hidden" name="pr_ids[]" :value="id">
                 </template>
 
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <!-- Left Column: Form -->
                     <div class="lg:col-span-2 space-y-6">
                         <!-- Header Box -->
-                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-6">
+                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-4">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Informasi Order</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
@@ -65,7 +65,7 @@
                         </div>
 
                         <!-- Items Box -->
-                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-6">
+                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Item Order</h3>
                                 <div class="space-x-2">
@@ -149,7 +149,7 @@
 
                     <!-- Right Column: Summary -->
                     <div class="space-y-6">
-                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-6">
+                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-4">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Ringkasan</h3>
 
                             <div class="flex justify-between mb-2">
@@ -195,7 +195,7 @@
                         </div>
 
                         <!-- Selected PR Info -->
-                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-6"
+                        <div class="bg-white dark:bg-dark-800 shadow sm:rounded-lg p-4"
                             x-show="selectedPrInfo.length > 0">
                             <h4 class="text-sm font-medium text-gray-500 mb-2">PR Terpilih:</h4>
                             <ul class="list-disc list-inside text-sm text-gray-700 dark:text-gray-300">
@@ -223,7 +223,7 @@
                             <x-heroicon-o-x-circle class="w-6 h-6" />
                         </button>
                     </div>
-                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                                 <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white"
@@ -268,7 +268,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button type="button" @click="importPrs()"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
                             Import Selected
@@ -359,3 +359,5 @@
         }
     </script>
 </x-app-layout>
+
+

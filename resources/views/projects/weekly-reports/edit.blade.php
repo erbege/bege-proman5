@@ -29,8 +29,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
             
             @if (session('success'))
                 <div class="p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 rounded-lg">
@@ -39,7 +39,7 @@
             @endif
 
             <!-- Section 1: Cover -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6" x-data="coverEditor()" x-cloak>
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4" x-data="coverEditor()" x-cloak>
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                         <span class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">1</span>
@@ -61,7 +61,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Judul Cover</label>
@@ -130,7 +130,7 @@
             </div>
 
             <!-- Section 2: Kumulatif Progress -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6" x-data="cumulativeEditor()" x-cloak>
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4" x-data="cumulativeEditor()" x-cloak>
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                         <span class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">2</span>
@@ -241,7 +241,7 @@
 
                             <template x-if="!data || !data.sections">
                                 <tr>
-                                    <td colspan="11" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Data progress tidak tersedia.</td>
+                                    <td colspan="11" class="px-3 py-1.5 text-center text-gray-500 dark:text-gray-400">Data progress tidak tersedia.</td>
                                 </tr>
                             </template>
                         </tbody>
@@ -250,7 +250,7 @@
             </div>
 
             <!-- Section 3: Detail Progress -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                         <span class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">3</span>
@@ -293,7 +293,7 @@
             </div>
 
             <!-- Section 4: Project Documentations -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6" x-data="documentationsEditor()" x-cloak>
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4" x-data="documentationsEditor()" x-cloak>
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                         <span class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">4</span>
@@ -400,7 +400,7 @@
             </div>
 
             <!-- Section 5: Activity and Problems -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6" x-data="activitiesEditor()" x-cloak>
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4" x-data="activitiesEditor()" x-cloak>
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
                         <span class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">5</span>
@@ -422,7 +422,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Aktivitas Minggu Ini</label>
                         <textarea x-model="formData.activities" @input="hasChanges = true" rows="6" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-dark-700 dark:text-white focus:ring-primary-500 focus:border-primary-500" placeholder="Deskripsi aktivitas yang dilakukan pada minggu ini..."></textarea>
@@ -803,3 +803,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

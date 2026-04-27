@@ -14,15 +14,15 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
+                <div class="p-4 text-gray-900 dark:text-gray-100">
                     <form action="{{ route('projects.mr.store', $project) }}" method="POST" x-data="mrForm()">
                         @csrf
 
                         <!-- Header Form -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                             <div>
                                 <x-input-label for="request_date" value="Tanggal Permintaan" />
                                 <x-text-input id="request_date" name="request_date" type="date"
@@ -142,3 +142,5 @@
         }
     </script>
 </x-app-layout>
+
+

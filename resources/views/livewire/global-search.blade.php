@@ -21,7 +21,7 @@
                             <x-heroicon-o-magnifying-glass class="h-5 w-5 text-gray-400" />
                         </div>
                         <input type="text" x-ref="searchInput" wire:model.live.debounce.300ms="query"
-                            class="w-full pl-12 pr-4 py-4 text-lg bg-transparent border-0 border-b border-gray-200 dark:border-dark-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 focus:outline-none"
+                            class="w-full pl-12 pr-4 py-3 text-base bg-transparent border-0 border-b border-gray-200 dark:border-dark-700 text-gray-900 dark:text-white placeholder-gray-400 focus:ring-0 focus:outline-none"
                             placeholder="Cari proyek, PO, PR, material, supplier...">
 
                         {{-- Loading --}}
@@ -52,7 +52,7 @@
                                 @foreach($groupedResults as $groupName => $groupItems)
                                     {{-- Group Header --}}
                                     <div
-                                        class="px-4 py-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider bg-gray-50 dark:bg-dark-700/50">
+                                        class="px-3 py-1 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest bg-gray-50 dark:bg-dark-700/50">
                                         {{ $groupName }}
                                     </div>
                                     @foreach($groupItems as $result)
@@ -61,10 +61,10 @@
                                             $isSelected = $selectedIndex === $globalIndex;
                                         @endphp
                                         <a href="{{ $result['url'] }}"
-                                            class="flex items-center px-4 py-3 transition-colors group {{ $isSelected ? 'bg-gold-50 dark:bg-gold-900/20' : 'hover:bg-gray-50 dark:hover:bg-dark-700' }}"
+                                            class="flex items-center px-3 py-1 transition-colors group {{ $isSelected ? 'bg-gold-50 dark:bg-gold-900/20' : 'hover:bg-gray-50 dark:hover:bg-dark-700' }}"
                                             wire:key="result-{{ $globalIndex }}">
                                             <div
-                                                class="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center
+                                                class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center
                                                                                                                                                                                         {{ $result['color'] === 'gold' ? 'bg-gold-100 dark:bg-gold-900/30 text-gold-600 dark:text-gold-400' : '' }}
                                                                                                                                                                                         {{ $result['color'] === 'blue' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : '' }}
                                                                                                                                                                                         {{ $result['color'] === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : '' }}
@@ -73,21 +73,21 @@
                                                                                                                                                                                         {{ $result['color'] === 'indigo' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' : '' }}
                                                                                                                                                                                         {{ $result['color'] === 'teal' ? 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400' : '' }}">
                                                 @if($result['icon'] === 'folder')
-                                                    <x-heroicon-o-folder class="w-5 h-5" />
+                                                    <x-heroicon-o-folder class="w-4 h-4" />
                                                 @elseif($result['icon'] === 'cube')
-                                                    <x-heroicon-o-cube class="w-5 h-5" />
+                                                    <x-heroicon-o-cube class="w-4 h-4" />
                                                 @elseif($result['icon'] === 'truck')
-                                                    <x-heroicon-o-truck class="w-5 h-5" />
+                                                    <x-heroicon-o-truck class="w-4 h-4" />
                                                 @elseif($result['icon'] === 'user-group')
-                                                    <x-heroicon-o-user-group class="w-5 h-5" />
+                                                    <x-heroicon-o-user-group class="w-4 h-4" />
                                                 @elseif($result['icon'] === 'document-text')
-                                                    <x-heroicon-o-document-text class="w-5 h-5" />
+                                                    <x-heroicon-o-document-text class="w-4 h-4" />
                                                 @elseif($result['icon'] === 'document-check')
-                                                    <x-heroicon-o-document-check class="w-5 h-5" />
+                                                    <x-heroicon-o-document-check class="w-4 h-4" />
                                                 @elseif($result['icon'] === 'document-currency-dollar')
-                                                    <x-heroicon-o-document-currency-dollar class="w-5 h-5" />
+                                                    <x-heroicon-o-document-currency-dollar class="w-4 h-4" />
                                                 @elseif($result['icon'] === 'list-bullet')
-                                                    <x-heroicon-o-list-bullet class="w-5 h-5" />
+                                                    <x-heroicon-o-list-bullet class="w-4 h-4" />
                                                 @endif
                                             </div>
                                             <div class="ml-3 flex-1 min-w-0">
@@ -128,7 +128,7 @@
                     </div>
 
                     {{-- Footer --}}
-                    <div class="px-4 py-3 border-t border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-700/50">
+                    <div class="px-3 py-1.5 border-t border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-700/50">
                         <div class="flex items-center justify-between text-xs text-gray-400">
                             <div class="flex items-center gap-4">
                                 <span><kbd class="px-1.5 py-0.5 bg-white dark:bg-dark-600 rounded shadow-sm">↑↓</kbd>
@@ -145,3 +145,5 @@
         </div>
     @endif
 </div>
+
+

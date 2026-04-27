@@ -5,14 +5,14 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <form method="POST" action="{{ route('projects.rab.items.update', [$project, $item]) }}" class="p-6">
+                <form method="POST" action="{{ route('projects.rab.items.update', [$project, $item]) }}" class="p-4">
                     @csrf
                     @method('PUT')
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <x-input-label for="rab_section_id" :value="__('Bagian Pekerjaan')" />
                             <select id="rab_section_id" name="rab_section_id"
@@ -101,3 +101,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

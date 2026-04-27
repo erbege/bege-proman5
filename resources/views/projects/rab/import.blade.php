@@ -5,9 +5,9 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                 <form method="POST" action="{{ route('projects.rab.process-import', $project) }}"
                     enctype="multipart/form-data">
                     @csrf
@@ -144,3 +144,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

@@ -49,8 +49,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
             @if (session('success'))
                 <div
                     class="p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-700 text-green-700 dark:text-green-300 rounded-lg">
@@ -59,14 +59,14 @@
             @endif
 
             <!-- Section 1: Cover -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
+                <h3 class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 mb-3 flex items-center">
                     <span
-                        class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">1</span>
+                        class="inline-flex items-center justify-center w-5 h-5 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-[10px] font-bold">1</span>
                     Cover
                 </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="space-y-4">
                         <div>
                             <span class="text-sm text-gray-500 dark:text-gray-400">Judul:</span>
@@ -114,12 +114,12 @@
             </div>
 
             <!-- Section 2: Cumulative Progress -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6"
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3"
                 x-data="cumulativeEditor()" x-cloak>
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 flex items-center">
                         <span
-                            class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">2</span>
+                            class="inline-flex items-center justify-center w-5 h-5 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-[10px] font-bold">2</span>
                         Kumulatif Progress
                     </h3>
                     <div class="flex items-center space-x-2">
@@ -209,7 +209,7 @@
                                     :class="row.type === 'header' ? 'bg-gray-50 dark:bg-dark-700 font-semibold' : 'hover:bg-gray-50 dark:hover:bg-dark-700'">
                                     <!-- Header row: colspan 11 -->
                                     <template x-if="row.type === 'header'">
-                                        <td colspan="11" class="px-3 py-2 border text-gray-900 dark:text-white"
+                                        <td colspan="11" class="px-2 py-1.5 border text-gray-900 dark:text-white text-xs font-bold"
                                             x-html="row.indent + row.label"></td>
                                     </template>
                                     <!-- Item row: individual cells -->
@@ -303,7 +303,7 @@
 
                             <template x-if="!data || !data.sections">
                                 <tr>
-                                    <td colspan="11" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">Data
+                                    <td colspan="11" class="px-3 py-1.5 text-center text-gray-500 dark:text-gray-400">Data
                                         progress tidak tersedia.</td>
                                 </tr>
                             </template>
@@ -313,10 +313,10 @@
             </div>
 
             <!-- Section 3: Detail Progress -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
+                <h3 class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 mb-3 flex items-center">
                     <span
-                        class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">3</span>
+                        class="inline-flex items-center justify-center w-5 h-5 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-[10px] font-bold">3</span>
                     Detail Progress
                 </h3>
 
@@ -355,10 +355,10 @@
             </div>
 
             <!-- Section 4: Project Documentations -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
+                <h3 class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 mb-3 flex items-center">
                     <span
-                        class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">4</span>
+                        class="inline-flex items-center justify-center w-5 h-5 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-[10px] font-bold">4</span>
                     Project Documentations
                 </h3>
 
@@ -379,14 +379,14 @@
             </div>
 
             <!-- Section 5: Activity and Problems -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-3">
+                <h3 class="text-[10px] font-black uppercase text-gray-400 dark:text-gray-500 mb-3 flex items-center">
                     <span
-                        class="inline-flex items-center justify-center w-8 h-8 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-sm font-bold">5</span>
+                        class="inline-flex items-center justify-center w-5 h-5 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 rounded-full mr-2 text-[10px] font-bold">5</span>
                     Activity and Problems
                 </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <h4 class="font-medium text-gray-900 dark:text-white mb-2">Aktivitas Minggu Ini</h4>
                         <div
@@ -572,3 +572,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

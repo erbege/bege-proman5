@@ -1,6 +1,6 @@
 <div>
     {{-- Header with filters and actions --}}
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-dark-700">
+    <div class="flex items-center justify-between px-3 py-1.5 border-b border-gray-100 dark:border-dark-700">
         <div class="flex items-center space-x-4">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Semua Notifikasi</h3>
             @if($unreadCount > 0)
@@ -31,11 +31,11 @@
     {{-- Filter Tabs --}}
     <div class="flex border-b border-gray-100 dark:border-dark-700">
         <button wire:click="setFilter('all')"
-            class="px-6 py-3 text-sm font-medium transition-colors {{ $filter === 'all' ? 'text-gold-600 dark:text-gold-400 border-b-2 border-gold-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+            class="px-3 py-1.5 text-sm font-medium transition-colors {{ $filter === 'all' ? 'text-gold-600 dark:text-gold-400 border-b-2 border-gold-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
             Semua
         </button>
         <button wire:click="setFilter('unread')"
-            class="px-6 py-3 text-sm font-medium transition-colors {{ $filter === 'unread' ? 'text-gold-600 dark:text-gold-400 border-b-2 border-gold-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+            class="px-3 py-1.5 text-sm font-medium transition-colors {{ $filter === 'unread' ? 'text-gold-600 dark:text-gold-400 border-b-2 border-gold-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
             Belum Dibaca
             @if($unreadCount > 0)
                 <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
@@ -51,7 +51,7 @@
             <div class="relative group {{ is_null($notification->read_at) ? 'bg-gold-50/50 dark:bg-gold-900/5' : '' }}">
                 <a href="{{ $notification->data['url'] ?? '#' }}" 
                    wire:click="markAsRead('{{ $notification->id }}')"
-                   class="block px-6 py-4 hover:bg-gray-50 dark:hover:bg-dark-700/50 transition-colors">
+                   class="block px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-dark-700/50 transition-colors">
                     <div class="flex items-start gap-4">
                         {{-- Icon --}}
                         <div class="flex-shrink-0">
@@ -136,8 +136,10 @@
 
     {{-- Pagination --}}
     @if($notifications->hasPages())
-        <div class="px-6 py-4 border-t border-gray-100 dark:border-dark-700">
+        <div class="px-3 py-1.5 border-t border-gray-100 dark:border-dark-700">
             {{ $notifications->links() }}
         </div>
     @endif
 </div>
+
+

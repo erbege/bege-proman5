@@ -1,8 +1,8 @@
 <div>
     @include('projects.navigation')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if (session()->has('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
@@ -10,7 +10,7 @@
             @endif
 
             {{-- Header --}}
-            <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Purchase Requests -
                         {{ $project->name }}
@@ -45,7 +45,7 @@
             </div>
 
             {{-- Filters --}}
-            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-4">
+            <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-4 p-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2">
                         <div class="relative">
@@ -75,25 +75,25 @@
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     No. PR</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Tanggal</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Required</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Item</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Priority</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Status</th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Aksi</th>
                             </tr>
                         </thead>
@@ -101,30 +101,30 @@
                             @forelse($prs as $pr)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                                        class="px-3 py-1.5 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $pr->pr_number }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $pr->request_date->format('d M Y') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $pr->required_date->format('d M Y') }}
                                     </td>
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">
+                                        class="px-3 py-1.5 whitespace-nowrap text-sm text-center text-gray-500 dark:text-gray-400">
                                         {{ $pr->items->count() }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-center">
                                         @php $priorityColors = ['low' => 'bg-gray-100 text-gray-800', 'normal' => 'bg-blue-100 text-blue-800', 'high' => 'bg-orange-100 text-orange-800', 'urgent' => 'bg-red-100 text-red-800']; @endphp
                                         <span
                                             class="px-2 py-1 text-xs font-medium rounded-full {{ $priorityColors[$pr->priority] ?? 'bg-gray-100 text-gray-800' }}">{{ ucfirst($pr->priority) }}</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-center">
                                         @php $statusColors = ['pending' => 'bg-yellow-100 text-yellow-800', 'approved' => 'bg-green-100 text-green-800', 'rejected' => 'bg-red-100 text-red-800', 'completed' => 'bg-blue-100 text-blue-800']; @endphp
                                         <span
                                             class="px-2 py-1 text-xs font-medium rounded-full {{ $statusColors[$pr->status] ?? 'bg-gray-100 text-gray-800' }}">{{ ucfirst($pr->status) }}</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm space-x-2">
                                         @if($pr->status === 'pending')
                                             <button wire:click="openApprovalModal({{ $pr->id }}, 'approved')"
                                                 class="text-green-600 hover:text-green-900 dark:text-green-400">Approve</button>
@@ -159,7 +159,7 @@
                 <div
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
                     <form wire:submit="save">
-                        <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                        <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Buat Purchase Request</h3>
                                 <button type="button" wire:click="closeModal"
@@ -292,7 +292,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                             <x-primary-button type="submit" class="sm:ml-3"
                                 wire:loading.attr="disabled">Simpan</x-primary-button>
                             <button type="button" wire:click="closeModal"
@@ -317,7 +317,7 @@
                             <x-heroicon-o-x-circle class="w-6 h-6" />
                         </button>
                     </div>
-                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                         <div class="sm:flex sm:items-start">
                             <div
                                 class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full {{ $approvalAction === 'approved' ? 'bg-green-100' : 'bg-red-100' }} sm:mx-0 sm:h-10 sm:w-10">
@@ -335,7 +335,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button wire:click="processApproval"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 {{ $approvalAction === 'approved' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700' }} text-base font-medium text-white sm:ml-3 sm:w-auto sm:text-sm">{{ $approvalAction === 'approved' ? 'Approve' : 'Reject' }}</button>
                         <button wire:click="closeApprovalModal"
@@ -346,3 +346,5 @@
         </div>
     @endif
 </div>
+
+

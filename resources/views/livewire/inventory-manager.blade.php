@@ -1,5 +1,5 @@
-<div class="py-12">
-    <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+<div class="py-4">
+    <div class="max-w-full mx-auto sm:px-6 lg:px-8">
         {{-- Flash Messages --}}
         @if (session()->has('success'))
             <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">{{ session('success') }}
@@ -10,16 +10,16 @@
         @endif
 
         {{-- Header --}}
-        <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-                <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">Manajemen Stok (Inventory)</h2>
-                <p class="text-sm text-gray-500 dark:text-gray-400">Pantau dan sesuaikan stok material per proyek</p>
+                <h2 class="text-lg font-black uppercase text-gray-800 dark:text-gray-200">Manajemen Stok</h2>
+                <p class="text-xs text-gray-500 dark:text-gray-400">Pantau dan sesuaikan stok material per proyek</p>
             </div>
         </div>
 
         {{-- Filter & Tabs --}}
-        <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6">
-            <div class="p-4">
+        <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-4">
+            <div class="p-3">
                 <div class="flex flex-col md:flex-row md:items-end gap-4">
                     {{-- Search --}}
                     <div class="flex-1">
@@ -51,12 +51,12 @@
                 <div class="mt-4 border-b border-gray-200 dark:border-gray-700">
                     <nav class="-mb-px flex space-x-8">
                         <button wire:click="setViewMode('stock')"
-                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $viewMode === 'stock' ? 'border-gold-500 text-gold-600 dark:text-gold-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400' }}">
-                            <x-heroicon-o-cube class="w-5 h-5 inline mr-2" />Data Stok
+                            class="whitespace-nowrap py-2 px-1 border-b-2 font-black text-[10px] uppercase tracking-widest {{ $viewMode === 'stock' ? 'border-gold-500 text-gold-600 dark:text-gold-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400' }}">
+                            <x-heroicon-o-cube class="w-4 h-4 inline mr-2" />Data Stok
                         </button>
                         <button wire:click="setViewMode('history')"
-                            class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm {{ $viewMode === 'history' ? 'border-gold-500 text-gold-600 dark:text-gold-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400' }}">
-                            <x-heroicon-o-clock class="w-5 h-5 inline mr-2" />Riwayat Log
+                            class="whitespace-nowrap py-2 px-1 border-b-2 font-black text-[10px] uppercase tracking-widest {{ $viewMode === 'history' ? 'border-gold-500 text-gold-600 dark:text-gold-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400' }}">
+                            <x-heroicon-o-clock class="w-4 h-4 inline mr-2" />Riwayat Log
                         </button>
                     </nav>
                 </div>
@@ -71,38 +71,38 @@
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Proyek</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Material</th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Stok Saat Ini</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($inventories as $inventory)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $inventory->project->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-3 py-1.5 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900 dark:text-white">
                                             {{ $inventory->material->name }}</div>
                                         <div class="text-sm text-gray-500 dark:text-gray-400">{{ $inventory->material->code }}
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm">
                                         <span
                                             class="font-bold {{ $inventory->quantity > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
                                             {{ number_format($inventory->quantity, 2) }}
                                         </span>
                                         <span class="text-gray-500 dark:text-gray-400">{{ $inventory->material->unit }}</span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-center">
                                         <button wire:click="openAdjustModal({{ $inventory->id }})"
                                             class="text-gold-600 hover:text-gold-900 dark:text-gold-400 text-sm font-medium">Sesuaikan</button>
                                     </td>
@@ -128,38 +128,38 @@
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Waktu</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Proyek</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Material</th>
                                 <th
-                                    class="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Tipe</th>
                                 <th
-                                    class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Qty</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Catatan</th>
                                 <th
-                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     User</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($logs as $log)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-dark-700">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $log->created_at->format('d/m/Y H:i') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $log->inventory->project->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                                         {{ $log->inventory->material->name ?? 'N/A' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-center">
                                         @if($log->type === 'in')
                                             <span
                                                 class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">Masuk</span>
@@ -172,12 +172,12 @@
                                         @endif
                                     </td>
                                     <td
-                                        class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium {{ $log->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                        class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-medium {{ $log->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
                                         {{ $log->quantity > 0 ? '+' : '' }}{{ number_format($log->quantity, 2) }}
                                     </td>
-                                    <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
+                                    <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
                                         {{ $log->notes ?? '-' }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                         {{ $log->user->name ?? 'System' }}</td>
                                 </tr>
                             @empty
@@ -203,7 +203,7 @@
                 <div
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <form wire:submit="saveAdjustment">
-                        <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                        <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Sesuaikan Stok</h3>
                                 <button type="button" wire:click="closeAdjustModal"
@@ -244,7 +244,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                             <x-primary-button type="submit" class="sm:ml-3"
                                 wire:loading.attr="disabled">Simpan</x-primary-button>
                             <button type="button" wire:click="closeAdjustModal"
@@ -256,3 +256,5 @@
         </div>
     @endif
 </div>
+
+

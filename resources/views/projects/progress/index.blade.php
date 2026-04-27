@@ -24,3 +24,5 @@
     <livewire:progress-report-manager :project="$project" />
 
 </x-app-layout>
+
+

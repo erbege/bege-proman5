@@ -48,8 +48,8 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if(session('success'))
                 <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
                     {{ session('success') }}
@@ -57,13 +57,13 @@
             @endif
 
             <!-- S-Curve Chart -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 mb-6">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Grafik Kurva S</h3>
                 <div id="scurve-chart" style="height: 400px;"></div>
             </div>
 
             <!-- Schedule Table with Tabs -->
-            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4">
                 <!-- Tab Switcher (Chips) -->
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Data Mingguan</h3>
@@ -85,46 +85,46 @@
                         <thead class="bg-gray-50 dark:bg-dark-700">
                             <tr>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Minggu</th>
                                 <th
-                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Periode</th>
                                 <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Rencana (%)</th>
                                 <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Realisasi (%)</th>
                                 <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Kum. Rencana</th>
                                 <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Kum. Realisasi</th>
                                 <th
-                                    class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
+                                    class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                                     Deviasi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($schedules as $schedule)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                    <td class="px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+                                    <td class="px-3 py-1.5 text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $schedule->week_label }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                                    <td class="px-3 py-1.5 text-sm text-gray-500 dark:text-gray-400">
                                         {{ $schedule->week_start->format('d M') }} -
                                         {{ $schedule->week_end->format('d M Y') }}
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                         {{ number_format($schedule->planned_weight, 2) }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                         {{ number_format($schedule->actual_weight, 2) }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                         {{ number_format($schedule->planned_cumulative, 2) }}</td>
-                                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white text-right">
+                                    <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white text-right">
                                         {{ number_format($schedule->actual_cumulative, 2) }}</td>
-                                    <td class="px-4 py-3 text-sm text-right font-medium 
+                                    <td class="px-3 py-1.5 text-sm text-right font-medium 
                                                 @if($schedule->deviation > 0) text-green-600 dark:text-green-400
                                                 @elseif($schedule->deviation < 0) text-red-600 dark:text-red-400
                                                 @else text-gray-900 dark:text-white @endif">
@@ -369,3 +369,5 @@
         </script>
     @endpush
 </x-app-layout>
+
+

@@ -1,8 +1,8 @@
 <div>
 
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             @if (session()->has('success'))
                 <div
                     class="mb-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-lg flex items-center">
@@ -65,13 +65,13 @@
                     </div>
                 </div>
 
-                <div class="p-6">
+                <div class="p-4">
                     @if($reports->count() > 0)
                         <!-- LIST VIEW -->
                         @if($viewMode === 'list')
                             <div class="space-y-4">
                                 @foreach($reports as $report)
-                                            <div class="border dark:border-dark-700 rounded-lg p-4 hover:shadow-md transition-shadow duration-200 hover:border-gold-300 dark:hover:border-gold-700 cursor-pointer"
+                                            <div class="border dark:border-dark-700 rounded-lg p-3 hover:shadow-md transition-shadow duration-200 hover:border-gold-300 dark:hover:border-gold-700 cursor-pointer"
                                                 wire:click="showDetail({{ $report->id }})"
                                                 wire:loading.class="opacity-50 pointer-events-none"
                                                 wire:target="showDetail({{ $report->id }})">
@@ -152,7 +152,7 @@
                                 @foreach($reports as $report)
                                     <div class="border dark:border-dark-700 rounded-xl overflow-hidden hover:shadow-lg transition-all duration-200 hover:border-gold-300 dark:hover:border-gold-700 cursor-pointer"
                                         wire:click="showDetail({{ $report->id }})">
-                                        <div class="bg-gradient-to-r from-gold-500 to-gold-600 px-4 py-3 text-white">
+                                        <div class="bg-gradient-to-r from-gold-500 to-gold-600 px-3 py-1.5 text-white">
                                             <div class="flex justify-between items-center">
                                                 <span class="font-bold">{{ $report->report_date->format('d M Y') }}</span>
                                                 @if($report->weather)
@@ -218,22 +218,22 @@
                                     <thead class="bg-gray-50 dark:bg-dark-700">
                                         <tr>
                                             <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 Tanggal</th>
                                             <th
-                                                class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 Pekerjaan</th>
                                             <th
-                                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 Progress</th>
                                             <th
-                                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 Cuaca</th>
                                             <th
-                                                class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                class="px-3 py-1.5 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 Pekerja</th>
                                             <th
-                                                class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                                class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                                 Aksi</th>
                                         </tr>
                                     </thead>
@@ -241,16 +241,16 @@
                                         @foreach($reports as $report)
                                             <tr class="hover:bg-gray-50 dark:hover:bg-dark-700/50 transition cursor-pointer"
                                                 wire:click="showDetail({{ $report->id }})">
-                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                <td class="px-3 py-1.5 whitespace-nowrap">
                                                     <span
                                                         class="text-sm font-medium text-gray-900 dark:text-white">{{ $report->report_date->format('d M Y') }}</span>
                                                 </td>
-                                                <td class="px-4 py-3">
+                                                <td class="px-3 py-1.5">
                                                     <span class="text-sm text-gray-900 dark:text-white truncate block max-w-xs">
                                                         {{ $report->rabItem->work_name ?? '-' }}
                                                     </span>
                                                 </td>
-                                                <td class="px-4 py-3 text-center">
+                                                <td class="px-3 py-1.5 text-center">
                                                     <div class="flex items-center justify-center space-x-2">
                                                         <div class="w-16 bg-gray-200 dark:bg-dark-600 rounded-full h-2">
                                                             <div class="bg-gold-500 h-2 rounded-full"
@@ -260,14 +260,14 @@
                                                             class="text-sm font-medium text-gray-900 dark:text-white">{{ number_format($report->progress_percentage, 0) }}%</span>
                                                     </div>
                                                 </td>
-                                                <td class="px-4 py-3 text-center">
+                                                <td class="px-3 py-1.5 text-center">
                                                     @php $weatherIcons = ['sunny' => '☀️', 'cloudy' => '☁️', 'rainy' => '🌧️', 'stormy' => '⛈️']; @endphp
                                                     <span>{{ $weatherIcons[$report->weather] ?? '-' }}</span>
                                                 </td>
-                                                <td class="px-4 py-3 text-center text-sm text-gray-900 dark:text-white">
+                                                <td class="px-3 py-1.5 text-center text-sm text-gray-900 dark:text-white">
                                                     {{ $report->workers_count ?? '-' }}
                                                 </td>
-                                                <td class="px-4 py-3 text-right">
+                                                <td class="px-3 py-1.5 text-right">
                                                     <div class="flex justify-end space-x-1">
                                                         <button type="button" wire:click="showDetail({{ $report->id }})"
                                                             class="p-1.5 text-gray-500 hover:text-gold-600 hover:bg-gold-50 dark:hover:bg-gold-900/20 rounded transition">
@@ -326,7 +326,7 @@
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
                     <form wire:submit="save">
                         <div
-                            class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6 max-h-[80vh] overflow-y-auto scrollbar-overlay">
+                            class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4 max-h-[80vh] overflow-y-auto scrollbar-overlay">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Tambah Laporan Progress</h3>
                                 <button type="button" wire:click="closeModal"
@@ -425,7 +425,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                             <x-primary-button type="submit" class="sm:ml-3"
                                 wire:loading.attr="disabled">Simpan</x-primary-button>
                             <button type="button" wire:click="closeModal"
@@ -447,7 +447,7 @@
                     class="inline-block align-bottom bg-white dark:bg-dark-800 rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
 
                     <!-- Modal Header -->
-                    <div class="bg-gradient-to-r from-gold-500 to-gold-600 px-6 py-4">
+                    <div class="bg-gradient-to-r from-gold-500 to-gold-600 px-3 py-1.5">
                         <div class="flex justify-between items-center">
                             <div>
                                 <h3 class="text-lg font-bold text-white">{{ $selectedReport->report_date->format('d F Y') }}
@@ -460,7 +460,7 @@
                         </div>
                     </div>
 
-                    <div class="p-6">
+                    <div class="p-4">
                         <!-- Stats Grid -->
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                             <div class="bg-gray-50 dark:bg-dark-700 rounded-lg p-3 text-center">
@@ -604,7 +604,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-gray-50 dark:bg-dark-700 px-6 py-4 flex justify-end space-x-3">
+                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 flex justify-end space-x-3">
                         <button wire:click="closeDetailModal"
                             class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-lg transition">
                             Tutup
@@ -628,7 +628,7 @@
                             <x-heroicon-o-x-circle class="w-6 h-6" />
                         </button>
                     </div>
-                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                    <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                         <div class="sm:flex sm:items-start">
                             <div
                                 class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -641,7 +641,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <div class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                         <button wire:click="delete"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 sm:ml-3 sm:w-auto sm:text-sm">Hapus</button>
                         <button wire:click="closeDeleteModal"
@@ -652,3 +652,5 @@
         </div>
     @endif
 </div>
+
+

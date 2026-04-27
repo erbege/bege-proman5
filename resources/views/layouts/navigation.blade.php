@@ -1,6 +1,6 @@
 <nav x-data="{ open: false }" class="bg-white dark:bg-dark-900 border-b border-gray-100 dark:border-dark-800">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
@@ -302,7 +302,7 @@
                 </x-responsive-nav-link>
 
                 <!-- Mobile Theme Switcher -->
-                <div class="px-4 py-3 border-t border-gray-200 dark:border-dark-600">
+                <div class="px-3 py-1.5 border-t border-gray-200 dark:border-dark-600">
                     <span
                         class="block text-xs font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider mb-2">Tema</span>
                     <div class="flex items-center space-x-2">
@@ -333,3 +333,5 @@
         </div>
     </div>
 </nav>
+
+

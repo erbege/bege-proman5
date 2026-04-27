@@ -16,11 +16,11 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <form method="POST" action="{{ route('materials.update', $material) }}" class="p-6">
+                <form method="POST" action="{{ route('materials.update', $material) }}" class="p-4">
                     @csrf
                     @method('PUT')
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <x-input-label for="code" :value="__('Kode Material')" />
                             <x-text-input id="code" name="code" type="text" class="mt-1 block w-full"
@@ -119,3 +119,5 @@
         </form>
     </x-confirm-modal>
 </x-app-layout>
+
+

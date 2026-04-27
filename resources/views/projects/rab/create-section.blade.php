@@ -5,10 +5,10 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-2xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <form method="POST" action="{{ route('projects.rab.sections.store', $project) }}" class="p-6">
+                <form method="POST" action="{{ route('projects.rab.sections.store', $project) }}" class="p-4">
                     @csrf
 
                     <div class="mb-6">
@@ -35,3 +35,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

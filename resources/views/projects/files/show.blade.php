@@ -28,8 +28,8 @@
 
     @include('projects.navigation')
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
             {{-- Breadcrumb Navigation --}}
             <div class="mb-6">
                 <nav class="flex" aria-label="Breadcrumb">
@@ -76,12 +76,12 @@
                 </div>
             @endif
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {{-- Left: File Info & Versions --}}
                 <div class="lg:col-span-2 space-y-6">
                     {{-- File Info Card --}}
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
+                        <div class="p-4">
                             <div class="flex items-start justify-between mb-4">
                                 <div>
                                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">Informasi File</h3>
@@ -154,7 +154,7 @@
 
                     {{-- Version History --}}
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
+                        <div class="p-4">
                             <div class="flex justify-between items-center mb-4">
                                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Riwayat Versi</h3>
                                 <button type="button"
@@ -229,7 +229,7 @@
                                                         <x-heroicon-o-x-circle class="w-6 h-6" />
                                                     </button>
                                                 </div>
-                                                <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                                                <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                                                     <div class="sm:flex sm:items-start">
                                                         <div
                                                             class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -256,7 +256,7 @@
                                                     </div>
                                                 </div>
                                                 <div
-                                                    class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                    class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                                                     <form :action="rollbackAction" method="POST">
                                                         @csrf
                                                         <button type="submit"
@@ -281,7 +281,7 @@
                 {{-- Right: Comments --}}
                 <div class="space-y-6">
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
-                        <div class="p-6">
+                        <div class="p-4">
                             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                                 Feedback & Komentar
                                 @if($file->unresolved_comments_count > 0)
@@ -381,7 +381,7 @@
                     {{-- Danger Zone --}}
                     <div x-data="{ showDeleteFileModal: false }"
                         class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg border border-red-200 dark:border-red-900">
-                        <div class="p-6">
+                        <div class="p-4">
                             <h3 class="text-lg font-medium text-red-600 dark:text-red-400 mb-4">Danger Zone</h3>
                             <button type="button" @click="showDeleteFileModal = true"
                                 class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">
@@ -405,7 +405,7 @@
                                                     <x-heroicon-o-x-circle class="w-6 h-6" />
                                                 </button>
                                             </div>
-                                            <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-6">
+                                            <div class="bg-white dark:bg-dark-800 px-4 pt-5 pb-4 sm:p-4">
                                                 <div class="sm:flex sm:items-start">
                                                     <div
                                                         class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -431,7 +431,7 @@
                                                 </div>
                                             </div>
                                             <div
-                                                class="bg-gray-50 dark:bg-dark-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                                                class="bg-gray-50 dark:bg-dark-700 px-3 py-1.5 sm:px-6 sm:flex sm:flex-row-reverse">
                                                 <form action="{{ route('projects.files.destroy', [$project, $file]) }}"
                                                     method="POST">
                                                     @csrf
@@ -462,7 +462,7 @@
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75"
                 onclick="document.getElementById('versionModal').classList.add('hidden')"></div>
-            <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-lg w-full p-6">
+            <div class="relative bg-white dark:bg-dark-800 rounded-lg shadow-xl max-w-lg w-full p-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Upload Versi Baru</h3>
                 <form action="{{ route('projects.files.version', [$project, $file]) }}" method="POST"
                     enctype="multipart/form-data">
@@ -496,3 +496,5 @@
         </div>
     </div>
 </x-app-layout>
+
+

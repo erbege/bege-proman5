@@ -25,7 +25,7 @@
 
                 {{-- Storage Settings --}}
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
+                    <div class="p-4">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6">Pengaturan Penyimpanan</h3>
 
                         {{-- Storage Driver --}}
@@ -123,7 +123,7 @@
                 </div>
                 {{-- AI Configuration Settings --}}
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                    <div class="p-6">
+                    <div class="p-4">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6">
                             <x-heroicon-o-cpu-chip class="w-5 h-5 inline mr-1" />
                             Konfigurasi AI
@@ -362,3 +362,5 @@
         }
     </script>
 </x-app-layout>
+
+

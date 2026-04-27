@@ -22,14 +22,14 @@
         </div>
     </x-slot>
 
-    <div class="py-8 bg-gray-50/50 dark:bg-dark-950/50">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-4 bg-gray-50/50 dark:bg-dark-950/50">
+        <div class="max-w-full mx-auto sm:px-6 lg:px-8">
 
             <!-- Row 1: High-Level Stats (Glassmorphism inspired) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <!-- Total Projects -->
                 <div
-                    class="group bg-white dark:bg-dark-900 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
+                    class="group bg-white dark:bg-dark-900 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
                     <div
                         class="absolute top-0 right-0 w-24 h-24 bg-primary-500/5 rounded-bl-full translate-x-8 -translate-y-8 group-hover:translate-x-4 group-hover:-translate-y-4 transition-transform duration-500">
                     </div>
@@ -58,7 +58,7 @@
 
                 <!-- Active Projects -->
                 <div
-                    class="group bg-white dark:bg-dark-900 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
+                    class="group bg-white dark:bg-dark-900 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
                     <div
                         class="absolute top-0 right-0 w-24 h-24 bg-green-500/5 rounded-bl-full translate-x-8 -translate-y-8 group-hover:translate-x-4 group-hover:-translate-y-4 transition-transform duration-500">
                     </div>
@@ -87,7 +87,7 @@
 
                 <!-- Pending Approvals -->
                 <div
-                    class="group bg-white dark:bg-dark-900 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
+                    class="group bg-white dark:bg-dark-900 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
                     <div
                         class="absolute top-0 right-0 w-24 h-24 bg-orange-500/5 rounded-bl-full translate-x-8 -translate-y-8 group-hover:translate-x-4 group-hover:-translate-y-4 transition-transform duration-500">
                     </div>
@@ -118,7 +118,7 @@
 
                 <!-- Material Alerts -->
                 <div
-                    class="group bg-white dark:bg-dark-900 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300 p-6 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
+                    class="group bg-white dark:bg-dark-900 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
                     <div
                         class="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-bl-full translate-x-8 -translate-y-8 group-hover:translate-x-4 group-hover:-translate-y-4 transition-transform duration-500">
                     </div>
@@ -148,10 +148,10 @@
             </div>
 
             <!-- Row 2: Charts & Visual Intelligence -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
                 <!-- Project Status Distribution -->
                 <div
-                    class="bg-white dark:bg-dark-900 rounded-[2.5rem] shadow-sm p-8 border border-gray-100 dark:border-dark-800">
+                    class="bg-white dark:bg-dark-900 rounded-3xl shadow-sm p-4 border border-gray-100 dark:border-dark-800">
                     <div class="flex items-center justify-between mb-8">
                         <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">Alokasi
                             Status</h3>
@@ -164,7 +164,7 @@
 
                 <!-- Performance Metrics -->
                 <div
-                    class="bg-white dark:bg-dark-900 rounded-[2.5rem] shadow-sm p-8 border border-gray-100 dark:border-dark-800">
+                    class="bg-white dark:bg-dark-900 rounded-3xl shadow-sm p-4 border border-gray-100 dark:border-dark-800">
                     <div class="flex items-center justify-between mb-8">
                         <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">Efisiensi
                             Tim</h3>
@@ -177,7 +177,7 @@
 
                 <!-- Projects Progress List -->
                 <div
-                    class="bg-white dark:bg-dark-900 rounded-[2.5rem] shadow-sm p-8 border border-gray-100 dark:border-dark-800 flex flex-col">
+                    class="bg-white dark:bg-dark-900 rounded-[2.5rem] shadow-sm p-4 border border-gray-100 dark:border-dark-800 flex flex-col">
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">Live
                             Progress</h3>
@@ -213,10 +213,10 @@
             </div>
 
             <!-- Row 3: Operational Intelligence -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                 <!-- Critical Project Alerts -->
                 <div
-                    class="bg-white dark:bg-dark-900 rounded-[2.5rem] shadow-sm p-8 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
+                    class="bg-white dark:bg-dark-900 rounded-3xl shadow-sm p-4 border border-gray-100 dark:border-dark-800 relative overflow-hidden">
                     @if($projectsWithIssues->count() > 0)
                         <div
                             class="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-bl-full translate-x-12 -translate-y-12">
@@ -270,7 +270,7 @@
 
                 <!-- Recent Activity Feed -->
                 <div
-                    class="bg-white dark:bg-dark-900 rounded-[2.5rem] shadow-sm p-8 border border-gray-100 dark:border-dark-800">
+                    class="bg-white dark:bg-dark-900 rounded-3xl shadow-sm p-4 border border-gray-100 dark:border-dark-800">
                     <div class="flex items-center justify-between mb-8">
                         <h3
                             class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest flex items-center">
@@ -316,10 +316,10 @@
             </div>
 
             <!-- Row 4: Grid Master & Controller -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 <!-- Data Projects Table -->
                 <div
-                    class="lg:col-span-2 bg-white dark:bg-dark-900 rounded-[2.5rem] shadow-sm p-8 border border-gray-100 dark:border-dark-800 overflow-hidden">
+                    class="lg:col-span-2 bg-white dark:bg-dark-900 rounded-3xl shadow-sm p-4 border border-gray-100 dark:border-dark-800 overflow-hidden">
                     <div class="flex justify-between items-center mb-8">
                         <h3 class="text-sm font-black text-gray-900 dark:text-white uppercase tracking-widest">Master
                             Proyek Terbaru</h3>
@@ -385,7 +385,7 @@
                 </div>
 
                 <!-- Strategic Controller -->
-                <div class="bg-dark-900 rounded-[2.5rem] shadow-2xl p-8 border border-white/5 relative overflow-hidden">
+                <div class="bg-dark-900 rounded-3xl shadow-2xl p-4 border border-white/5 relative overflow-hidden">
                     <div
                         class="absolute top-0 right-0 w-32 h-32 bg-primary-500/10 rounded-bl-full translate-x-12 -translate-y-12 blur-3xl">
                     </div>
@@ -447,7 +447,7 @@
                         </a>
                     </div>
 
-                    <div class="mt-10 p-6 bg-primary-500/5 rounded-[2rem] border border-primary-500/10">
+                    <div class="mt-10 p-4 bg-primary-500/5 rounded-[2rem] border border-primary-500/10">
                         <p class="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em] mb-2">Technical
                             Summary</p>
                         <div class="flex justify-between items-end">
@@ -606,3 +606,5 @@
         </style>
     @endpush
 </x-app-layout>
+
+

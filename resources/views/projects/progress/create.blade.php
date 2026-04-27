@@ -14,14 +14,14 @@
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-4">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <form method="POST" action="{{ route('projects.progress.store', $project) }}"
-                    enctype="multipart/form-data" class="p-6">
+                    enctype="multipart/form-data" class="p-4">
                     @csrf
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <x-input-label for="report_date" :value="__('Tanggal Laporan')" />
                             <x-text-input id="report_date" name="report_date" type="date" class="mt-1 block w-full"
@@ -134,3 +134,5 @@
         </div>
     </div>
 </x-app-layout>
+
+
