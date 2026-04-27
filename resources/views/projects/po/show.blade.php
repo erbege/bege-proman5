@@ -34,14 +34,38 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">            <!-- Approval Progress -->
+            @if($po->status !== 'draft' && $po->status !== 'rejected')
+                <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-6">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Progres Persetujuan</h3>
+                    <div class="relative">
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200 dark:bg-dark-700">
+                            @php 
+                                $percent = ($po->current_approval_level / ($po->max_approval_level + 1)) * 100;
+                                if($po->is_fully_approved) $percent = 100;
+                            @endphp
+                            <div style="width:{{ $percent }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gold-500 transition-all duration-500"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-medium">
+                            <div class="text-gray-500">Draft</div>
+                            @for($i = 1; $i <= $po->max_approval_level; $i++)
+                                <div class="{{ $po->current_approval_level >= $i ? 'text-gold-600 font-bold' : 'text-gray-400' }}">
+                                    Level {{ $i }}
+                                </div>
+                            @endfor
+                            <div class="{{ $po->is_fully_approved ? 'text-green-600 font-bold' : 'text-gray-400' }}">Selesai</div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <!-- PO Header Info -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Supplier</p>
-                            <p class="font-bold text-lg">{{ $po->supplier->name }}</p>
+                            <p class="font-bold text-lg text-gold-600">{{ $po->supplier->name }}</p>
                             <p class="text-sm">{{ $po->supplier->address }}</p>
                             <p class="text-sm">{{ $po->supplier->phone }}</p>
                         </div>
@@ -54,14 +78,22 @@
                         </div>
                         <div>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Status</p>
-                            <span
-                                class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full 
+                                @if($po->is_fully_approved) bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300
+                                @elseif($po->status === 'rejected') bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300
+                                @elseif($po->status === 'pending') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300
+                                @else bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300
+                                @endif">
                                 {{ strtoupper($po->status) }}
                             </span>
 
-                            @if($po->purchaseRequest)
+                            @if($po->purchaseRequests->isNotEmpty())
                                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Ref PR</p>
-                                <p class="font-medium text-blue-600">{{ $po->purchaseRequest->pr_number }}</p>
+                                <div class="flex flex-wrap gap-1 mt-1">
+                                    @foreach($po->purchaseRequests as $refPr)
+                                        <span class="px-2 py-0.5 bg-gray-100 dark:bg-dark-700 rounded text-xs font-medium">{{ $refPr->pr_number }}</span>
+                                    @endforeach
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -72,77 +104,47 @@
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
-                                    <th
-                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Material</th>
-                                    <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Qty</th>
-                                    <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Harga Satuan</th>
-                                    <th
-                                        class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Material</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Qty</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Harga Satuan</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Total</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach($po->items as $item)
                                     <tr>
                                         <td class="px-4 py-3">
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                                {{ $item->material->name }}
-                                            </div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $item->material->name }}</div>
                                             @if($item->notes)
                                                 <div class="text-xs text-gray-500">{{ $item->notes }}</div>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-3 text-right text-sm text-gray-900 dark:text-white">
-                                            {{ number_format($item->quantity, 2) }} {{ $item->material->unit }}
-                                        </td>
-                                        <td class="px-4 py-3 text-right text-sm text-gray-900 dark:text-white">
-                                            Rp {{ number_format($item->unit_price, 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">
-                                            Rp {{ number_format($item->total_price, 0, ',', '.') }}
-                                        </td>
+                                        <td class="px-4 py-3 text-right text-sm text-gray-900 dark:text-white">{{ number_format($item->quantity, 2) }} {{ $item->material->unit }}</td>
+                                        <td class="px-4 py-3 text-right text-sm text-gray-900 dark:text-white">Rp {{ number_format($item->unit_price, 0, ',', '.') }}</td>
+                                        <td class="px-4 py-3 text-right text-sm font-bold text-gray-900 dark:text-white">Rp {{ number_format($item->total_price, 0, ',', '.') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
-                                    <td colspan="3" class="px-4 py-2 text-right text-sm font-medium text-gray-500">
-                                        Subtotal</td>
-                                    <td class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
-                                        Rp {{ number_format($po->subtotal, 0, ',', '.') }}
-                                    </td>
+                                    <td colspan="3" class="px-4 py-2 text-right text-sm font-medium text-gray-500">Subtotal</td>
+                                    <td class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">Rp {{ number_format($po->subtotal, 0, ',', '.') }}</td>
                                 </tr>
                                 @if($po->tax_amount > 0)
                                     <tr>
-                                        <td colspan="3" class="px-4 py-2 text-right text-sm font-medium text-gray-500">Pajak
-                                        </td>
-                                        <td class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">
-                                            + Rp {{ number_format($po->tax_amount, 0, ',', '.') }}
-                                        </td>
+                                        <td colspan="3" class="px-4 py-2 text-right text-sm font-medium text-gray-500">Pajak</td>
+                                        <td class="px-4 py-2 text-right text-sm font-bold text-gray-900 dark:text-white">+ Rp {{ number_format($po->tax_amount, 0, ',', '.') }}</td>
                                     </tr>
                                 @endif
                                 @if($po->discount_amount > 0)
                                     <tr>
-                                        <td colspan="3" class="px-4 py-2 text-right text-sm font-medium text-gray-500">
-                                            Diskon</td>
-                                        <td class="px-4 py-2 text-right text-sm font-bold text-green-600">
-                                            - Rp {{ number_format($po->discount_amount, 0, ',', '.') }}
-                                        </td>
+                                        <td colspan="3" class="px-4 py-2 text-right text-sm font-medium text-gray-500">Diskon</td>
+                                        <td class="px-4 py-2 text-right text-sm font-bold text-green-600">- Rp {{ number_format($po->discount_amount, 0, ',', '.') }}</td>
                                     </tr>
                                 @endif
                                 <tr>
-                                    <td colspan="3"
-                                        class="px-4 py-3 text-right text-base font-bold text-gray-900 dark:text-white">
-                                        Total Akhir</td>
-                                    <td
-                                        class="px-4 py-3 text-right text-base font-bold text-blue-600 dark:text-blue-400">
-                                        {{ $po->formatted_total_amount }}
-                                    </td>
+                                    <td colspan="3" class="px-4 py-3 text-right text-base font-bold text-gray-900 dark:text-white">Total Akhir</td>
+                                    <td class="px-4 py-3 text-right text-base font-bold text-blue-600 dark:text-blue-400">{{ $po->formatted_total_amount }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -154,6 +156,123 @@
                             <p class="text-sm text-yellow-700 dark:text-yellow-300 mt-1">{{ $po->notes }}</p>
                         </div>
                     @endif
+                </div>
+            </div>
+
+            <!-- Approval Actions -->
+            @if($po->status === 'pending' && !$po->is_fully_approved)
+                @php
+                    $canApprove = false;
+                    $matrix = \App\Models\ApprovalMatrix::where('document_type', 'PO')
+                        ->where('level', $po->current_approval_level)
+                        ->where('is_active', true)
+                        ->first();
+                    if ($matrix && auth()->user()->hasRole($matrix->role_name)) {
+                        $canApprove = true;
+                    }
+                @endphp
+
+                @if($canApprove)
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6 border-l-4 border-gold-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-md font-bold text-gray-900 dark:text-white">Menunggu Persetujuan Anda</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Anda bertanggung jawab untuk persetujuan Level {{ $po->current_approval_level }}</p>
+                            </div>
+                            <div class="flex gap-4">
+                                <button type="button" onclick="document.getElementById('approvePOModal').classList.remove('hidden')"
+                                    class="inline-flex items-center px-6 py-2 bg-green-600 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest hover:bg-green-700 shadow-lg transition">
+                                    <x-heroicon-o-check class="w-4 h-4 mr-2" />
+                                    Setujui PO
+                                </button>
+                                <button type="button" onclick="document.getElementById('rejectPOModal').classList.remove('hidden')"
+                                    class="inline-flex items-center px-6 py-2 bg-red-600 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest hover:bg-red-700 shadow-lg transition">
+                                    <x-heroicon-o-x-mark class="w-4 h-4 mr-2" />
+                                    Tolak PO
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6 flex items-center shadow-sm">
+                        <x-heroicon-o-information-circle class="w-5 h-5 text-blue-500 mr-3" />
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            Menunggu persetujuan Level {{ $po->current_approval_level }} (Role: {{ str_replace('_', ' ', $matrix->role_name ?? 'N/A') }})
+                        </p>
+                    </div>
+                @endif
+            @endif
+
+            <!-- Audit Trail / Approval History -->
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
+                        <x-heroicon-o-clock class="w-5 h-5 mr-2 text-gray-400" />
+                        Riwayat Persetujuan & Aktivitas
+                    </h3>
+                    
+                    <div class="flow-root">
+                        <ul role="list" class="-mb-8">
+                            @foreach($po->approvalLogs as $log)
+                                <li>
+                                    <div class="relative pb-8">
+                                        @if(!$loop->last)
+                                            <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-dark-700" aria-hidden="true"></span>
+                                        @endif
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white dark:ring-dark-800 
+                                                    {{ $log->status === 'approved' ? 'bg-green-500' : 'bg-red-500' }}">
+                                                    @if($log->status === 'approved')
+                                                        <x-heroicon-s-check class="w-5 h-5 text-white" />
+                                                    @else
+                                                        <x-heroicon-s-x-mark class="w-5 h-5 text-white" />
+                                                    @endif
+                                                </span>
+                                            </div>
+                                            <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                                <div>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                        <span class="font-bold text-gray-900 dark:text-white">{{ $log->user->name }}</span> 
+                                                        {{ $log->status === 'approved' ? 'menyetujui' : 'menolak' }} 
+                                                        <span class="font-medium text-gold-600">Level {{ $log->level }}</span>
+                                                    </p>
+                                                    @if($log->comment)
+                                                        <p class="mt-1 text-sm italic text-gray-600 dark:text-gray-400">"{{ $log->comment }}"</p>
+                                                    @endif
+                                                </div>
+                                                <div class="whitespace-nowrap text-right text-xs text-gray-500">
+                                                    <time datetime="{{ $log->created_at }}">{{ $log->created_at->format('d M Y, H:i') }}</time>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            @endforeach
+                            
+                            <li>
+                                <div class="relative pb-8">
+                                    <div class="relative flex space-x-3">
+                                        <div>
+                                            <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white dark:ring-dark-800">
+                                                <x-heroicon-s-paper-airplane class="w-5 h-5 text-white" />
+                                            </span>
+                                        </div>
+                                        <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                            <div>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                    <span class="font-bold text-gray-900 dark:text-white">{{ $po->createdBy->name }}</span> membuat Purchase Order
+                                                </p>
+                                            </div>
+                                            <div class="whitespace-nowrap text-right text-xs text-gray-500">
+                                                <time datetime="{{ $po->created_at }}">{{ $po->created_at->format('d M Y, H:i') }}</time>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -169,4 +288,46 @@
                 Hapus</button>
         </form>
     </x-confirm-modal>
-</x-app-layout>
+
+    <!-- Approve PO Modal -->
+    <x-confirm-modal id="approvePOModal" title="Approve Purchase Order"
+        message="Apakah Anda yakin ingin menyetujui PO ini untuk Level {{ $po->current_approval_level }}?" confirmColor="green" icon="check">
+        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-6">
+            @csrf
+            <input type="hidden" name="status" value="approved">
+            
+            <div class="mb-4 text-left">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan Persetujuan (Opsional)</label>
+                <textarea name="comment" rows="3" class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500 text-sm" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('approvePOModal').classList.add('hidden')"
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Batal</button>
+                <button type="submit"
+                    class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700">Ya, Approve</button>
+            </div>
+        </form>
+    </x-confirm-modal>
+
+    <!-- Reject PO Modal -->
+    <x-confirm-modal id="rejectPOModal" title="Reject Purchase Order"
+        message="Harap masukkan alasan penolakan PO ini." confirmColor="red" icon="x-mark">
+        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-6">
+            @csrf
+            <input type="hidden" name="status" value="rejected">
+            
+            <div class="mb-4 text-left">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alasan Penolakan</label>
+                <textarea name="comment" required rows="3" class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500 text-sm" placeholder="Wajib diisi..."></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="document.getElementById('rejectPOModal').classList.add('hidden')"
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Batal</button>
+                <button type="submit"
+                    class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Ya, Tolak</button>
+            </div>
+        </form>
+    </x-confirm-modal>
+</x-app-layout>t>

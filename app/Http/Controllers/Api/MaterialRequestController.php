@@ -2,13 +2,33 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StoreMaterialRequestRequest;
+use App\Http\Resources\Api\MaterialRequestResource;
 use App\Models\MaterialRequest;
-use App\Models\Material;
+use App\Services\MaterialRequestService;
 use Illuminate\Http\Request;
 
+/**
+ * @group Procurement: Material Requests
+ * @authenticated
+ * 
+ * Endpoints for managing material requests (MR) from the field.
+ */
 class MaterialRequestController extends Controller
 {
+    use ApiResponse;
+
+    protected $mrService;
+
+    private const ELEVATED_ROLES = ['super-admin', 'Superadmin', 'administrator'];
+
+    public function __construct(MaterialRequestService $mrService)
+    {
+        $this->mrService = $mrService;
+    }
+
     /**
      * List material requests.
      * 
@@ -27,19 +47,16 @@ class MaterialRequestController extends Controller
         }
 
         $user = auth()->user();
-        if ($user && $user->hasRole('supervisor')) {
-            $query->where('requested_by', $user->id);
-        } else if ($user) {
-            $supervisorProjectIds = $user->projects()->wherePivot('role', 'supervisor')->pluck('projects.id');
-            if ($supervisorProjectIds->isNotEmpty()) {
-                $query->where(function ($q) use ($user, $supervisorProjectIds) {
-                    $q->whereNotIn('project_id', $supervisorProjectIds)
-                        ->orWhere('requested_by', $user->id);
-                });
-            }
+        if ($user) {
+            $this->applyVisibilityScope($query, $user);
         }
 
-        return $query->latest()->paginate($request->per_page ?? 15);
+        $requests = $query->latest()->paginate($request->per_page ?? 15);
+
+        return $this->paginatedResponse(
+            'Material requests retrieved successfully.', 
+            MaterialRequestResource::collection($requests)
+        );
     }
 
     /**
@@ -50,18 +67,16 @@ class MaterialRequestController extends Controller
     public function show(MaterialRequest $materialRequest)
     {
         $user = auth()->user();
-        $isSupervisor = $user && $user->hasRole('supervisor');
-        if (!$isSupervisor && $user) {
-            $isSupervisor = $user->projects()->wherePivot('role', 'supervisor')->where('projects.id', $materialRequest->project_id)->exists();
+        if (!$user || !$this->canViewRequest($materialRequest, $user)) {
+            return $this->errorResponse('Unauthorized', 403);
         }
 
-        if ($isSupervisor && $materialRequest->requested_by !== $user->id) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        $materialRequest->load(['project', 'requestedBy', 'items.material', 'approvalLogs']);
 
-        return response()->json([
-            'data' => $materialRequest->load(['project', 'requestedBy', 'items.material'])
-        ]);
+        return $this->successResponse(
+            'Material request retrieved successfully.', 
+            new MaterialRequestResource($materialRequest)
+        );
     }
 
     /**
@@ -69,79 +84,49 @@ class MaterialRequestController extends Controller
      * 
      * Create a new material request for a project.
      */
-    public function store(Request $request)
+    public function store(StoreMaterialRequestRequest $request)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'request_date' => 'nullable|date',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.material_id' => 'required|exists:materials,id',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit' => 'nullable|string|max:50',
-        ]);
+        if (!$this->mrService->canCreateRequest(auth()->id(), $request->project_id)) {
+            return $this->errorResponse('Anda tidak terdaftar dalam tim proyek ini.', 403);
+        }
 
-        $materialRequest = MaterialRequest::create([
-            'project_id' => $validated['project_id'],
-            'requested_by' => auth()->id(),
-            'request_date' => $validated['request_date'] ?? now(),
-            'notes' => $validated['notes'] ?? null,
-            'status' => 'pending',
-        ]);
+        $materialRequest = $this->mrService->createMaterialRequest(
+            $request->validated(),
+            auth()->id()
+        );
 
-        foreach ($validated['items'] as $item) {
-            if (empty($item['unit'])) {
-                $material = Material::find($item['material_id']);
-                $item['unit'] = $material->unit ?? '-';
+        return $this->successResponse(
+            'Material request created successfully', 
+            new MaterialRequestResource($materialRequest->load('items.material')), 
+            201
+        );
+    }
+
+    private function applyVisibilityScope($query, $user): void
+    {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+            return;
+        }
+
+        $projectIds = $user->projects()->pluck('projects.id');
+        $query->where(function ($q) use ($user, $projectIds) {
+            $q->where('requested_by', $user->id);
+            if ($projectIds->isNotEmpty()) {
+                $q->orWhereIn('project_id', $projectIds);
             }
-            $materialRequest->items()->create($item);
-        }
-
-        return response()->json([
-            'message' => 'Material request created successfully',
-            'data' => $materialRequest->load('items.material')
-        ], 201);
+        });
     }
 
-    /**
-     * Approve material request.
-     * 
-     * Approve a pending material request.
-     */
-    public function approve(MaterialRequest $materialRequest)
+    private function canViewRequest(MaterialRequest $materialRequest, $user): bool
     {
-        if ($materialRequest->status !== 'pending') {
-            return response()->json(['error' => 'Request is not pending'], 422);
+        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+            return true;
         }
 
-        $materialRequest->update([
-            'status' => 'approved',
-        ]);
-
-        return response()->json([
-            'message' => 'Material request approved',
-            'data' => $materialRequest
-        ]);
-    }
-
-    /**
-     * Reject material request.
-     * 
-     * Reject a pending material request.
-     */
-    public function reject(MaterialRequest $materialRequest)
-    {
-        if ($materialRequest->status !== 'pending') {
-            return response()->json(['error' => 'Request is not pending'], 422);
+        if ($materialRequest->requested_by === $user->id) {
+            return true;
         }
 
-        $materialRequest->update([
-            'status' => 'rejected',
-        ]);
-
-        return response()->json([
-            'message' => 'Material request rejected',
-            'data' => $materialRequest
-        ]);
+        return $user->projects()->where('projects.id', $materialRequest->project_id)->exists();
     }
 }

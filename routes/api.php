@@ -57,39 +57,44 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/projects/{project}/stats', [Api\ProjectController::class, 'stats']);
 
     // ========================================================================
-    // RAB (Budget)
+    // Project Scoped Resources
     // ========================================================================
-    Route::get('/projects/{project}/rab', [Api\RabController::class, 'index']);
-    Route::get('/projects/{project}/rab/items/{item}', [Api\RabController::class, 'show']);
+    Route::prefix('projects/{project}')->scopeBindings()->group(function () {
+        // RAB (Budget)
+        Route::get('/rab', [Api\RabController::class, 'index']);
+        Route::get('/rab/items/{item}', [Api\RabController::class, 'show']);
 
-    // ========================================================================
-    // Schedule
-    // ========================================================================
-    Route::get('/projects/{project}/schedule', [Api\ScheduleController::class, 'index']);
-    Route::get('/projects/{project}/schedule/scurve', [Api\ScheduleController::class, 'scurve']);
+        // Schedule
+        Route::get('/schedule', [Api\ScheduleController::class, 'index']);
+        Route::get('/schedule/scurve', [Api\ScheduleController::class, 'scurve']);
 
-    // ========================================================================
-    // Progress Reports
-    // ========================================================================
-    Route::get('/projects/{project}/progress', [Api\ProgressReportController::class, 'index']);
-    Route::get('/projects/{project}/progress/{report}', [Api\ProgressReportController::class, 'show']);
-    Route::post('/projects/{project}/progress', [Api\ProgressReportController::class, 'store']);
+        // Progress Reports
+        Route::get('/progress', [Api\ProgressReportController::class, 'index']);
+        Route::get('/progress/{report}', [Api\ProgressReportController::class, 'show']);
+        Route::post('/progress', [Api\ProgressReportController::class, 'store']);
 
-    // ========================================================================
-    // Weekly Reports
-    // ========================================================================
-    Route::get('/projects/{project}/weekly-reports', [Api\WeeklyReportController::class, 'index']);
-    Route::post('/projects/{project}/weekly-reports', [Api\WeeklyReportController::class, 'store']);
-    Route::post('/projects/{project}/weekly-reports/auto-generate', [Api\WeeklyReportController::class, 'autoGenerate']);
-    Route::get('/projects/{project}/weekly-reports/{report}', [Api\WeeklyReportController::class, 'show']);
-    Route::delete('/projects/{project}/weekly-reports/{report}', [Api\WeeklyReportController::class, 'destroy']);
-    Route::post('/projects/{project}/weekly-reports/{report}/cover', [Api\WeeklyReportController::class, 'updateCover']);
-    Route::patch('/projects/{project}/weekly-reports/{report}/cumulative', [Api\WeeklyReportController::class, 'updateCumulative']);
-    Route::patch('/projects/{project}/weekly-reports/{report}/detail', [Api\WeeklyReportController::class, 'updateDetail']);
-    Route::post('/projects/{project}/weekly-reports/{report}/documentations/upload', [Api\WeeklyReportController::class, 'uploadDocumentation']);
-    Route::post('/projects/{project}/weekly-reports/{report}/documentations/progress-photos', [Api\WeeklyReportController::class, 'addProgressPhotos']);
-    Route::delete('/projects/{project}/weekly-reports/{report}/documentations', [Api\WeeklyReportController::class, 'removeDocumentation']);
-    Route::patch('/projects/{project}/weekly-reports/{report}/activities', [Api\WeeklyReportController::class, 'updateActivities']);
+        // Weekly Reports
+        Route::get('/weekly-reports', [Api\WeeklyReportController::class, 'index']);
+        Route::post('/weekly-reports', [Api\WeeklyReportController::class, 'store']);
+        Route::post('/weekly-reports/auto-generate', [Api\WeeklyReportController::class, 'autoGenerate']);
+        Route::get('/weekly-reports/{report}', [Api\WeeklyReportController::class, 'show']);
+        Route::delete('/weekly-reports/{report}', [Api\WeeklyReportController::class, 'destroy']);
+        Route::post('/weekly-reports/{report}/cover', [Api\WeeklyReportController::class, 'updateCover']);
+        Route::patch('/weekly-reports/{report}/cumulative', [Api\WeeklyReportController::class, 'updateCumulative']);
+        Route::patch('/weekly-reports/{report}/detail', [Api\WeeklyReportController::class, 'updateDetail']);
+        Route::post('/weekly-reports/{report}/documentations/upload', [Api\WeeklyReportController::class, 'uploadDocumentation']);
+        Route::post('/weekly-reports/{report}/documentations/progress-photos', [Api\WeeklyReportController::class, 'addProgressPhotos']);
+        Route::delete('/weekly-reports/{report}/documentations', [Api\WeeklyReportController::class, 'removeDocumentation']);
+        Route::patch('/weekly-reports/{report}/activities', [Api\WeeklyReportController::class, 'updateActivities']);
+
+        // Material Usage
+        Route::get('/material-usages', [Api\MaterialUsageController::class, 'index']);
+        Route::post('/material-usages', [Api\MaterialUsageController::class, 'store']);
+        Route::get('/material-usages/{materialUsage}', [Api\MaterialUsageController::class, 'show']);
+
+        // Procurement Helpers
+        Route::get('/available-mr-items', [Api\PurchaseRequestController::class, 'availableMrItems']);
+    });
 
     // ========================================================================
     // Material Requests
@@ -99,13 +104,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/material-requests', [Api\MaterialRequestController::class, 'store']);
     Route::post('/material-requests/{materialRequest}/approve', [Api\MaterialRequestController::class, 'approve']);
     Route::post('/material-requests/{materialRequest}/reject', [Api\MaterialRequestController::class, 'reject']);
-
-    // ========================================================================
-    // Material Usage
-    // ========================================================================
-    Route::get('/projects/{project}/material-usages', [Api\MaterialUsageController::class, 'index']);
-    Route::post('/projects/{project}/material-usages', [Api\MaterialUsageController::class, 'store']);
-    Route::get('/projects/{project}/material-usages/{materialUsage}', [Api\MaterialUsageController::class, 'show']);
 
     // ========================================================================
     // Purchase Requests

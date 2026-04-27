@@ -15,11 +15,33 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->code }}</p>
             </div>
-            <a href="{{ route('projects.pr.create', $project) }}"
-                class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
-                <x-heroicon-o-plus class="w-4 h-4 mr-2" />
-                Buat PR Baru
-            </a>
+            <div class="flex gap-2">
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                        <x-heroicon-o-document-arrow-down class="w-4 h-4 mr-2" />
+                        Dari MR
+                    </button>
+                    <div x-show="open" @click.away="open = false"
+                        class="absolute right-0 mt-2 w-64 bg-white dark:bg-dark-800 rounded-md shadow-lg z-50 py-1 border border-gray-200 dark:border-dark-700">
+                        @forelse($approvedMrs as $mr)
+                            <a href="{{ route('projects.pr.create', [$project, 'from_mr' => $mr->id]) }}"
+                                class="block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
+                                {{ $mr->code }} ({{ $mr->items->count() }} items)
+                            </a>
+                        @empty
+                            <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
+                                Tidak ada MR yang disetujui (Approved) untuk proyek ini.
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+                <a href="{{ route('projects.pr.create', $project) }}"
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    <x-heroicon-o-plus class="w-4 h-4 mr-2" />
+                    Buat PR Baru
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -118,7 +140,27 @@
                             <x-heroicon-o-shopping-cart class="mx-auto h-12 w-12 text-gray-400" />
                             <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Belum ada Purchase Request
                             </h3>
-                            <div class="mt-6">
+                            <div class="mt-6 flex justify-center gap-2">
+                                <div x-data="{ open: false }" class="relative text-left">
+                                    <button @click="open = !open"
+                                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                        <x-heroicon-o-document-arrow-down class="w-4 h-4 mr-2" />
+                                        Dari MR
+                                    </button>
+                                    <div x-show="open" @click.away="open = false"
+                                        class="absolute left-0 mt-2 w-64 bg-white dark:bg-dark-800 rounded-md shadow-lg z-50 py-1 border border-gray-200 dark:border-dark-700">
+                                        @forelse($approvedMrs as $mr)
+                                            <a href="{{ route('projects.pr.create', [$project, 'from_mr' => $mr->id]) }}"
+                                                class="block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
+                                                {{ $mr->code }} ({{ $mr->items->count() }} items)
+                                            </a>
+                                        @empty
+                                            <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
+                                                Tidak ada MR yang disetujui (Approved) untuk proyek ini.
+                                            </div>
+                                        @endforelse
+                                    </div>
+                                </div>
                                 <a href="{{ route('projects.pr.create', $project) }}"
                                     class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                                     <x-heroicon-o-plus class="w-4 h-4 mr-2" />

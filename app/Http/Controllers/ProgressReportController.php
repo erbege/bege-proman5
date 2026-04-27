@@ -50,6 +50,7 @@ class ProgressReportController extends Controller
             'issues' => 'nullable|string',
             'weather' => 'nullable|in:sunny,cloudy,rainy,stormy',
             'workers_count' => 'nullable|integer|min:0',
+            'labor_details' => 'nullable|array',
             'photos' => 'nullable|array|max:5',
             'photos.*' => 'image|max:5120', // 5MB max per image
         ]);
@@ -114,6 +115,7 @@ class ProgressReportController extends Controller
     public function destroy(Project $project, ProgressReport $report)
     {
         $hasRabItem = $report->rab_item_id ? true : false;
+        $rabItem = $report->rabItem;
 
         // Delete photos
         if ($report->photos) {
@@ -126,7 +128,13 @@ class ProgressReportController extends Controller
         $report->delete();
 
         // Regenerate schedule if the deleted report was linked to a RAB item
-        if ($hasRabItem) {
+        if ($hasRabItem && $rabItem) {
+            // Recalculate actual_progress for the RAB item
+            $actualProgress = ProgressReport::where('rab_item_id', $rabItem->id)->sum('progress_percentage');
+            $rabItem->update([
+                'actual_progress' => min(100, $actualProgress)
+            ]);
+
             $scheduleCalculator = new ScheduleCalculator();
             $scheduleCalculator->updateFromProgress($project);
         }

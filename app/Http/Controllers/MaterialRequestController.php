@@ -11,6 +11,13 @@ use Illuminate\Support\Str;
 
 class MaterialRequestController extends Controller
 {
+    protected $approvalService;
+
+    public function __construct(\App\Services\ApprovalService $approvalService)
+    {
+        $this->approvalService = $approvalService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -61,7 +68,7 @@ class MaterialRequestController extends Controller
                 'requested_by' => auth()->id(),
                 'code' => $code,
                 'request_date' => $validated['request_date'],
-                'status' => 'pending',
+                'status' => 'draft',
                 'notes' => $validated['notes'] ?? null,
             ]);
 
@@ -73,6 +80,9 @@ class MaterialRequestController extends Controller
                     'notes' => $item['notes'] ?? null,
                 ]);
             }
+
+            // Initialize Approval Process
+            $this->approvalService->submit($mr);
 
             return $mr;
         });
@@ -85,7 +95,7 @@ class MaterialRequestController extends Controller
             auth()->id()
         );
 
-        return redirect()->route('projects.mr.index', $project)->with('success', 'Material Request berhasil dibuat.');
+        return redirect()->route('projects.mr.index', $project)->with('success', 'Material Request berhasil dibuat dan diajukan untuk approval.');
     }
 
     /**
@@ -98,7 +108,7 @@ class MaterialRequestController extends Controller
             abort(403, 'Anda tidak memiliki akses ke Material Request ini.');
         }
 
-        $mr->load(['items.material', 'requestedBy']);
+        $mr->load(['items.material', 'requestedBy', 'approvalLogs.user']);
         return view('projects.mr.show', compact('project', 'mr'));
     }
 
@@ -108,7 +118,7 @@ class MaterialRequestController extends Controller
     public function edit(Project $project, MaterialRequest $mr)
     {
         // Only pending MR can be edited
-        if ($mr->status !== 'pending') {
+        if ($mr->status !== 'pending' && $mr->status !== 'draft') {
             return back()->with('error', 'Hanya MR status pending yang bisa diedit.');
         }
 
@@ -121,7 +131,7 @@ class MaterialRequestController extends Controller
      */
     public function update(Request $request, Project $project, MaterialRequest $mr)
     {
-        if ($mr->status !== 'pending') {
+        if ($mr->status !== 'pending' && $mr->status !== 'draft') {
             return back()->with('error', 'Hanya MR status pending yang bisa diedit.');
         }
 
@@ -129,6 +139,7 @@ class MaterialRequestController extends Controller
             'request_date' => 'required|date',
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
+            'items.*.id' => 'nullable|exists:material_request_items,id',
             'items.*.material_id' => 'required|exists:materials,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.unit' => 'required|string',
@@ -141,16 +152,35 @@ class MaterialRequestController extends Controller
                 'notes' => $validated['notes'] ?? null,
             ]);
 
-            // Replace items (simplest approach)
-            $mr->items()->delete();
+            $existingItemIds = $mr->items()->pluck('id')->toArray();
+            $incomingItemIds = [];
 
-            foreach ($validated['items'] as $item) {
-                $mr->items()->create([
-                    'material_id' => $item['material_id'],
-                    'quantity' => $item['quantity'],
-                    'unit' => $item['unit'],
-                    'notes' => $item['notes'] ?? null,
-                ]);
+            foreach ($validated['items'] as $itemData) {
+                if (!empty($itemData['id']) && in_array($itemData['id'], $existingItemIds)) {
+                    // Update existing item
+                    $mr->items()->where('id', $itemData['id'])->update([
+                        'material_id' => $itemData['material_id'],
+                        'quantity' => $itemData['quantity'],
+                        'unit' => $itemData['unit'],
+                        'notes' => $itemData['notes'] ?? null,
+                    ]);
+                    $incomingItemIds[] = $itemData['id'];
+                } else {
+                    // Create new item
+                    $newItem = $mr->items()->create([
+                        'material_id' => $itemData['material_id'],
+                        'quantity' => $itemData['quantity'],
+                        'unit' => $itemData['unit'],
+                        'notes' => $itemData['notes'] ?? null,
+                    ]);
+                    $incomingItemIds[] = $newItem->id;
+                }
+            }
+
+            // Delete items that were removed
+            $itemsToDelete = array_diff($existingItemIds, $incomingItemIds);
+            if (!empty($itemsToDelete)) {
+                $mr->items()->whereIn('id', $itemsToDelete)->delete();
             }
         });
 
@@ -162,7 +192,7 @@ class MaterialRequestController extends Controller
      */
     public function destroy(Project $project, MaterialRequest $mr)
     {
-        if ($mr->status !== 'pending') {
+        if ($mr->status !== 'pending' && $mr->status !== 'draft') {
             return back()->with('error', 'Hanya MR status pending yang bisa dihapus.');
         }
 
@@ -172,18 +202,28 @@ class MaterialRequestController extends Controller
 
     public function updateStatus(Request $request, Project $project, MaterialRequest $mr)
     {
-        // Simple approval flow
-        $request->validate(['status' => 'required|in:approved,rejected']);
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'comment' => 'nullable|string|max:500'
+        ]);
 
-        $mr->update(['status' => $request->status]);
+        try {
+            if ($request->status === 'approved') {
+                $this->approvalService->approve($mr, $request->comment);
+            } else {
+                $this->approvalService->reject($mr, $request->comment ?? 'Rejected by user');
+            }
 
-        // Notify the requester
-        if ($mr->requestedBy && $mr->requestedBy->id !== auth()->id()) {
-            $mr->requestedBy->notify(
-                new \App\Notifications\MaterialRequestStatusNotification($mr, $request->status)
-            );
+            // Notify the requester
+            if ($mr->requestedBy && $mr->requestedBy->id !== auth()->id()) {
+                $mr->requestedBy->notify(
+                    new \App\Notifications\MaterialRequestStatusNotification($mr, $request->status)
+                );
+            }
+
+            return back()->with('success', 'Status MR berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        return back()->with('success', 'Status MR berhasil diperbarui.');
     }
 }

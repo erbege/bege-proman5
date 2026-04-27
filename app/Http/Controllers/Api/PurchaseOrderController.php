@@ -2,12 +2,32 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StorePurchaseOrderRequest;
+use App\Http\Resources\Api\PurchaseOrderResource;
+use App\Models\Project;
 use App\Models\PurchaseOrder;
+use App\Services\PurchaseOrderService;
 use Illuminate\Http\Request;
 
+/**
+ * @group Procurement: Purchase Orders
+ * @authenticated
+ * 
+ * Endpoints for managing purchase orders (PO) to suppliers.
+ */
 class PurchaseOrderController extends Controller
 {
+    use ApiResponse;
+
+    protected $poService;
+
+    public function __construct(PurchaseOrderService $poService)
+    {
+        $this->poService = $poService;
+    }
+
     /**
      * List purchase orders.
      * 
@@ -15,7 +35,7 @@ class PurchaseOrderController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PurchaseOrder::with(['project:id,name', 'supplier:id,name']);
+        $query = PurchaseOrder::with(['project:id,name', 'supplier:id,name', 'createdBy:id,name']);
 
         if ($request->has('project_id')) {
             $query->where('project_id', $request->project_id);
@@ -29,7 +49,12 @@ class PurchaseOrderController extends Controller
             $query->where('status', $request->status);
         }
 
-        return $query->latest()->paginate($request->per_page ?? 15);
+        $orders = $query->latest()->paginate($request->per_page ?? 15);
+
+        return $this->paginatedResponse(
+            'Purchase orders retrieved successfully.',
+            PurchaseOrderResource::collection($orders)
+        );
     }
 
     /**
@@ -39,49 +64,33 @@ class PurchaseOrderController extends Controller
      */
     public function show(PurchaseOrder $purchaseOrder)
     {
-        return response()->json([
-            'data' => $purchaseOrder->load(['project', 'supplier', 'items.material', 'createdBy'])
-        ]);
+        $purchaseOrder->load(['project', 'supplier', 'items.material', 'createdBy', 'approvalLogs', 'purchaseRequests']);
+        
+        return $this->successResponse(
+            'Purchase order detail retrieved successfully.',
+            new PurchaseOrderResource($purchaseOrder)
+        );
     }
 
     /**
      * Create new purchase order.
      * 
-     * Create a new purchase order.
+     * Create a new purchase order using the service layer.
      */
-    public function store(Request $request)
+    public function store(StorePurchaseOrderRequest $request)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'supplier_id' => 'required|exists:suppliers,id',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.material_id' => 'required|exists:materials,id',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.unit_price' => 'required|numeric|min:0',
-        ]);
+        $project = Project::findOrFail($request->input('project_id'));
+        
+        $purchaseOrder = $this->poService->createPurchaseOrder(
+            $request->validated(),
+            $project,
+            auth()->id()
+        );
 
-        $purchaseOrder = PurchaseOrder::create([
-            'project_id' => $validated['project_id'],
-            'supplier_id' => $validated['supplier_id'],
-            'created_by' => auth()->id(),
-            'notes' => $validated['notes'] ?? null,
-            'status' => 'draft',
-            'total_amount' => collect($validated['items'])->sum(fn($i) => $i['quantity'] * $i['unit_price']),
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            $purchaseOrder->items()->create([
-                'material_id' => $item['material_id'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['unit_price'],
-                'total_price' => $item['quantity'] * $item['unit_price'],
-            ]);
-        }
-
-        return response()->json([
-            'message' => 'Purchase order created successfully',
-            'data' => $purchaseOrder->load('items.material')
-        ], 201);
+        return $this->successResponse(
+            'Purchase order created successfully',
+            new PurchaseOrderResource($purchaseOrder->load('items.material')),
+            201
+        );
     }
 }

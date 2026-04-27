@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\StoreMaterialUsageRequest;
 use App\Models\Inventory;
 use App\Models\MaterialUsage;
 use App\Models\Project;
@@ -12,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class MaterialUsageController extends Controller
 {
+    use ApiResponse;
+
     /**
      * List material usages for a project.
      *
@@ -26,7 +30,7 @@ class MaterialUsageController extends Controller
             ->latest('usage_date')
             ->paginate($request->per_page ?? 20);
 
-        return response()->json($usages);
+        return $this->paginatedResponse('Material usages retrieved successfully.', $usages);
     }
 
     /**
@@ -36,17 +40,9 @@ class MaterialUsageController extends Controller
      * @param Project $project
      * @return \Illuminate\Http\JsonResponse
      */
-    public function store(Request $request, Project $project)
+    public function store(StoreMaterialUsageRequest $request, Project $project)
     {
-        $validated = $request->validate([
-            'usage_date' => 'required|date',
-            'rab_item_id' => 'nullable|exists:rab_items,id',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.material_id' => 'required|exists:materials,id',
-            'items.*.quantity' => 'required|numeric|min:0.0001',
-            'items.*.notes' => 'nullable|string',
-        ]);
+        $validated = $request->validated();
 
         try {
             $usage = DB::transaction(function () use ($validated, $project) {
@@ -93,15 +89,18 @@ class MaterialUsageController extends Controller
                 return $usage;
             });
 
-            return response()->json([
-                'message' => 'Material usage created successfully',
-                'data' => $usage->load(['items.material', 'createdBy'])
-            ], 201);
+            return $this->successResponse(
+                'Material usage created successfully',
+                $usage->load(['items.material', 'createdBy']),
+                201
+            );
 
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 500);
+            report($e);
+
+            return $this->errorResponse('Failed to create material usage.', 500);
         }
     }
 
@@ -116,11 +115,11 @@ class MaterialUsageController extends Controller
     {
         // Ensure usage belongs to project
         if ($materialUsage->project_id != $project->id) {
-            return response()->json(['error' => 'Material Usage not found in this project'], 404);
+            return $this->errorResponse('Material Usage not found in this project', 404);
         }
 
         $materialUsage->load(['items.material', 'createdBy', 'rabItem']);
 
-        return response()->json($materialUsage);
+        return $this->successResponse('Material usage retrieved successfully.', $materialUsage);
     }
 }

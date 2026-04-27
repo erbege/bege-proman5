@@ -66,21 +66,29 @@ class PurchaseRequestManager extends Component
         $this->priority = 'normal';
 
         if ($mrId) {
-            $mr = MaterialRequest::with('items')->find($mrId);
+            $mr = MaterialRequest::with('items.material')->find($mrId);
             if ($mr && $mr->status === 'approved') {
                 $this->fromMrId = $mrId;
-                $this->items = $mr->items->map(function ($item) {
-                    return [
-                        'material_id' => $item->material_id,
-                        'quantity' => $item->quantity,
-                        'estimated_price' => 0,
-                        'notes' => $item->notes ?? '',
-                    ];
-                })->toArray();
+                $this->items = $mr->items
+                    ->filter(fn($item) => $item->remaining_to_order > 0)
+                    ->map(function ($item) {
+                        return [
+                            'material_id' => $item->material_id,
+                            'material_request_item_id' => $item->id,
+                            'quantity' => $item->remaining_to_order,
+                            'estimated_price' => 0,
+                            'notes' => $item->notes ?? '',
+                        ];
+                    })->toArray();
+                
+                if (empty($this->items)) {
+                    session()->flash('error', 'Semua item di MR ini sudah diproses.');
+                    return;
+                }
             }
         } else {
             $this->items = [
-                ['material_id' => '', 'quantity' => 1, 'estimated_price' => 0, 'notes' => ''],
+                ['material_id' => '', 'material_request_item_id' => null, 'quantity' => 1, 'estimated_price' => 0, 'notes' => ''],
             ];
         }
 
@@ -95,7 +103,7 @@ class PurchaseRequestManager extends Component
 
     public function addItem()
     {
-        $this->items[] = ['material_id' => '', 'quantity' => 1, 'estimated_price' => 0, 'notes' => ''];
+        $this->items[] = ['material_id' => '', 'material_request_item_id' => null, 'quantity' => 1, 'estimated_price' => 0, 'notes' => ''];
     }
 
     public function removeItem(int $index)
@@ -112,38 +120,27 @@ class PurchaseRequestManager extends Component
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.material_id' => 'required|exists:materials,id',
+            'items.*.material_request_item_id' => 'nullable|exists:material_request_items,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.estimated_price' => 'nullable|numeric|min:0',
             'items.*.notes' => 'nullable|string',
         ]);
 
-        DB::transaction(function () {
-            $pr = PurchaseRequest::create([
+        try {
+            $service = app(\App\Services\PurchaseRequestService::class);
+            $service->createPurchaseRequest([
                 'project_id' => $this->project->id,
-                'request_date' => now(),
                 'required_date' => $this->requiredDate,
-                'status' => 'pending',
                 'priority' => $this->priority,
-                'notes' => $this->notes . ($this->fromMrId ? " (From MR ID: {$this->fromMrId})" : ""),
-                'requested_by' => auth()->id(),
-            ]);
+                'notes' => $this->notes,
+                'items' => $this->items,
+            ], auth()->id());
 
-            foreach ($this->items as $item) {
-                $pr->items()->create([
-                    'material_id' => $item['material_id'],
-                    'quantity' => $item['quantity'],
-                    'estimated_price' => $item['estimated_price'] ?? 0,
-                    'notes' => $item['notes'] ?: null,
-                ]);
-            }
-
-            if ($this->fromMrId) {
-                MaterialRequest::find($this->fromMrId)->update(['status' => 'processed']);
-            }
-        });
-
-        session()->flash('success', 'Purchase Request berhasil dibuat.');
-        $this->closeModal();
+            session()->flash('success', 'Purchase Request berhasil dibuat.');
+            $this->closeModal();
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal membuat PR: ' . $e->getMessage());
+        }
     }
 
     // Approval

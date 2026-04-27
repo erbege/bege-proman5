@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\DB;
 
 class PurchaseOrderController extends Controller
 {
+    protected $approvalService;
+
+    public function __construct(\App\Services\ApprovalService $approvalService)
+    {
+        $this->approvalService = $approvalService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -44,7 +51,7 @@ class PurchaseOrderController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, Project $project)
+    public function store(Request $request, Project $project, \App\Services\PurchaseOrderService $poService)
     {
         $validated = $request->validate([
             'supplier_id' => 'required|exists:suppliers,id',
@@ -63,62 +70,7 @@ class PurchaseOrderController extends Controller
             'items.*.notes' => 'nullable|string',
         ]);
 
-        $po = DB::transaction(function () use ($validated, $project) {
-            // Calculate totals
-            $subtotal = 0;
-            foreach ($validated['items'] as $item) {
-                $subtotal += $item['quantity'] * $item['unit_price'];
-            }
-
-            $tax = $validated['tax_amount'] ?? 0;
-            $discount = $validated['discount_amount'] ?? 0;
-            $total = $subtotal + $tax - $discount;
-
-            $po = PurchaseOrder::create([
-                'project_id' => $project->id,
-                'supplier_id' => $validated['supplier_id'],
-                // Link to single PR only if exactly one is used, otherwise null
-                'purchase_request_id' => (isset($validated['pr_ids']) && count($validated['pr_ids']) === 1) ? $validated['pr_ids'][0] : null,
-                'order_date' => $validated['order_date'],
-                'expected_delivery' => $validated['expected_delivery'],
-                'status' => 'sent', // Assume Sent immediately for now, or Draft
-                'payment_terms' => $validated['payment_terms'],
-                'notes' => $validated['notes'],
-                'subtotal' => $subtotal,
-                'tax_amount' => $tax,
-                'discount_amount' => $discount,
-                'total_amount' => $total,
-                'created_by' => auth()->id(),
-            ]);
-
-            foreach ($validated['items'] as $item) {
-                $po->items()->create([
-                    'material_id' => $item['material_id'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'total_price' => $item['quantity'] * $item['unit_price'],
-                    'notes' => $item['notes'] ?? null,
-                ]);
-            }
-
-            // Mark PRs as completed
-            if (!empty($validated['pr_ids'])) {
-                PurchaseRequest::whereIn('id', $validated['pr_ids'])->update(['status' => 'completed']);
-            }
-
-            return $po;
-        });
-
-        // Notify project team members (except creator)
-        $po->load('supplier');
-        $teamMembers = $project->team()
-            ->where('users.id', '!=', auth()->id())
-            ->get();
-
-        \Illuminate\Support\Facades\Notification::send(
-            $teamMembers,
-            new \App\Notifications\PurchaseOrderCreatedNotification($po)
-        );
+        $poService->createPurchaseOrder($validated, $project, auth()->id());
 
         return redirect()->route('projects.po.index', $project)->with('success', 'Purchase Order berhasil dibuat.');
     }
@@ -128,8 +80,31 @@ class PurchaseOrderController extends Controller
      */
     public function show(Project $project, PurchaseOrder $po)
     {
-        $po->load(['items.material', 'supplier', 'createdBy', 'project']);
+        $po->load(['items.material', 'supplier', 'createdBy', 'project', 'approvalLogs.user']);
         return view('projects.po.show', compact('project', 'po'));
+    }
+
+    /**
+     * Update status (Approval).
+     */
+    public function updateStatus(Request $request, Project $project, PurchaseOrder $po)
+    {
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'comment' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            if ($request->status === 'approved') {
+                $this->approvalService->approve($po, $request->comment);
+            } else {
+                $this->approvalService->reject($po, $request->comment ?? 'Rejected by user');
+            }
+
+            return back()->with('success', 'Status PO berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -137,6 +112,9 @@ class PurchaseOrderController extends Controller
      */
     public function print(Project $project, PurchaseOrder $po)
     {
+        if (!$po->is_fully_approved) {
+            return back()->with('error', 'PO harus disetujui sepenuhnya sebelum dicetak.');
+        }
         $po->load(['items.material', 'supplier', 'createdBy', 'project']);
         return view('projects.po.print', compact('project', 'po'));
     }
@@ -146,16 +124,9 @@ class PurchaseOrderController extends Controller
      */
     public function destroy(Project $project, PurchaseOrder $po)
     {
-        if ($po->status !== 'draft' && $po->status !== 'sent') {
-            return back()->with('error', 'Hanya PO status Draft atau Sent yang dapat dihapus.');
+        if ($po->status !== 'draft' && $po->status !== 'pending') {
+            return back()->with('error', 'Hanya PO status Draft atau Pending yang dapat dihapus.');
         }
-
-        // Revert PR status if linked?
-        // If we grouped, we lost the strict link in `purchase_request_id` column but we might have it in logs?
-        // For MVP, if we delete PO, we might leave PRs as completed (manual fix needed) or we try to find them.
-        // Since we didn't store the grouped IDs, we can't revert easily.
-        // One improvement: Store linked PR IDs in `notes` or pivot.
-        // For now, simple delete.
 
         $po->delete();
         return redirect()->route('projects.po.index', $project)->with('success', 'Purchase Order berhasil dihapus.');

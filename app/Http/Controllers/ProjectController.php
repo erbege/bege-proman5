@@ -72,7 +72,11 @@ class ProjectController extends Controller
         $scheduleCalculator = new ScheduleCalculator();
         $scurveData = $scheduleCalculator->getScurveData($project);
 
-        return view('projects.show', compact('project', 'scurveData'));
+        // Get Financial Metrics
+        $costControlService = new \App\Services\CostControlService();
+        $financialMetrics = $costControlService->getProjectFinancialSummary($project);
+
+        return view('projects.show', compact('project', 'scurveData', 'financialMetrics'));
     }
 
     public function edit(Project $project)

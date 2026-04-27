@@ -13,6 +13,7 @@ class PurchaseRequestItem extends Model
     protected $fillable = [
         'purchase_request_id',
         'material_id',
+        'material_request_item_id',
         'quantity',
         'estimated_price',
         'notes',
@@ -32,6 +33,11 @@ class PurchaseRequestItem extends Model
     public function material(): BelongsTo
     {
         return $this->belongsTo(Material::class);
+    }
+
+    public function materialRequestItem(): BelongsTo
+    {
+        return $this->belongsTo(MaterialRequestItem::class);
     }
 
     // Accessors

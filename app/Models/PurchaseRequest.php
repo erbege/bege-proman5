@@ -8,9 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class PurchaseRequest extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $fillable = [
         'pr_number',
@@ -53,9 +64,14 @@ class PurchaseRequest extends Model
         return $this->hasMany(PurchaseRequestItem::class);
     }
 
-    public function purchaseOrders(): HasMany
+    public function approvalLogs(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
-        return $this->hasMany(PurchaseOrder::class);
+        return $this->morphMany(ApprovalLog::class, 'approvable');
+    }
+
+    public function purchaseOrders(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(PurchaseOrder::class);
     }
 
     // Scopes
@@ -83,19 +99,7 @@ class PurchaseRequest extends Model
 
     public static function generateNumber(): string
     {
-        $prefix = 'PR-' . date('Ym');
-        $lastPr = static::where('pr_number', 'like', $prefix . '%')
-            ->orderByDesc('pr_number')
-            ->first();
-
-        if ($lastPr) {
-            $lastNumber = (int) substr($lastPr->pr_number, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return DocumentSequence::next('PR');
     }
 
     // Accessors

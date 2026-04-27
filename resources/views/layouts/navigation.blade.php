@@ -173,6 +173,10 @@
                                 <x-heroicon-o-shield-check class="w-4 h-4 mr-2 inline" />
                                 {{ __('Kelola Role') }}
                             </x-dropdown-link>
+                            <x-dropdown-link :href="route('settings.approval-matrix.index')">
+                                <x-heroicon-o-queue-list class="w-4 h-4 mr-2 inline" />
+                                {{ __('Matriks Approval') }}
+                            </x-dropdown-link>
                         @endif
 
                         <!-- Theme Toggle -->

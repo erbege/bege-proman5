@@ -188,6 +188,44 @@
                         </div>
                     </div>
 
+                    <!-- Financial Health -->
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 border-l-4 {{ $financialMetrics['cost_variance'] >= 0 ? 'border-green-500' : 'border-red-500' }}">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Kesehatan Keuangan</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                    <span>Biaya Riil (AC)</span>
+                                    <span>Rp {{ number_format($financialMetrics['actual_cost'], 0, ',', '.') }}</span>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                                    <span>Nilai Hasil (EV)</span>
+                                    <span>Rp {{ number_format($financialMetrics['earned_value'], 0, ',', '.') }}</span>
+                                </div>
+                                <div class="w-full bg-gray-100 dark:bg-dark-700 rounded-full h-2 mt-2">
+                                    @php 
+                                        $costRatio = $financialMetrics['earned_value'] > 0 
+                                            ? ($financialMetrics['actual_cost'] / $financialMetrics['earned_value']) * 100 
+                                            : 0;
+                                    @endphp
+                                    <div class="h-full rounded-full {{ $financialMetrics['cost_variance'] >= 0 ? 'bg-green-500' : 'bg-red-500' }}" 
+                                        style="width: {{ min(100, $costRatio) }}%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2 border-t dark:border-dark-700">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Variansi Biaya</span>
+                                    <span class="text-sm font-bold {{ $financialMetrics['cost_variance'] >= 0 ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $financialMetrics['cost_variance'] >= 0 ? '+' : '' }}Rp {{ number_format($financialMetrics['cost_variance'], 0, ',', '.') }}
+                                    </span>
+                                </div>
+                                <p class="text-[10px] text-gray-400 mt-1">
+                                    {{ $financialMetrics['cost_variance'] >= 0 ? 'Di bawah budget (Hemat)' : 'Melebihi budget (Boros)' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Quick Actions -->
                     <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Aksi Cepat</h3>

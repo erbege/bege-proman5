@@ -8,9 +8,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class PurchaseOrder extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $fillable = [
         'po_number',
@@ -39,9 +50,9 @@ class PurchaseOrder extends Model
     ];
 
     // Relationships
-    public function purchaseRequest(): BelongsTo
+    public function purchaseRequests(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsTo(PurchaseRequest::class);
+        return $this->belongsToMany(PurchaseRequest::class);
     }
 
     public function project(): BelongsTo
@@ -64,6 +75,11 @@ class PurchaseOrder extends Model
         return $this->hasMany(PurchaseOrderItem::class);
     }
 
+    public function approvalLogs(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(ApprovalLog::class, 'approvable');
+    }
+
     public function goodsReceipts(): HasMany
     {
         return $this->hasMany(GoodsReceipt::class);
@@ -83,19 +99,7 @@ class PurchaseOrder extends Model
 
     public static function generateNumber(): string
     {
-        $prefix = 'PO-' . date('Ym');
-        $lastPo = static::where('po_number', 'like', $prefix . '%')
-            ->orderByDesc('po_number')
-            ->first();
-
-        if ($lastPo) {
-            $lastNumber = (int) substr($lastPo->po_number, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return DocumentSequence::next('PO');
     }
 
     // Accessors

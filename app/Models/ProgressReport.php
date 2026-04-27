@@ -21,6 +21,7 @@ class ProgressReport extends Model
         'photos',
         'weather',
         'workers_count',
+        'labor_details',
         'reported_by',
     ];
 
@@ -29,6 +30,7 @@ class ProgressReport extends Model
         'progress_percentage' => 'decimal:2',
         'cumulative_progress' => 'decimal:2',
         'photos' => 'array',
+        'labor_details' => 'array',
     ];
 
     // Relationships

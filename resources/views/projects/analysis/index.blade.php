@@ -131,8 +131,13 @@
             </details>
 
             <!-- Material Summary Tab -->
-            @if($activeTab === 'summary' && $summary && $summary->count() > 0)
-                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6">
+            @if($activeTab === 'summary')
+                <div class="mb-8">
+                    <livewire:material-control-report :project="$project" />
+                </div>
+                
+                @if($summary && $summary->count() > 0)
+                <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6 border border-gray-100 dark:border-dark-700">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                         Ringkasan Kebutuhan Material ({{ $summary->total() }} material)
                     </h3>
@@ -179,7 +184,7 @@
                         {{ $summary->links() }}
                     </div>
                 </div>
-            @elseif($activeTab === 'summary')
+                @else
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6 text-center">
                     <x-heroicon-o-inbox class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
                     <p class="text-gray-500 dark:text-gray-400">Belum ada material yang dianalisis.</p>
@@ -188,10 +193,12 @@
                         Lihat item yang belum dianalisis →
                     </a>
                 </div>
+                @endif
             @endif
 
             <!-- Unanalyzed Items Tab -->
-            @if($activeTab === 'unanalyzed' && $unanalyzedItems && $unanalyzedItems->count() > 0)
+            @if($activeTab === 'unanalyzed')
+                @if($unanalyzedItems && $unanalyzedItems->count() > 0)
                 <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg p-6 mb-6">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                         Item Belum Dianalisis ({{ $unanalyzedItems->total() }})
@@ -292,7 +299,7 @@
                         {{ $unanalyzedItems->withQueryString()->links() }}
                     </div>
                 </div>
-            @elseif($activeTab === 'unanalyzed')
+                @else
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6 text-center">
                     <x-heroicon-o-check-badge class="w-12 h-12 mx-auto text-green-500 mb-4" />
                     <p class="text-gray-500 dark:text-gray-400">Semua item sudah dianalisis!</p>
@@ -301,10 +308,12 @@
                         Lihat item yang sudah dianalisis →
                     </a>
                 </div>
+                @endif
             @endif
 
             <!-- Analyzed Items Tab -->
-            @if($activeTab === 'analyzed' && $analyzedItems && $analyzedItems->count() > 0)
+            @if($activeTab === 'analyzed')
+                @if($analyzedItems && $analyzedItems->count() > 0)
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6"
                     x-data="{ selectedItems: [] , showResetModal: false }">
                     <!-- Bulk Actions Header -->
@@ -749,7 +758,7 @@
                         {{ $analyzedItems->withQueryString()->links() }}
                     </div>
                 </div>
-            @elseif($activeTab === 'analyzed')
+                @else
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-6 mb-6 text-center">
                     <x-heroicon-o-inbox class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
                     <p class="text-gray-500 dark:text-gray-400">Belum ada item yang dianalisis.</p>
@@ -758,6 +767,7 @@
                         Lihat item yang belum dianalisis →
                     </a>
                 </div>
+                @endif
             @endif
 
             @if($analyzedCount === 0 && $unanalyzedCount === 0)

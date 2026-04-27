@@ -120,11 +120,26 @@ class GoodsReceiptController extends Controller
                 $poItem->received_qty += $item['received_qty'];
                 $poItem->save();
 
-                // Update Inventory
+                // Update Inventory with Row Lock for atomic calculation
                 $inventory = Inventory::firstOrCreate(
                     ['project_id' => $project->id, 'material_id' => $poItem->material_id],
-                    ['quantity' => 0, 'reserved_qty' => 0]
+                    ['quantity' => 0, 'reserved_qty' => 0, 'average_cost' => 0]
                 );
+                
+                // Reload with lock for update
+                $inventory = Inventory::where('id', $inventory->id)->lockForUpdate()->first();
+
+                // Calculate Moving Average Cost
+                $oldQty = (float) $inventory->quantity;
+                $oldAvgCost = (float) $inventory->average_cost;
+                $newQty = (float) $item['received_qty'];
+                $unitPrice = (float) $poItem->unit_price;
+
+                $totalNewQty = $oldQty + $newQty;
+                if ($totalNewQty > 0) {
+                    $inventory->average_cost = (($oldQty * $oldAvgCost) + ($newQty * $unitPrice)) / $totalNewQty;
+                    $inventory->save();
+                }
 
                 $inventory->addStock(
                     $item['received_qty'],

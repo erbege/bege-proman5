@@ -4,8 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class MaterialRequest extends Model
 {
+    use LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
     protected $fillable = [
         'project_id',
         'requested_by',
@@ -34,6 +47,11 @@ class MaterialRequest extends Model
         return $this->hasMany(MaterialRequestItem::class);
     }
 
+    public function approvalLogs(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(ApprovalLog::class, 'approvable');
+    }
+
     // Boot
     protected static function boot()
     {
@@ -51,18 +69,6 @@ class MaterialRequest extends Model
 
     public static function generateCode(): string
     {
-        $prefix = 'MR-' . date('Ym');
-        $lastRequest = static::where('code', 'like', $prefix . '%')
-            ->orderByDesc('code')
-            ->first();
-
-        if ($lastRequest) {
-            $lastNumber = (int) substr($lastRequest->code, -4);
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
-        }
-
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        return DocumentSequence::next('MR');
     }
 }

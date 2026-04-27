@@ -2,12 +2,21 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\ProjectResource;
 use App\Models\Project;
 use Illuminate\Http\Request;
 
+/**
+ * @group Project Management
+ * 
+ * Endpoints for managing construction projects.
+ */
 class ProjectController extends Controller
 {
+    use ApiResponse;
+
     /**
      * List all projects.
      * 
@@ -15,7 +24,7 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Project::query();
+        $query = Project::with(['creator']);
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -29,9 +38,12 @@ class ProjectController extends Controller
             });
         }
 
-        return $query->select('id', 'code', 'name', 'client_name', 'start_date', 'end_date', 'status', 'contract_value')
-            ->latest()
-            ->paginate($request->per_page ?? 10);
+        $projects = $query->latest()->paginate($request->per_page ?? 10);
+        
+        return $this->paginatedResponse(
+            'Projects retrieved successfully.',
+            ProjectResource::collection($projects)
+        );
     }
 
     /**
@@ -41,9 +53,10 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        return response()->json([
-            'data' => $project->load(['team'])
-        ]);
+        return $this->successResponse(
+            'Project details retrieved successfully.',
+            new ProjectResource($project->load(['creator']))
+        );
     }
 
     /**
@@ -53,9 +66,9 @@ class ProjectController extends Controller
      */
     public function team(Project $project)
     {
-        return response()->json([
-            'data' => $project->team()->select('users.id', 'users.name', 'users.email')->get()
-        ]);
+        $team = $project->team()->select('users.id', 'users.name', 'users.email')->get();
+        
+        return $this->successResponse('Project team retrieved successfully.', $team);
     }
 
     /**
@@ -69,20 +82,18 @@ class ProjectController extends Controller
         $totalBudget = $rabItems->sum('total_price');
         $weightedProgress = $rabItems->sum(fn($item) => $item->weight_percentage * ($item->actual_progress / 100));
 
-        return response()->json([
-            'data' => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'status' => $project->status,
-                'contract_value' => $project->contract_value,
-                'total_budget' => $totalBudget,
-                'overall_progress' => round($weightedProgress, 2),
-                'start_date' => $project->start_date?->format('Y-m-d'),
-                'end_date' => $project->end_date?->format('Y-m-d'),
-                'duration_weeks' => $project->duration_weeks,
-                'rab_items_count' => $rabItems->count(),
-                'scheduled_items_count' => $rabItems->whereNotNull('planned_start')->count(),
-            ]
+        return $this->successResponse('Project statistics retrieved successfully.', [
+            'id' => $project->id,
+            'name' => $project->name,
+            'status' => $project->status,
+            'contract_value' => (float) $project->contract_value,
+            'total_budget' => $totalBudget,
+            'overall_progress' => round($weightedProgress, 2),
+            'start_date' => $project->start_date?->format('Y-m-d'),
+            'end_date' => $project->end_date?->format('Y-m-d'),
+            'duration_weeks' => $project->duration_weeks,
+            'rab_items_count' => $rabItems->count(),
+            'scheduled_items_count' => $rabItems->whereNotNull('planned_start')->count(),
         ]);
     }
 }

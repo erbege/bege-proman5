@@ -143,19 +143,23 @@ class MaterialUsageApiTest extends TestCase
         $response = $this->getJson("/api/projects/{$this->project->id}/material-usages/{$usage->id}");
 
         $response->assertStatus(200)
-            ->assertJsonPath('id', $usage->id)
+            ->assertJsonPath('data.id', $usage->id)
             ->assertJsonStructure([
-                'id',
-                'usage_number',
-                'items' => [
-                    '*' => [
-                        'id',
-                        'material_id',
-                        'quantity',
-                        'material' => ['id', 'name']
-                    ]
-                ],
-                'created_by' => ['id', 'name']
+                'success',
+                'message',
+                'data' => [
+                    'id',
+                    'usage_number',
+                    'items' => [
+                        '*' => [
+                            'id',
+                            'material_id',
+                            'quantity',
+                            'material' => ['id', 'name']
+                        ]
+                    ],
+                    'created_by' => ['id', 'name']
+                ]
             ]);
     }
 

@@ -14,6 +14,8 @@ class MaterialUsageItem extends Model
         'material_usage_id',
         'material_id',
         'quantity',
+        'unit_cost',
+        'total_cost',
         'notes',
     ];
 

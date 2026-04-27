@@ -385,19 +385,133 @@ class WeeklyReportService
         return $generated;
     }
     /**
-     * Collect item code => actual_cumulative from sections recursively (used for carry over)
+     * Update cumulative data actual progress for a report and cascade to future weeks
      */
-    protected function collectItemCumulatives(array $sections, array &$map): void
+    public function updateCumulativeActuals(WeeklyReport $report, array $itemUpdates): int
     {
-        foreach ($sections as $section) {
-            foreach ($section['items'] ?? [] as $item) {
-                if (isset($item['code']) && isset($item['actual']['cumulative'])) {
-                    $map[$item['code']] = $item['actual']['cumulative'];
-                }
+        $data = $report->cumulative_data;
+        if (!$data || !isset($data['sections'])) {
+            return 0;
+        }
+
+        $totals = [
+            'weight' => 0, 'planned_prev' => 0, 'planned_current' => 0, 'planned_cumulative' => 0,
+            'actual_prev' => 0, 'actual_current' => 0, 'actual_cumulative' => 0,
+            'deviation_prev' => 0, 'deviation_current' => 0, 'deviation_cumulative' => 0,
+        ];
+
+        foreach ($data['sections'] as &$section) {
+            $this->updateSectionItems($section, $itemUpdates, $totals);
+        }
+
+        $totals['deviation_prev'] = $totals['actual_prev'] - $totals['planned_prev'];
+        $totals['deviation_current'] = $totals['actual_current'] - $totals['planned_current'];
+        $totals['deviation_cumulative'] = $totals['actual_cumulative'] - $totals['planned_cumulative'];
+
+        $data['totals'] = $totals;
+        $report->update(['cumulative_data' => $data]);
+
+        // Cascade update to subsequent weeks
+        return $this->cascadeToSubsequentWeeks($report->project, $report, $data);
+    }
+
+    protected function cascadeToSubsequentWeeks(Project $project, WeeklyReport $currentReport, array $currentData): int
+    {
+        $subsequentReports = WeeklyReport::where('project_id', $project->id)
+            ->where('week_number', '>', $currentReport->week_number)
+            ->orderBy('week_number')
+            ->get();
+
+        if ($subsequentReports->isEmpty()) return 0;
+
+        $prevCumulatives = [];
+        $this->collectItemCumulatives($currentData['sections'], $prevCumulatives);
+
+        foreach ($subsequentReports as $nextReport) {
+            $nextData = $nextReport->cumulative_data;
+            if (!$nextData || !isset($nextData['sections'])) continue;
+
+            $nextTotals = [
+                'weight' => 0, 'planned_prev' => 0, 'planned_current' => 0, 'planned_cumulative' => 0,
+                'actual_prev' => 0, 'actual_current' => 0, 'actual_cumulative' => 0,
+                'deviation_prev' => 0, 'deviation_current' => 0, 'deviation_cumulative' => 0,
+            ];
+
+            foreach ($nextData['sections'] as &$section) {
+                $this->cascadeSectionItems($section, $prevCumulatives, $nextTotals);
             }
-            if (isset($section['children'])) {
-                $this->collectItemCumulatives($section['children'], $map);
+
+            $nextTotals['deviation_prev'] = $nextTotals['actual_prev'] - $nextTotals['planned_prev'];
+            $nextTotals['deviation_current'] = $nextTotals['actual_current'] - $nextTotals['planned_current'];
+            $nextTotals['deviation_cumulative'] = $nextTotals['actual_cumulative'] - $nextTotals['planned_cumulative'];
+
+            $nextData['totals'] = $nextTotals;
+            $nextReport->update(['cumulative_data' => $nextData]);
+
+            $prevCumulatives = [];
+            $this->collectItemCumulatives($nextData['sections'], $prevCumulatives);
+        }
+
+        return $subsequentReports->count();
+    }
+
+    protected function cascadeSectionItems(array &$section, array $prevCumulatives, array &$totals): void
+    {
+        foreach ($section['items'] as &$item) {
+            $code = $item['code'];
+
+            if (isset($prevCumulatives[$code])) {
+                $newUpToPrev = round((float) $prevCumulatives[$code], 4);
+                $item['actual']['up_to_prev'] = $newUpToPrev;
+                $item['actual']['cumulative'] = round($newUpToPrev + $item['actual']['current'], 4);
+                $item['deviation']['up_to_prev'] = round($newUpToPrev - $item['planned']['up_to_prev'], 4);
+                $item['deviation']['current'] = round($item['actual']['current'] - $item['planned']['current'], 4);
+                $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
+            }
+
+            $totals['weight'] += $item['weight'] ?? 0;
+            $totals['planned_prev'] += $item['planned']['up_to_prev'] ?? 0;
+            $totals['planned_current'] += $item['planned']['current'] ?? 0;
+            $totals['planned_cumulative'] += $item['planned']['cumulative'] ?? 0;
+            $totals['actual_prev'] += $item['actual']['up_to_prev'] ?? 0;
+            $totals['actual_current'] += $item['actual']['current'] ?? 0;
+            $totals['actual_cumulative'] += $item['actual']['cumulative'] ?? 0;
+        }
+
+        if (isset($section['children'])) {
+            foreach ($section['children'] as &$child) {
+                $this->cascadeSectionItems($child, $prevCumulatives, $totals);
+            }
+        }
+    }
+
+    protected function updateSectionItems(array &$section, array $itemUpdates, array &$totals): void
+    {
+        foreach ($section['items'] as &$item) {
+            $code = $item['code'];
+
+            if (isset($itemUpdates[$code])) {
+                $newActualCurrent = round((float) $itemUpdates[$code], 4);
+                $item['actual']['current'] = $newActualCurrent;
+                $item['actual']['cumulative'] = round($item['actual']['up_to_prev'] + $newActualCurrent, 4);
+                $item['deviation']['current'] = round($newActualCurrent - $item['planned']['current'], 4);
+                $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
+            }
+
+            $totals['weight'] += $item['weight'] ?? 0;
+            $totals['planned_prev'] += $item['planned']['up_to_prev'] ?? 0;
+            $totals['planned_current'] += $item['planned']['current'] ?? 0;
+            $totals['planned_cumulative'] += $item['planned']['cumulative'] ?? 0;
+            $totals['actual_prev'] += $item['actual']['up_to_prev'] ?? 0;
+            $totals['actual_current'] += $item['actual']['current'] ?? 0;
+            $totals['actual_cumulative'] += $item['actual']['cumulative'] ?? 0;
+        }
+
+        if (isset($section['children'])) {
+            foreach ($section['children'] as &$child) {
+                $this->updateSectionItems($child, $itemUpdates, $totals);
             }
         }
     }
 }
+

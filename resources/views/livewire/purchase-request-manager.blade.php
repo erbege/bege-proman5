@@ -18,22 +18,25 @@
                     <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->code }}</p>
                 </div>
                 <div class="flex gap-2">
-                    @if($approvedMrs->count() > 0)
-                        <div x-data="{ open: false }" class="relative">
-                            <button @click="open = !open"
-                                class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-xs font-semibold rounded-md uppercase hover:bg-green-700">
-                                <x-heroicon-o-document-arrow-down class="w-4 h-4 mr-2" />Dari MR
-                            </button>
-                            <div x-show="open" @click.away="open = false"
-                                class="absolute right-0 mt-2 w-64 bg-white dark:bg-dark-800 rounded-md shadow-lg z-50">
-                                @foreach($approvedMrs as $mr)
-                                    <button wire:click="openModal({{ $mr->id }})"
-                                        class="block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">{{ $mr->code }}
-                                        ({{ $mr->items->count() }} items)</button>
-                                @endforeach
-                            </div>
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open"
+                            class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-xs font-semibold rounded-md uppercase hover:bg-green-700">
+                            <x-heroicon-o-document-arrow-down class="w-4 h-4 mr-2" />Dari MR
+                        </button>
+                        <div x-show="open" @click.away="open = false"
+                            class="absolute right-0 mt-2 w-64 bg-white dark:bg-dark-800 rounded-md shadow-lg z-50 py-1">
+                            @forelse($approvedMrs as $mr)
+                                <button wire:click="openModal({{ $mr->id }})"
+                                    class="block w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-700">
+                                    {{ $mr->code }} ({{ $mr->items->count() }} items)
+                                </button>
+                            @empty
+                                <div class="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
+                                    Tidak ada MR yang disetujui (Approved) untuk proyek ini.
+                                </div>
+                            @endforelse
                         </div>
-                    @endif
+                    </div>
                     <button wire:click="openModal"
                         class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-md uppercase hover:bg-blue-700">
                         <x-heroicon-o-plus class="w-4 h-4 mr-2" />Buat PR Baru
@@ -257,6 +260,13 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
+                                                @if(isset($item['material_request_item_id']))
+                                                    <div class="mt-1">
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                            <x-heroicon-s-link class="w-3 h-3 mr-1" /> Source MR Item
+                                                        </span>
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div class="col-span-2">
                                                 <x-input-label value="Qty" class="text-xs" />

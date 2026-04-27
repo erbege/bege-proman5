@@ -2,12 +2,34 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\RejectPurchaseRequestRequest;
+use App\Http\Requests\Api\StorePurchaseRequestRequest;
+use App\Http\Resources\Api\PurchaseRequestResource;
 use App\Models\PurchaseRequest;
+use App\Services\PurchaseRequestService;
 use Illuminate\Http\Request;
 
+/**
+ * @group Procurement: Purchase Requests
+ * @authenticated
+ * 
+ * Endpoints for managing purchase requests (PR).
+ */
 class PurchaseRequestController extends Controller
 {
+    use ApiResponse;
+
+    protected $prService;
+
+    private const ELEVATED_ROLES = ['super-admin', 'Superadmin', 'administrator'];
+
+    public function __construct(PurchaseRequestService $prService)
+    {
+        $this->prService = $prService;
+    }
+
     /**
      * List purchase requests.
      * 
@@ -26,19 +48,16 @@ class PurchaseRequestController extends Controller
         }
 
         $user = auth()->user();
-        if ($user && $user->hasRole('supervisor')) {
-            $query->where('requested_by', $user->id);
-        } else if ($user) {
-            $supervisorProjectIds = $user->projects()->wherePivot('role', 'supervisor')->pluck('projects.id');
-            if ($supervisorProjectIds->isNotEmpty()) {
-                $query->where(function($q) use ($user, $supervisorProjectIds) {
-                    $q->whereNotIn('project_id', $supervisorProjectIds)
-                      ->orWhere('requested_by', $user->id);
-                });
-            }
+        if ($user) {
+            $this->applyVisibilityScope($query, $user);
         }
 
-        return $query->latest()->paginate($request->per_page ?? 15);
+        $requests = $query->latest()->paginate($request->per_page ?? 15);
+
+        return $this->paginatedResponse(
+            'Purchase requests retrieved successfully.', 
+            PurchaseRequestResource::collection($requests)
+        );
     }
 
     /**
@@ -49,51 +68,39 @@ class PurchaseRequestController extends Controller
     public function show(PurchaseRequest $purchaseRequest)
     {
         $user = auth()->user();
-        $isSupervisor = $user && $user->hasRole('supervisor');
-        if (!$isSupervisor && $user) {
-            $isSupervisor = $user->projects()->wherePivot('role', 'supervisor')->where('projects.id', $purchaseRequest->project_id)->exists();
+        if (!$user || !$this->canViewRequest($purchaseRequest, $user)) {
+            return $this->errorResponse('Unauthorized', 403);
         }
 
-        if ($isSupervisor && $purchaseRequest->requested_by !== $user->id) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        $purchaseRequest->load(['project', 'requestedBy', 'items.material', 'approvalLogs']);
 
-        return response()->json([
-            'data' => $purchaseRequest->load(['project', 'requestedBy', 'items.material'])
-        ]);
+        return $this->successResponse(
+            'Purchase request retrieved successfully.', 
+            new PurchaseRequestResource($purchaseRequest)
+        );
     }
 
     /**
      * Create new purchase request.
      * 
-     * Create a new purchase request.
+     * Create a new purchase request using the service layer.
      */
-    public function store(Request $request)
+    public function store(StorePurchaseRequestRequest $request)
     {
-        $validated = $request->validate([
-            'project_id' => 'required|exists:projects,id',
-            'notes' => 'nullable|string',
-            'items' => 'required|array|min:1',
-            'items.*.material_id' => 'required|exists:materials,id',
-            'items.*.quantity' => 'required|numeric|min:0.01',
-            'items.*.estimated_price' => 'nullable|numeric|min:0',
-        ]);
-
-        $purchaseRequest = PurchaseRequest::create([
-            'project_id' => $validated['project_id'],
-            'requested_by' => auth()->id(),
-            'notes' => $validated['notes'] ?? null,
-            'status' => 'pending',
-        ]);
-
-        foreach ($validated['items'] as $item) {
-            $purchaseRequest->items()->create($item);
+        if (!$this->prService->canCreatePR(auth()->id(), $request->project_id)) {
+            return $this->errorResponse('Anda tidak terdaftar dalam tim proyek ini.', 403);
         }
 
-        return response()->json([
-            'message' => 'Purchase request created successfully',
-            'data' => $purchaseRequest->load('items.material')
-        ], 201);
+        $purchaseRequest = $this->prService->createPurchaseRequest(
+            $request->validated(),
+            auth()->id()
+        );
+
+        return $this->successResponse(
+            'Purchase request created successfully', 
+            new PurchaseRequestResource($purchaseRequest->load('items.material')), 
+            201
+        );
     }
 
     /**
@@ -104,7 +111,7 @@ class PurchaseRequestController extends Controller
     public function approve(PurchaseRequest $purchaseRequest)
     {
         if ($purchaseRequest->status !== 'pending') {
-            return response()->json(['error' => 'Request is not pending'], 422);
+            return $this->errorResponse('Request is not pending', 422);
         }
 
         $purchaseRequest->update([
@@ -113,10 +120,10 @@ class PurchaseRequestController extends Controller
             'approved_at' => now(),
         ]);
 
-        return response()->json([
-            'message' => 'Purchase request approved',
-            'data' => $purchaseRequest
-        ]);
+        return $this->successResponse(
+            'Purchase request approved', 
+            new PurchaseRequestResource($purchaseRequest)
+        );
     }
 
     /**
@@ -124,24 +131,87 @@ class PurchaseRequestController extends Controller
      * 
      * Reject a pending purchase request.
      */
-    public function reject(Request $request, PurchaseRequest $purchaseRequest)
+    public function reject(RejectPurchaseRequestRequest $request, PurchaseRequest $purchaseRequest)
     {
         if ($purchaseRequest->status !== 'pending') {
-            return response()->json(['error' => 'Request is not pending'], 422);
+            return $this->errorResponse('Request is not pending', 422);
         }
 
-        $validated = $request->validate([
-            'reason' => 'nullable|string|max:255',
-        ]);
+        $validated = $request->validated();
 
         $purchaseRequest->update([
             'status' => 'rejected',
             'rejection_reason' => $validated['reason'] ?? null,
         ]);
 
-        return response()->json([
-            'message' => 'Purchase request rejected',
-            'data' => $purchaseRequest
-        ]);
+        return $this->successResponse(
+            'Purchase request rejected', 
+            new PurchaseRequestResource($purchaseRequest)
+        );
+    }
+
+    /**
+     * Get available MR items for import.
+     * 
+     * Get list of approved MR items for a project that have not been fully processed to PR.
+     * 
+     * @urlParam project_id integer required The ID of the project.
+     */
+    public function availableMrItems(Request $request, \App\Models\Project $project)
+    {
+        $user = auth()->user();
+        if (!$user->projects()->where('projects.id', $project->id)->exists() && !$user->hasAnyRole(self::ELEVATED_ROLES)) {
+            return $this->errorResponse('Unauthorized access to project', 403);
+        }
+
+        $items = \App\Models\MaterialRequestItem::whereHas('materialRequest', function ($q) use ($project) {
+                $q->where('project_id', $project->id)
+                  ->where('status', 'approved');
+            })
+            ->with(['material:id,name,unit', 'materialRequest:id,code'])
+            ->get()
+            ->filter(fn($item) => $item->remaining_to_order > 0)
+            ->values();
+
+        return $this->successResponse('Available MR items retrieved successfully.', $items->map(fn($item) => [
+            'id' => $item->id,
+            'mr_id' => $item->material_request_id,
+            'mr_code' => $item->materialRequest?->code,
+            'material_id' => $item->material_id,
+            'material_name' => $item->material?->name,
+            'unit' => $item->material?->unit,
+            'quantity_requested' => (float) $item->quantity,
+            'quantity_ordered' => (float) $item->ordered_quantity,
+            'remaining_to_order' => (float) $item->remaining_to_order,
+            'notes' => $item->notes,
+        ]));
+    }
+
+    private function applyVisibilityScope($query, $user): void
+    {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+            return;
+        }
+
+        $projectIds = $user->projects()->pluck('projects.id');
+        $query->where(function ($q) use ($user, $projectIds) {
+            $q->where('requested_by', $user->id);
+            if ($projectIds->isNotEmpty()) {
+                $q->orWhereIn('project_id', $projectIds);
+            }
+        });
+    }
+
+    private function canViewRequest(PurchaseRequest $purchaseRequest, $user): bool
+    {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+            return true;
+        }
+
+        if ($purchaseRequest->requested_by === $user->id) {
+            return true;
+        }
+
+        return $user->projects()->where('projects.id', $purchaseRequest->project_id)->exists();
     }
 }

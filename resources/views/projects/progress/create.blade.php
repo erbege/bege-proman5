@@ -65,10 +65,34 @@
                             <x-input-error class="mt-2" :messages="$errors->get('weather')" />
                         </div>
 
-                        <div>
-                            <x-input-label for="workers_count" :value="__('Jumlah Pekerja')" />
-                            <x-text-input id="workers_count" name="workers_count" type="number" min="0"
-                                class="mt-1 block w-full" :value="old('workers_count')" />
+                        <div x-data="{ 
+                            labors: [
+                                { name: 'Tukang', count: 0 },
+                                { name: 'Pekerja', count: 0 },
+                                { name: 'Mandor', count: 0 },
+                                { name: 'Lainnya', count: 0 }
+                            ],
+                            get total() {
+                                return this.labors.reduce((sum, l) => sum + (parseInt(l.count) || 0), 0);
+                            }
+                        }">
+                            <x-input-label :value="__('Detail Tenaga Kerja')" />
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                <template x-for="(labor, index) in labors" :key="index">
+                                    <div class="flex items-center space-x-2">
+                                        <input type="hidden" :name="'labor_details[' + labor.name + ']'" :value="labor.count">
+                                        <div class="flex-1">
+                                            <span class="text-xs text-gray-500" x-text="labor.name"></span>
+                                            <input type="number" x-model="labor.count" min="0"
+                                                class="block w-full text-sm border-gray-300 dark:border-dark-700 dark:bg-dark-900 dark:text-gray-300 focus:border-gold-500 rounded-md shadow-sm">
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <div class="mt-2 text-xs font-bold text-gray-700 dark:text-gray-400">
+                                Total: <span x-text="total"></span> orang
+                                <input type="hidden" name="workers_count" :value="total">
+                            </div>
                             <x-input-error class="mt-2" :messages="$errors->get('workers_count')" />
                         </div>
                     </div>

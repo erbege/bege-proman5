@@ -95,10 +95,15 @@ class MaterialUsageController extends Controller
 
                     $inventory->removeStock($qty, 'usage', $usage->id, $itemData['notes'] ?? null);
 
+                    $unitCost = $inventory->average_cost;
+                    $totalCost = $qty * $unitCost;
+
                     // 3. Create Item
                     $usage->items()->create([
                         'material_id' => $materialId,
                         'quantity' => $qty,
+                        'unit_cost' => $unitCost,
+                        'total_cost' => $totalCost,
                         'notes' => $itemData['notes'] ?? null,
                     ]);
                 }

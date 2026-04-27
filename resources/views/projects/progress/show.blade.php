@@ -39,8 +39,28 @@
                     @endif
                     @if($report->workers_count)
                         <div>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Pekerja</p>
-                            <p class="font-semibold text-gray-900 dark:text-white">{{ $report->workers_count }} orang</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Tenaga Kerja</p>
+                            <div class="flex items-center">
+                                <p class="font-semibold text-gray-900 dark:text-white">{{ $report->workers_count }} orang</p>
+                                @if($report->labor_details)
+                                    <div x-data="{ open: false }" class="relative ml-1 inline-block">
+                                        <button @mouseenter="open = true" @mouseleave="open = false" type="button" class="text-gray-400 hover:text-gray-600">
+                                            <x-heroicon-s-information-circle class="w-4 h-4" />
+                                        </button>
+                                        <div x-show="open" x-cloak class="absolute z-20 w-32 p-2 bg-gray-900 text-white text-[10px] rounded shadow-lg -top-2 left-6">
+                                            <p class="font-bold border-b border-gray-700 mb-1 pb-1">Rincian:</p>
+                                            @foreach($report->labor_details as $type => $count)
+                                                @if($count > 0)
+                                                    <div class="flex justify-between">
+                                                        <span>{{ $type }}:</span>
+                                                        <span>{{ $count }}</span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     @endif
                 </div>

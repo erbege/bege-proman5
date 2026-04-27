@@ -11,15 +11,6 @@ use App\Http\Controllers\RabController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SupplierController;
 use Illuminate\Support\Facades\Route;
-use OpenAI\Laravel\Facades\OpenAI;
-
-Route::get('/ai', function () {
-    $returnValue = OpenAI::responses()->create([
-        'model' => 'gpt-4o-mini',
-        'input' => 'Hello!',
-    ]);
-    echo $returnValue->outputText;
-});
 
 
 Route::get('/', function () {
@@ -168,6 +159,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/po/create', [App\Http\Controllers\PurchaseOrderController::class, 'create'])->name('po.create');
         Route::post('/po', [App\Http\Controllers\PurchaseOrderController::class, 'store'])->name('po.store');
         Route::get('/po/{po}', [App\Http\Controllers\PurchaseOrderController::class, 'show'])->name('po.show');
+        Route::post('/po/{po}/status', [App\Http\Controllers\PurchaseOrderController::class, 'updateStatus'])->name('po.status');
         Route::get('/po/{po}/print', [App\Http\Controllers\PurchaseOrderController::class, 'print'])->name('po.print');
         Route::delete('/po/{po}', [App\Http\Controllers\PurchaseOrderController::class, 'destroy'])->name('po.destroy');
 
@@ -224,6 +216,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::delete('/files/{file}', [App\Http\Controllers\ProjectFileController::class, 'destroy'])->name('files.destroy');
         Route::post('/files/{file}/comments', [App\Http\Controllers\ProjectFileController::class, 'storeComment'])->name('files.comments.store');
         Route::post('/files/{file}/comments/{comment}/toggle', [App\Http\Controllers\ProjectFileController::class, 'toggleResolveComment'])->name('files.comments.toggle');
+        // Cost Control / Financial
+        Route::get('/financial', [App\Http\Controllers\CostControlController::class, 'index'])->name('financial.index');
     });
 });
 
@@ -238,6 +232,12 @@ Route::middleware(['auth', 'role:Superadmin'])->prefix('settings')->name('settin
 Route::middleware(['auth', 'role:super-admin|Superadmin|administrator'])->prefix('settings')->name('settings.')->group(function () {
     Route::get('/users', fn() => view('settings.users'))->name('users');
     Route::get('/roles', fn() => view('settings.roles'))->name('roles');
+    
+    // Approval Matrix
+    Route::get('/approval-matrix', [App\Http\Controllers\ApprovalMatrixController::class, 'index'])->name('approval-matrix.index');
+    Route::post('/approval-matrix', [App\Http\Controllers\ApprovalMatrixController::class, 'store'])->name('approval-matrix.store');
+    Route::put('/approval-matrix/{matrix}', [App\Http\Controllers\ApprovalMatrixController::class, 'update'])->name('approval-matrix.update');
+    Route::delete('/approval-matrix/{matrix}', [App\Http\Controllers\ApprovalMatrixController::class, 'destroy'])->name('approval-matrix.destroy');
 });
 
 // Notifications (Authenticated Users)

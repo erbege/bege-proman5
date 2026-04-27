@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\DB;
 
 class PurchaseRequestController extends Controller
 {
+    protected $approvalService;
+
+    public function __construct(\App\Services\ApprovalService $approvalService)
+    {
+        $this->approvalService = $approvalService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -24,8 +31,9 @@ class PurchaseRequestController extends Controller
         }
 
         $prs = $query->latest()->paginate(10);
+        $approvedMrs = $project->materialRequests()->where('status', 'approved')->get();
 
-        return view('projects.pr.index', compact('project', 'prs'));
+        return view('projects.pr.index', compact('project', 'prs', 'approvedMrs'));
     }
 
     /**
@@ -34,26 +42,39 @@ class PurchaseRequestController extends Controller
     public function create(Project $project)
     {
         $materials = Material::orderBy('name')->get();
+        $availableMrItems = \App\Models\MaterialRequestItem::whereHas('materialRequest', function ($q) use ($project) {
+                $q->where('project_id', $project->id)
+                  ->where('status', 'approved');
+            })
+            ->with(['material', 'materialRequest'])
+            ->get()
+            ->filter(fn($item) => $item->remaining_to_order > 0)
+            ->values();
 
         $mr = null;
         $items = [];
 
         if (request('from_mr')) {
-            $mr = MaterialRequest::with('items')->find(request('from_mr'));
+            $mr = MaterialRequest::with('items.material')->find(request('from_mr'));
             if ($mr && $mr->status === 'approved') {
-                $items = $mr->items->map(function ($item) {
-                    return [
-                        'material_id' => $item->material_id,
-                        'quantity' => $item->quantity,
-                        'unit' => $item->unit,
-                        'estimated_price' => 0, // Default
-                        'notes' => $item->notes,
-                    ];
-                });
+                $items = $mr->items
+                    ->filter(fn($item) => $item->remaining_to_order > 0)
+                    ->map(function ($item) {
+                        return [
+                            'material_id' => $item->material_id,
+                            'material_request_item_id' => $item->id,
+                            'material_name' => $item->material->name,
+                            'mr_code' => $item->materialRequest->code,
+                            'quantity' => $item->remaining_to_order,
+                            'unit' => $item->unit,
+                            'estimated_price' => 0,
+                            'notes' => $item['notes'] ?? '',
+                        ];
+                    });
             }
         }
 
-        return view('projects.pr.create', compact('project', 'materials', 'mr', 'items'));
+        return view('projects.pr.create', compact('project', 'materials', 'mr', 'items', 'availableMrItems'));
     }
 
     /**
@@ -65,54 +86,28 @@ class PurchaseRequestController extends Controller
             'required_date' => 'required|date',
             'priority' => 'required|in:low,normal,high,urgent',
             'notes' => 'nullable|string',
-            'from_mr_id' => 'nullable|exists:material_requests,id',
             'items' => 'required|array|min:1',
             'items.*.material_id' => 'required|exists:materials,id',
+            'items.*.material_request_item_id' => 'nullable|exists:material_request_items,id',
             'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.estimated_price' => 'nullable|numeric|min:0',
             'items.*.notes' => 'nullable|string',
         ]);
 
-        $pr = DB::transaction(function () use ($validated, $project) {
-            $pr = PurchaseRequest::create([
+        try {
+            $service = app(\App\Services\PurchaseRequestService::class);
+            $service->createPurchaseRequest([
                 'project_id' => $project->id,
-                'request_date' => now(),
                 'required_date' => $validated['required_date'],
-                'status' => 'pending', // Pending approval
                 'priority' => $validated['priority'],
-                'notes' => $validated['notes'] . ($validated['from_mr_id'] ? " (From MR ID: {$validated['from_mr_id']})" : ""),
-                'requested_by' => auth()->id(),
-            ]);
+                'notes' => $validated['notes'],
+                'items' => $validated['items'],
+            ], auth()->id());
 
-            foreach ($validated['items'] as $item) {
-                $pr->items()->create([
-                    'material_id' => $item['material_id'],
-                    'quantity' => $item['quantity'],
-                    'estimated_price' => $item['estimated_price'] ?? 0,
-                    'notes' => $item['notes'] ?? null,
-                ]);
-            }
-
-            // Update MR status if applicable
-            if (!empty($validated['from_mr_id'])) {
-                $mr = MaterialRequest::find($validated['from_mr_id']);
-                if ($mr) {
-                    $mr->update(['status' => 'processed']);
-                }
-            }
-
-            return $pr;
-        });
-
-        // Notify project team + admins about new PR
-        $pr->load(['project', 'requestedBy']);
-        \App\Services\NotificationHelper::sendToProjectTeam(
-            $project,
-            new \App\Notifications\PurchaseRequestCreatedNotification($pr),
-            auth()->id()
-        );
-
-        return redirect()->route('projects.pr.index', $project)->with('success', 'Purchase Request berhasil dibuat.');
+            return redirect()->route('projects.pr.index', $project)->with('success', 'Purchase Request berhasil dibuat dan diajukan untuk approval.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membuat PR: ' . $e->getMessage())->withInput();
+        }
     }
 
     /**
@@ -125,7 +120,7 @@ class PurchaseRequestController extends Controller
             abort(403, 'Anda tidak memiliki akses ke Purchase Request ini.');
         }
 
-        $pr->load(['items.material', 'requestedBy', 'approvedBy']);
+        $pr->load(['items.material', 'requestedBy', 'approvedBy', 'approvalLogs.user']);
         return view('projects.pr.show', compact('project', 'pr'));
     }
 
@@ -134,28 +129,28 @@ class PurchaseRequestController extends Controller
      */
     public function updateStatus(Request $request, Project $project, PurchaseRequest $pr)
     {
-        $request->validate(['status' => 'required|in:approved,rejected']);
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'comment' => 'nullable|string|max:500'
+        ]);
 
-        $data = [
-            'status' => $request->status,
-        ];
+        try {
+            if ($request->status === 'approved') {
+                $this->approvalService->approve($pr, $request->comment);
+            } else {
+                $this->approvalService->reject($pr, $request->comment ?? 'Rejected by user');
+            }
 
-        if ($request->status === 'approved') {
-            $data['approved_by'] = auth()->id();
-            $data['approved_at'] = now();
-        } elseif ($request->status === 'rejected') {
-            // Reason logic could be added here
+            // Send notification to the requester
+            if ($pr->requestedBy && $pr->requestedBy->id !== auth()->id()) {
+                $pr->requestedBy->notify(
+                    new \App\Notifications\PurchaseRequestStatusNotification($pr, $request->status)
+                );
+            }
+
+            return back()->with('success', 'Status PR berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
         }
-
-        $pr->update($data);
-
-        // Send notification to the requester
-        if ($pr->requestedBy && $pr->requestedBy->id !== auth()->id()) {
-            $pr->requestedBy->notify(
-                new \App\Notifications\PurchaseRequestStatusNotification($pr, $request->status)
-            );
-        }
-
-        return back()->with('success', 'Status PR berhasil diperbarui.');
     }
 }

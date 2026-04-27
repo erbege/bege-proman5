@@ -22,5 +22,53 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                // Validation Exception
+                if ($e instanceof \Illuminate\Validation\ValidationException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Validasi gagal.',
+                        'errors' => $e->errors(),
+                    ], 422);
+                }
+
+                // Authentication Exception
+                if ($e instanceof \Illuminate\Auth\AuthenticationException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Sesi berakhir, silakan login kembali.',
+                    ], 401);
+                }
+
+                // Authorization Exception
+                if ($e instanceof \Illuminate\Auth\Access\AuthorizationException || 
+                    $e instanceof \Spatie\Permission\Exceptions\UnauthorizedException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Anda tidak memiliki akses untuk aksi ini.',
+                    ], 403);
+                }
+
+                // Model Not Found
+                if ($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data tidak ditemukan.',
+                    ], 404);
+                }
+
+                // Generic Fallback for API
+                return response()->json([
+                    'success' => false,
+                    'message' => config('app.debug') ? $e->getMessage() : 'Terjadi kesalahan pada server.',
+                    'error' => config('app.debug') ? [
+                        'exception' => get_class($e),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => $e->getTrace(),
+                    ] : null,
+                ], 500);
+            }
+        });
     })->create();

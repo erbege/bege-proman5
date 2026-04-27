@@ -7,15 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class Inventory extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $fillable = [
         'project_id',
         'material_id',
         'quantity',
         'reserved_qty',
+        'average_cost',
     ];
 
     protected $casts = [
@@ -53,8 +65,8 @@ class Inventory extends Model
     // Methods
     public function addStock(float $qty, string $referenceType = null, int $referenceId = null, string $notes = null, int $userId = null): void
     {
-        $this->quantity += $qty;
-        $this->save();
+        $this->increment('quantity', $qty);
+        $this->refresh(); // Sync the local instance with the new value
 
         $this->logs()->create([
             'type' => 'in',
@@ -69,8 +81,8 @@ class Inventory extends Model
 
     public function removeStock(float $qty, string $referenceType = null, int $referenceId = null, string $notes = null, int $userId = null): void
     {
-        $this->quantity -= $qty;
-        $this->save();
+        $this->decrement('quantity', $qty);
+        $this->refresh();
 
         $this->logs()->create([
             'type' => 'out',
