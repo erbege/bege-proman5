@@ -77,39 +77,39 @@
     </div>
 
     <!-- Forecasting Card -->
-    <div class="bg-gradient-to-r from-gray-900 to-dark-800 rounded-2xl p-4 mb-4 shadow-xl border border-gray-700">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-lg border-l-4 border-yellow-500 rounded-xl p-5 mb-6 transition-all duration-300 hover:shadow-xl">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center">
-                <div class="p-4 rounded-2xl bg-gold-500/10 text-gold-500 border border-gold-500/20">
-                    <x-heroicon-o-presentation-chart-line class="w-8 h-8" />
+                <div class="p-3 rounded-xl bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400">
+                    <x-heroicon-o-presentation-chart-line class="w-6 h-6" />
                 </div>
                 <div class="ml-5">
-                    <h4 class="text-lg font-bold text-white">Forecasting Proyek</h4>
-                    <p class="text-sm text-gray-400">Estimasi biaya akhir berdasarkan performa saat ini (CPI)</p>
+                    <h4 class="text-lg font-extrabold text-gray-900 dark:text-gray-100">Forecasting Proyek</h4>
+                    <p class="text-sm font-medium text-gray-400">Estimasi biaya akhir berdasarkan performa saat ini (CPI)</p>
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
                 <div>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Estimasi Akhir (EAC)</p>
-                    <p class="text-lg font-extrabold text-white">Rp {{ number_format($summary['eac'], 0, ',', '.') }}</p>
-                    <p class="text-[10px] mt-1 {{ $summary['eac'] <= $summary['total_budget'] ? 'text-green-400' : 'text-red-400' }}">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Estimasi Akhir (EAC)</p>
+                    <p class="text-lg font-extrabold text-gray-900 dark:text-gray-100">Rp {{ number_format($summary['eac'], 0, ',', '.') }}</p>
+                    <p class="text-[10px] mt-1 font-bold {{ $summary['eac'] <= $summary['total_budget'] ? 'text-green-500' : 'text-red-500' }}">
                         {{ $summary['forecast_status'] }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Sisa Anggaran (ETC)</p>
-                    <p class="text-lg font-extrabold text-white">Rp {{ number_format($summary['etc'], 0, ',', '.') }}</p>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Sisa Anggaran (ETC)</p>
+                    <p class="text-lg font-extrabold text-gray-900 dark:text-gray-100">Rp {{ number_format($summary['etc'], 0, ',', '.') }}</p>
                 </div>
                 <div class="hidden md:block">
-                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Status Profitabilitas</p>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status Profitabilitas</p>
                     @php 
                         $margin = $project->contract_value - $summary['eac'];
                     @endphp
-                    <p class="text-lg font-extrabold {{ $margin >= 0 ? 'text-green-400' : 'text-red-400' }}">
+                    <p class="text-lg font-extrabold {{ $margin >= 0 ? 'text-green-600' : 'text-red-600' }}">
                         {{ $margin >= 0 ? '+' : '' }}Rp {{ number_format($margin, 0, ',', '.') }}
                     </p>
-                    <p class="text-[10px] text-gray-400 mt-1 italic">Estimasi margin kotor</p>
+                    <p class="text-[10px] text-gray-400 mt-1 italic font-medium">Estimasi margin kotor</p>
                 </div>
             </div>
         </div>
