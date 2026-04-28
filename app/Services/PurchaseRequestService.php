@@ -15,6 +15,11 @@ class PurchaseRequestService
         $this->approvalService = $approvalService;
     }
 
+    public function approvalService(): ApprovalService
+    {
+        return $this->approvalService;
+    }
+
     /**
      * Create a new Purchase Request.
      */

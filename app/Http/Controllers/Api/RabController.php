@@ -8,12 +8,18 @@ use Illuminate\Http\Request;
 
 class RabController extends Controller
 {
+    private const ELEVATED_ROLES = ['Superadmin', 'super-admin', 'administrator'];
     /**
      * Get project RAB (Budget).
      */
     public function index(Project $project)
     {
         $this->authorize('rab.view');
+        $user = auth()->user();
+        if (!$user || !$this->canViewProject($project, $user)) {
+            return response()->json(['message' => 'Unauthorized access to project'], 403);
+        }
+
         $canViewFinancials = auth()->user()->can('financials.view');
 
         $sections = $project->rabSections()->with(['items' => function($q) use ($canViewFinancials) {
@@ -43,6 +49,11 @@ class RabController extends Controller
     public function show(Project $project, $itemId)
     {
         $this->authorize('rab.view');
+        $user = auth()->user();
+        if (!$user || !$this->canViewProject($project, $user)) {
+            return response()->json(['message' => 'Unauthorized access to project'], 403);
+        }
+
         $canViewFinancials = auth()->user()->can('financials.view');
 
         $item = $project->rabItems()->with(['section', 'materialForecasts.material'])->findOrFail($itemId);
@@ -54,5 +65,14 @@ class RabController extends Controller
         return response()->json([
             'data' => $item
         ]);
+    }
+
+    private function canViewProject(Project $project, $user): bool
+    {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
+            return true;
+        }
+
+        return $project->team()->where('users.id', $user->id)->exists();
     }
 }

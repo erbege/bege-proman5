@@ -24,14 +24,46 @@
         style="display: none;">
         
         {{-- Header --}}
-        <div class="flex items-center justify-between px-3 py-1.5 border-b border-gray-100 dark:border-dark-700">
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notifikasi</h3>
-            @if($unreadCount > 0)
-                <button wire:click="markAllAsRead" 
-                    class="text-xs text-gold-600 hover:text-gold-700 dark:text-gold-400 dark:hover:text-gold-300 font-medium">
-                    Tandai semua dibaca
-                </button>
-            @endif
+        <div class="px-3 py-1.5 border-b border-gray-100 dark:border-dark-700">
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Notifikasi</h3>
+                @if($unreadCount > 0)
+                    <button wire:click="markAllAsRead" 
+                        class="text-xs text-gold-600 hover:text-gold-700 dark:text-gold-400 dark:hover:text-gold-300 font-medium">
+                        Tandai semua dibaca
+                    </button>
+                @endif
+            </div>
+            
+            {{-- Push Notification Permission Request --}}
+            <div x-data="{ 
+                    showPrompt: false,
+                    init() {
+                        if ('Notification' in window && Notification.permission === 'default' && window.userId) {
+                            this.showPrompt = true;
+                        }
+                    },
+                    requestPermission() {
+                        if (window.PROMAN_FCM) {
+                            window.PROMAN_FCM.requestNotificationPermission().then(token => {
+                                if (token) {
+                                    window.PROMAN_FCM.initializeFcm();
+                                    this.showPrompt = false;
+                                }
+                            });
+                        }
+                    }
+                }" 
+                x-show="showPrompt" 
+                class="mt-1 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-100 dark:border-blue-800">
+                <div class="flex items-center justify-between gap-2">
+                    <p class="text-[10px] text-blue-700 dark:text-blue-300 leading-tight">Aktifkan notifikasi browser untuk update real-time.</p>
+                    <button @click="requestPermission" 
+                        class="flex-shrink-0 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold rounded transition-colors">
+                        Aktifkan
+                    </button>
+                </div>
+            </div>
         </div>
 
         {{-- Notification List --}}
@@ -55,6 +87,11 @@
                                         'material_request_created' => 'text-orange-600',
                                         'project_assignment' => 'text-indigo-500',
                                         'schedule_changed' => 'text-yellow-500',
+                                        'project_file_uploaded' => 'text-blue-500',
+                                        'project_file_updated' => 'text-blue-600',
+                                        'project_file_commented' => 'text-cyan-500',
+                                        'project_file_status_changed' => 'text-teal-500',
+                                        'goods_receipt' => 'text-green-600',
                                         default => 'text-gray-500'
                                     };
                                 @endphp
@@ -83,6 +120,19 @@
                                             @break
                                         @case('schedule_changed')
                                             <x-heroicon-s-calendar-days class="w-4 h-4 {{ $iconClass }}" />
+                                            @break
+                                        @case('project_file_uploaded')
+                                        @case('project_file_updated')
+                                            <x-heroicon-s-document-text class="w-4 h-4 {{ $iconClass }}" />
+                                            @break
+                                        @case('project_file_commented')
+                                            <x-heroicon-s-chat-bubble-left-right class="w-4 h-4 {{ $iconClass }}" />
+                                            @break
+                                        @case('project_file_status_changed')
+                                            <x-heroicon-s-check-circle class="w-4 h-4 {{ $iconClass }}" />
+                                            @break
+                                        @case('goods_receipt')
+                                            <x-heroicon-s-clipboard-document-check class="w-4 h-4 {{ $iconClass }}" />
                                             @break
                                         @default
                                             <x-heroicon-s-bell class="w-4 h-4 {{ $iconClass }}" />

@@ -19,7 +19,8 @@ class ProjectController extends Controller
         $query = Project::with('creator');
 
         // Data Scoping: If not superadmin/privileged, only show projects where user is in the team
-        if (!$user->hasRole(['super-admin', 'Superadmin', 'administrator']) && !$user->can('financials.manage')) {
+        if (!$user->hasRole(['super-admin', 'Superadmin', 'administrator', 'Project Manager', 'Estimator']) && 
+            !$user->can('projects.view.all')) {
             $query->whereHas('team', function ($q) use ($user) {
                 $q->where('user_id', $user->id)
                   ->where('is_active', true);
@@ -34,7 +35,7 @@ class ProjectController extends Controller
 
     public function create()
     {
-        if (!Auth::user()->can('financials.manage')) {
+        if (!Auth::user()->can('projects.create')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -51,7 +52,7 @@ class ProjectController extends Controller
 
     public function store(Request $request)
     {
-        if (!Auth::user()->can('financials.manage')) {
+        if (!Auth::user()->can('projects.create')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -94,7 +95,7 @@ class ProjectController extends Controller
         
         // Authorization check: User must be in team or be admin/privileged
         if (!$user->hasRole(['super-admin', 'Superadmin', 'administrator']) && 
-            !$user->can('financials.manage') && 
+            !$user->can('projects.view.all') && 
             !$project->team()->where('user_id', $user->id)->where('is_active', true)->exists()) {
             abort(403, 'Anda tidak terdaftar dalam tim proyek ini.');
         }
@@ -121,7 +122,7 @@ class ProjectController extends Controller
 
     public function edit(Project $project)
     {
-        if (!Auth::user()->can('financials.manage')) {
+        if (!Auth::user()->can('projects.update')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -145,7 +146,7 @@ class ProjectController extends Controller
 
     public function update(Request $request, Project $project)
     {
-        if (!Auth::user()->can('financials.manage')) {
+        if (!Auth::user()->can('projects.update')) {
             abort(403, 'Unauthorized action.');
         }
 

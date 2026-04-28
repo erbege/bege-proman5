@@ -15,6 +15,7 @@ class ProgressReportController extends Controller
 {
     public function index(Project $project)
     {
+        $this->authorize('progress.view');
         $reports = $project->progressReports()
             ->with(['rabItem', 'reporter'])
             ->orderByDesc('report_date')
@@ -25,6 +26,7 @@ class ProgressReportController extends Controller
 
     public function create(Project $project)
     {
+        $this->authorize('progress.create');
         $rabItems = $project->rabItems()
             ->with('section')
             ->orderBy('sort_order')
@@ -42,6 +44,7 @@ class ProgressReportController extends Controller
 
     public function store(Request $request, Project $project)
     {
+        $this->authorize('progress.create');
         $validated = $request->validate([
             'rab_item_id' => 'nullable|exists:rab_items,id',
             'report_date' => 'required|date',
@@ -95,9 +98,10 @@ class ProgressReportController extends Controller
             ->where('users.id', '!=', Auth::id())
             ->get();
 
-        \Illuminate\Support\Facades\Notification::send(
-            $teamMembers,
-            new \App\Notifications\ProgressReportCreatedNotification($report)
+        \App\Services\NotificationHelper::sendToProjectTeam(
+            $project,
+            new \App\Notifications\ProgressReportCreatedNotification($report),
+            Auth::id()
         );
 
         return redirect()
@@ -107,6 +111,7 @@ class ProgressReportController extends Controller
 
     public function show(Project $project, ProgressReport $report)
     {
+        $this->authorize('progress.view');
         $report->load(['rabItem.section', 'reporter']);
 
         return view('projects.progress.show', compact('project', 'report'));
@@ -114,6 +119,7 @@ class ProgressReportController extends Controller
 
     public function destroy(Project $project, ProgressReport $report)
     {
+        $this->authorize('progress.delete');
         $hasRabItem = $report->rab_item_id ? true : false;
         $rabItem = $report->rabItem;
 

@@ -21,12 +21,9 @@ class ProjectAssignmentNotification extends Notification implements ShouldQueue
         $this->role = $role;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -36,15 +33,28 @@ class ProjectAssignmentNotification extends Notification implements ShouldQueue
     {
         $roleLabel = ucwords(str_replace(['-', '_'], ' ', $this->role));
 
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'type' => 'project_assignment',
             'title' => 'Penugasan Proyek Baru',
-            'message' => "Anda ditugaskan sebagai {$roleLabel} di proyek {$this->project->name}",
+            'message' => "{$senderName} menugaskan Anda sebagai {$roleLabel} di proyek {$this->project->name}",
             'project_id' => $this->project->id,
             'project_name' => $this->project->name,
             'project_code' => $this->project->code,
             'role' => $this->role,
             'url' => route('projects.show', $this->project->id),
+        ];
+    }
+
+    /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
         ];
     }
 
@@ -55,9 +65,12 @@ class ProjectAssignmentNotification extends Notification implements ShouldQueue
     {
         $roleLabel = ucwords(str_replace(['-', '_'], ' ', $this->role));
 
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'title' => 'Penugasan Proyek Baru',
-            'body' => "Anda ditugaskan sebagai {$roleLabel} di proyek {$this->project->name}",
+            'body' => "{$senderName} menugaskan Anda sebagai {$roleLabel} di proyek {$this->project->name}",
             'data' => [
                 'type' => 'project_assignment',
                 'project_id' => (string) $this->project->id,

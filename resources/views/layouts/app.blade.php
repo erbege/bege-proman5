@@ -22,6 +22,9 @@
     </script>
 
     <!-- Scripts -->
+    <script>
+        window.userId = {{ Auth::id() ?? 'null' }};
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Theme button styles -->
@@ -55,6 +58,9 @@
 
     @stack('styles')
     @livewireStyles
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body class="font-sans antialiased">

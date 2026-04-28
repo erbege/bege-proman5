@@ -38,6 +38,11 @@ class PurchaseOrder extends Model
         'payment_terms',
         'notes',
         'created_by',
+        'current_approval_level',
+        'max_approval_level',
+        'is_fully_approved',
+        'approved_by',
+        'approved_at',
     ];
 
     protected $casts = [
@@ -93,6 +98,24 @@ class PurchaseOrder extends Model
         static::creating(function ($model) {
             if (empty($model->po_number)) {
                 $model->po_number = static::generateNumber();
+            }
+        });
+
+        static::updating(function ($model) {
+            // Prevent editing core fields if already approved
+            if ($model->getOriginal('status') === 'approved' || $model->getOriginal('is_fully_approved')) {
+                // Fields that should NOT change after approval
+                $restrictedFields = [
+                    'project_id', 'supplier_id', 'po_number', 
+                    'order_date', 'subtotal', 'tax_amount', 
+                    'discount_amount', 'total_amount'
+                ];
+                
+                foreach ($restrictedFields as $field) {
+                    if ($model->isDirty($field)) {
+                        throw new \Exception("Dokumen yang sudah disetujui tidak dapat diedit.");
+                    }
+                }
             }
         });
     }

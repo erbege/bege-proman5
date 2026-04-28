@@ -130,6 +130,9 @@ class ProjectFileController extends Controller
             'uploaded_by' => auth()->id(),
         ]);
 
+        // Notify team members
+        $this->notifyTeam($projectFile, 'uploaded');
+
         return redirect()
             ->route('projects.files.index', $project)
             ->with('success', 'File berhasil diunggah.');
@@ -212,6 +215,9 @@ class ProjectFileController extends Controller
             'original_name' => $uploadedFile->getClientOriginalName(),
         ]);
 
+        // Notify team members
+        $this->notifyTeam($file, 'updated');
+
         return redirect()
             ->route('projects.files.show', [$project, $file])
             ->with('success', "Versi {$nextVersion} berhasil diunggah.");
@@ -261,6 +267,9 @@ class ProjectFileController extends Controller
             'status' => $newStatus,
             'is_final' => $newStatus === 'final',
         ]);
+
+        // Notify team members
+        $this->notifyTeam($file, 'status_changed');
 
         return back()->with('success', 'Status berhasil diperbarui.');
     }
@@ -324,6 +333,9 @@ class ProjectFileController extends Controller
             'comment' => $request->comment,
         ]);
 
+        // Notify stakeholders
+        $this->notifyTeam($file, 'commented');
+
         return back()->with('success', 'Komentar berhasil ditambahkan.');
     }
 
@@ -367,5 +379,24 @@ class ProjectFileController extends Controller
         ]);
 
         return back()->with('success', 'Folder berhasil dibuat.');
+    }
+
+    /**
+     * Notify team members about file activity.
+     */
+    protected function notifyTeam(ProjectFile $file, string $action): void
+    {
+        $project = $file->project;
+        $performer = auth()->user();
+
+        $teamMembers = $project->team()
+            ->where('users.id', '!=', $performer->id)
+            ->get();
+
+        \App\Services\NotificationHelper::sendToProjectTeam(
+            $project,
+            new \App\Notifications\ProjectFileNotification($file, $action, $performer),
+            $performer->id
+        );
     }
 }

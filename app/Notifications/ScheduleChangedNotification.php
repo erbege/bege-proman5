@@ -23,12 +23,9 @@ class ScheduleChangedNotification extends Notification implements ShouldQueue
         $this->details = $details;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -36,10 +33,13 @@ class ScheduleChangedNotification extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'type' => 'schedule_changed',
             'title' => 'Jadwal Proyek Diperbarui',
-            'message' => "Jadwal proyek {$this->project->name} telah diperbarui",
+            'message' => "{$senderName} memperbarui jadwal proyek {$this->project->name}",
             'project_id' => $this->project->id,
             'project_name' => $this->project->name,
             'change_type' => $this->changeType,
@@ -49,13 +49,26 @@ class ScheduleChangedNotification extends Notification implements ShouldQueue
     }
 
     /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
+        ];
+    }
+
+    /**
      * Get the FCM representation of the notification.
      */
     public function toFcm(object $notifiable): array
     {
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'title' => 'Jadwal Proyek Diperbarui',
-            'body' => "Jadwal proyek {$this->project->name} telah diperbarui",
+            'body' => "{$senderName} memperbarui jadwal proyek {$this->project->name}",
             'data' => [
                 'type' => 'schedule_changed',
                 'project_id' => (string) $this->project->id,

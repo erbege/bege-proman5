@@ -22,10 +22,11 @@ class ApprovalMatrixController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'document_type' => 'required|in:MR,PR,PO',
+            'document_type' => 'required|in:MR,PR,PO,GR',
             'level' => 'required|integer|min:1',
             'role_name' => 'required|exists:roles,name',
             'min_amount' => 'nullable|numeric|min:0',
+            'max_amount' => 'nullable|numeric|min:0|gte:min_amount',
         ]);
 
         ApprovalMatrix::create($validated);
@@ -38,6 +39,7 @@ class ApprovalMatrixController extends Controller
         $validated = $request->validate([
             'role_name' => 'required|exists:roles,name',
             'min_amount' => 'nullable|numeric|min:0',
+            'max_amount' => 'nullable|numeric|min:0|gte:min_amount',
             'is_active' => 'required|boolean',
         ]);
 

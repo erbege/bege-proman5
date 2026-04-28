@@ -12,7 +12,6 @@ class NotificationDropdown extends Component
 
     protected $listeners = [
         'refreshNotifications' => 'loadNotifications',
-        'echo:notifications,NewNotification' => 'loadNotifications',
     ];
 
     public function mount()

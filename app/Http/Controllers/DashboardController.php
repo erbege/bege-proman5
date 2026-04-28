@@ -16,7 +16,9 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
-        $isPrivileged = $user->hasRole(['super-admin', 'Superadmin', 'administrator']) || $user->can('financials.manage');
+        $isPrivileged = $user->hasRole(['super-admin', 'Superadmin', 'administrator']) || 
+                        $user->can('financials.manage') || 
+                        $user->can('projects.view.all');
 
         // Cache dashboard stats per user role/access level for 5 minutes
         $cacheKey = 'dashboard_stats_' . ($isPrivileged ? 'admin' : $user->id);

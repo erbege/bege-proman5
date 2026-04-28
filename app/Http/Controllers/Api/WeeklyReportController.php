@@ -24,6 +24,7 @@ class WeeklyReportController extends Controller
     use ApiResponse;
 
     protected WeeklyReportService $service;
+    private const ELEVATED_ROLES = ['Superadmin', 'super-admin', 'administrator'];
 
     public function __construct(WeeklyReportService $service)
     {
@@ -35,6 +36,12 @@ class WeeklyReportController extends Controller
      */
     public function index(Project $project)
     {
+        $this->authorize('weekly_report.view');
+        $user = auth()->user();
+        if (!$user || !$this->canViewProject($project, $user)) {
+            return $this->errorResponse('Unauthorized access to project', 403);
+        }
+
         $reports = WeeklyReport::where('project_id', $project->id)
             ->with(['creator', 'coverImage.latestVersion'])
             ->orderByDesc('week_number')
@@ -119,6 +126,12 @@ class WeeklyReportController extends Controller
      */
     public function show(Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.view');
+        $user = auth()->user();
+        if (!$user || !$this->canViewProject($project, $user)) {
+            return $this->errorResponse('Unauthorized access to project', 403);
+        }
+
         if (!$this->belongsToProject($project, $report)) {
             return $this->errorResponse('Weekly report not found for this project.', 404);
         }
@@ -378,5 +391,14 @@ class WeeklyReportController extends Controller
     private function belongsToProject(Project $project, WeeklyReport $report): bool
     {
         return (int) $report->project_id === (int) $project->id;
+    }
+
+    private function canViewProject(Project $project, $user): bool
+    {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
+            return true;
+        }
+
+        return $project->team()->where('users.id', $user->id)->exists();
     }
 }

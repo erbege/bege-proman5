@@ -16,6 +16,11 @@ class MaterialRequestService
         $this->approvalService = $approvalService;
     }
 
+    public function approvalService(): ApprovalService
+    {
+        return $this->approvalService;
+    }
+
     /**
      * Create a new Material Request.
      */

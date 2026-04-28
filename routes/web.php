@@ -176,6 +176,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/gr/create', [App\Http\Controllers\GoodsReceiptController::class, 'create'])->name('gr.create');
         Route::post('/gr', [App\Http\Controllers\GoodsReceiptController::class, 'store'])->name('gr.store');
         Route::get('/gr/{gr}', [App\Http\Controllers\GoodsReceiptController::class, 'show'])->name('gr.show');
+        Route::post('/gr/{gr}/status', [App\Http\Controllers\GoodsReceiptController::class, 'updateStatus'])->name('gr.status');
 
         // Progress Reports
         Route::get('/progress', [ProgressReportController::class, 'index'])->name('progress.index');

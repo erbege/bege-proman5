@@ -94,6 +94,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Procurement Helpers
         Route::get('/available-mr-items', [Api\PurchaseRequestController::class, 'availableMrItems']);
+        Route::get('/available-pr-items', [Api\PurchaseOrderController::class, 'availablePrItems']);
     });
 
     // ========================================================================
@@ -120,6 +121,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/purchase-orders', [Api\PurchaseOrderController::class, 'index']);
     Route::get('/purchase-orders/{purchaseOrder}', [Api\PurchaseOrderController::class, 'show']);
     Route::post('/purchase-orders', [Api\PurchaseOrderController::class, 'store']);
+    Route::post('/purchase-orders/{purchaseOrder}/approve', [Api\PurchaseOrderController::class, 'approve']);
+    Route::post('/purchase-orders/{purchaseOrder}/reject', [Api\PurchaseOrderController::class, 'reject']);
 
     // ========================================================================
     // Goods Receipts
@@ -127,6 +130,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/goods-receipts', [Api\GoodsReceiptController::class, 'index']);
     Route::get('/goods-receipts/{goodsReceipt}', [Api\GoodsReceiptController::class, 'show']);
     Route::post('/goods-receipts', [Api\GoodsReceiptController::class, 'store']);
+    Route::post('/goods-receipts/{goodsReceipt}/approve', [Api\GoodsReceiptController::class, 'approve']);
+    Route::post('/goods-receipts/{goodsReceipt}/reject', [Api\GoodsReceiptController::class, 'reject']);
 
     // ========================================================================
     // Inventory

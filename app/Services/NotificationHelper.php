@@ -29,52 +29,66 @@ class NotificationHelper
     }
 
     /**
-     * Merge users with admins, removing duplicates.
+     * Merge users with admins, removing duplicates and excluding a specific user.
      */
     protected static function mergeWithAdmins($users, ?int $excludeUserId = null): Collection
     {
+        // Default to current user if not specified
+        $excludeUserId = $excludeUserId ?? (auth()->check() ? auth()->id() : null);
+        
         $admins = self::getAdmins($excludeUserId);
 
         if ($users instanceof Collection) {
-            return $users->merge($admins)->unique('id');
+            $filteredUsers = $excludeUserId 
+                ? $users->filter(fn($u) => $u->id !== $excludeUserId) 
+                : $users;
+            return $filteredUsers->merge($admins)->unique('id');
         }
 
         if (is_array($users)) {
             $usersCollection = collect($users);
-            return $usersCollection->merge($admins)->unique('id');
+            $filteredUsers = $excludeUserId 
+                ? $usersCollection->filter(fn($u) => (is_object($u) ? $u->id : $u) !== $excludeUserId) 
+                : $usersCollection;
+            return $filteredUsers->merge($admins)->unique('id');
         }
 
         return $admins;
     }
 
     /**
-     * Send notification to a single user (+ admins).
+     * Send notification to a single user (+ admins), excluding if it's the current user.
      * 
      * @param User $user The target user
      * @param Notification $notification The notification instance
      * @param bool $includeAdmins Whether to also send to admin users
+     * @param int|null $excludeUserId User ID to exclude
      * @return void
      */
-    public static function sendToUser(User $user, Notification $notification, bool $includeAdmins = true): void
+    public static function sendToUser(User $user, Notification $notification, bool $includeAdmins = true, ?int $excludeUserId = null): void
     {
+        $excludeUserId = $excludeUserId ?? (auth()->check() ? auth()->id() : null);
+
         if ($includeAdmins) {
-            $recipients = self::mergeWithAdmins(collect([$user]));
-            NotificationFacade::send($recipients, $notification);
+            $recipients = self::mergeWithAdmins(collect([$user]), $excludeUserId);
+            if ($recipients->isNotEmpty()) {
+                NotificationFacade::send($recipients, $notification);
+            }
         } else {
-            $user->notify($notification);
+            // Only send if not the excluded user
+            if (!$excludeUserId || $user->id !== $excludeUserId) {
+                $user->notify($notification);
+            }
         }
     }
 
     /**
-     * Send notification to multiple specific users (+ admins).
-     * 
-     * @param Collection|array $users Collection of User models or array of user IDs
-     * @param Notification $notification The notification instance
-     * @param bool $includeAdmins Whether to also send to admin users
-     * @return void
+     * Send notification to multiple specific users (+ admins), excluding actor.
      */
-    public static function sendToUsers($users, Notification $notification, bool $includeAdmins = true): void
+    public static function sendToUsers($users, Notification $notification, bool $includeAdmins = true, ?int $excludeUserId = null): void
     {
+        $excludeUserId = $excludeUserId ?? (auth()->check() ? auth()->id() : null);
+
         // If array of IDs, convert to User collection
         if (is_array($users) && !empty($users) && is_numeric($users[0])) {
             $users = User::whereIn('id', $users)->get();
@@ -82,10 +96,19 @@ class NotificationHelper
 
         if ($users instanceof Collection || is_array($users)) {
             if ($includeAdmins) {
-                $recipients = self::mergeWithAdmins($users);
-                NotificationFacade::send($recipients, $notification);
+                $recipients = self::mergeWithAdmins($users, $excludeUserId);
+                if ($recipients->isNotEmpty()) {
+                    NotificationFacade::send($recipients, $notification);
+                }
             } else {
-                NotificationFacade::send($users, $notification);
+                $usersCollection = collect($users);
+                $filtered = $excludeUserId 
+                    ? $usersCollection->filter(fn($u) => $u->id !== $excludeUserId)
+                    : $usersCollection;
+                
+                if ($filtered->isNotEmpty()) {
+                    NotificationFacade::send($filtered, $notification);
+                }
             }
         }
     }
@@ -101,6 +124,7 @@ class NotificationHelper
      */
     public static function sendToRole($roles, Notification $notification, ?int $excludeUserId = null, bool $includeAdmins = true): void
     {
+        $excludeUserId = $excludeUserId ?? (auth()->check() ? auth()->id() : null);
         $query = User::role($roles);
 
         if ($excludeUserId) {
@@ -127,6 +151,7 @@ class NotificationHelper
      */
     public static function sendToAll(Notification $notification, ?int $excludeUserId = null): void
     {
+        $excludeUserId = $excludeUserId ?? (auth()->check() ? auth()->id() : null);
         $query = User::query();
 
         if ($excludeUserId) {
@@ -151,6 +176,7 @@ class NotificationHelper
      */
     public static function sendToProjectTeam($project, Notification $notification, ?int $excludeUserId = null, bool $includeAdmins = true): void
     {
+        $excludeUserId = $excludeUserId ?? (auth()->check() ? auth()->id() : null);
         $query = $project->team();
 
         if ($excludeUserId) {
@@ -179,6 +205,7 @@ class NotificationHelper
      */
     public static function sendToPermission($permissions, Notification $notification, ?int $excludeUserId = null, bool $includeAdmins = true): void
     {
+        $excludeUserId = $excludeUserId ?? (auth()->check() ? auth()->id() : null);
         $query = User::permission($permissions);
 
         if ($excludeUserId) {

@@ -26,7 +26,7 @@ class MaterialRequestStatusNotification extends Notification implements ShouldQu
      */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -36,16 +36,20 @@ class MaterialRequestStatusNotification extends Notification implements ShouldQu
     {
         $statusText = match ($this->status) {
             'approved' => 'disetujui',
+            'level_approved' => 'disetujui di satu level',
             'rejected' => 'ditolak',
             'fulfilled' => 'telah dipenuhi',
             'pending' => 'menunggu persetujuan',
             default => $this->status,
         };
 
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'type' => 'material_request_status',
             'title' => 'Status Material Request',
-            'message' => "MR #{$this->materialRequest->code} telah {$statusText}",
+            'message' => "{$senderName} mengubah status MR #{$this->materialRequest->code} menjadi {$statusText}",
             'mr_id' => $this->materialRequest->id,
             'mr_code' => $this->materialRequest->code,
             'project_id' => $this->materialRequest->project_id,
@@ -58,20 +62,34 @@ class MaterialRequestStatusNotification extends Notification implements ShouldQu
     }
 
     /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
+        ];
+    }
+
+    /**
      * Get the FCM representation of the notification.
      */
     public function toFcm(object $notifiable): array
     {
         $statusText = match ($this->status) {
             'approved' => 'disetujui',
+            'level_approved' => 'disetujui di satu level',
             'rejected' => 'ditolak',
             'fulfilled' => 'telah dipenuhi',
             default => $this->status,
         };
 
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'title' => 'Status Material Request',
-            'body' => "MR #{$this->materialRequest->code} telah {$statusText}",
+            'body' => "{$senderName} mengubah status MR #{$this->materialRequest->code} menjadi {$statusText}",
             'data' => [
                 'type' => 'material_request_status',
                 'mr_id' => (string) $this->materialRequest->id,

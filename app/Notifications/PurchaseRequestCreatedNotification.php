@@ -24,7 +24,7 @@ class PurchaseRequestCreatedNotification extends Notification implements ShouldQ
      */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -40,12 +40,15 @@ class PurchaseRequestCreatedNotification extends Notification implements ShouldQ
             default => $this->purchaseRequest->priority,
         };
 
+        $senderName = $this->purchaseRequest->requestedBy->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'type' => 'purchase_request_created',
             'title' => 'Purchase Request Baru',
-            'message' => "PR baru memerlukan approval - {$this->purchaseRequest->project->name} ({$priorityLabel})",
+            'message' => "{$senderName} membuat PR baru memerlukan approval - {$this->purchaseRequest->project->name} ({$priorityLabel})",
             'purchase_request_id' => $this->purchaseRequest->id,
-            'purchase_request_code' => $this->purchaseRequest->code,
+            'purchase_request_code' => $this->purchaseRequest->pr_number,
             'project_id' => $this->purchaseRequest->project_id,
             'project_name' => $this->purchaseRequest->project->name,
             'priority' => $this->purchaseRequest->priority,
@@ -56,13 +59,26 @@ class PurchaseRequestCreatedNotification extends Notification implements ShouldQ
     }
 
     /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
+        ];
+    }
+
+    /**
      * Get the FCM representation of the notification.
      */
     public function toFcm(object $notifiable): array
     {
+        $senderName = $this->purchaseRequest->requestedBy->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'title' => 'Purchase Request Baru',
-            'body' => "PR baru memerlukan approval - {$this->purchaseRequest->project->name}",
+            'body' => "{$senderName} membuat PR baru untuk {$this->purchaseRequest->project->name}",
             'data' => [
                 'type' => 'purchase_request_created',
                 'purchase_request_id' => (string) $this->purchaseRequest->id,

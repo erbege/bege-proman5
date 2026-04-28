@@ -13,6 +13,7 @@ class PurchaseOrderItem extends Model
     protected $fillable = [
         'purchase_order_id',
         'material_id',
+        'purchase_request_item_id',
         'quantity',
         'unit_price',
         'total_price',
@@ -36,6 +37,11 @@ class PurchaseOrderItem extends Model
     public function material(): BelongsTo
     {
         return $this->belongsTo(Material::class);
+    }
+
+    public function purchaseRequestItem(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseRequestItem::class);
     }
 
     // Boot

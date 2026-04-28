@@ -23,7 +23,7 @@ class PurchaseRequestController extends Controller
      */
     public function index(Project $project)
     {
-        $this->authorize('procurement.manage');
+        $this->authorize('procurement.view');
 
         $query = $project->purchaseRequests()->with(['requestedBy', 'approvedBy', 'items']);
         
@@ -122,7 +122,7 @@ class PurchaseRequestController extends Controller
      */
     public function show(Project $project, PurchaseRequest $pr)
     {
-        $this->authorize('procurement.manage');
+        $this->authorize('procurement.view');
 
         $user = auth()->user();
         if (($user->hasRole('supervisor') || $user->getProjectRole($project) === 'supervisor') && $pr->requested_by !== $user->id) {
@@ -138,7 +138,7 @@ class PurchaseRequestController extends Controller
      */
     public function updateStatus(Request $request, Project $project, PurchaseRequest $pr)
     {
-        $this->authorize('financials.manage');
+        $this->authorize('pr.approve');
 
         $request->validate([
             'status' => 'required|in:approved,rejected',
@@ -152,12 +152,7 @@ class PurchaseRequestController extends Controller
                 $this->approvalService->reject($pr, $request->comment ?? 'Rejected by user');
             }
 
-            // Send notification to the requester
-            if ($pr->requestedBy && $pr->requestedBy->id !== auth()->id()) {
-                $pr->requestedBy->notify(
-                    new \App\Notifications\PurchaseRequestStatusNotification($pr, $request->status)
-                );
-            }
+            // Notification is now handled by ApprovalService
 
             return back()->with('success', 'Status PR berhasil diperbarui.');
         } catch (\Exception $e) {

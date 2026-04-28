@@ -65,27 +65,20 @@
             <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
                 <div class="p-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Item Diterima</h3>
-                    <div class="overflow-x-auto border rounded-lg dark:border-dark-700">
+                    <div class="overflow-x-auto border rounded-lg dark:border-dark-700 mb-6">
                         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-dark-700">
                                 <tr>
-                                    <th
-                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Material</th>
-                                    <th
-                                        class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Qty Diterima</th>
-                                    <th
-                                        class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
-                                        Catatan</th>
+                                    <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Material</th>
+                                    <th class="px-3 py-1.5 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Qty Diterima</th>
+                                    <th class="px-3 py-1.5 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Catatan</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach($gr->items as $item)
                                     <tr>
                                         <td class="px-3 py-1.5 text-sm text-gray-900 dark:text-white font-medium">
-                                            {{ $item->material?->name ?? 'Material Dihapus' }} <span
-                                                class="text-gray-500">({{ $item->material?->unit ?? '-' }})</span>
+                                            {{ $item->material?->name ?? 'Material Dihapus' }} <span class="text-gray-500">({{ $item->material?->unit ?? '-' }})</span>
                                         </td>
                                         <td class="px-3 py-1.5 text-right text-sm font-bold text-green-600">
                                             {{ number_format($item->quantity, 2) }}
@@ -100,6 +93,209 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Approval Progress -->
+            @if($gr->status !== 'draft' && $gr->status !== 'rejected')
+                <div class="bg-white dark:bg-dark-800 shadow-sm sm:rounded-lg mb-6 p-4">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Progres Persetujuan</h3>
+                    <div class="relative">
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200 dark:bg-dark-700">
+                            @php 
+                                $percent = ($gr->current_approval_level / ($gr->max_approval_level + 1)) * 100;
+                                if($gr->is_fully_approved) $percent = 100;
+                            @endphp
+                            <div style="width:{{ $percent }}%" class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gold-500 transition-all duration-500"></div>
+                        </div>
+                        <div class="flex justify-between text-xs font-medium">
+                            <div class="text-gray-500">Draft</div>
+                            @for($i = 1; $i <= $gr->max_approval_level; $i++)
+                                <div class="{{ $gr->current_approval_level >= $i ? 'text-gold-600 font-bold' : 'text-gray-400' }}">
+                                    Level {{ $i }}
+                                </div>
+                            @endfor
+                            <div class="{{ $gr->is_fully_approved ? 'text-green-600 font-bold' : 'text-gray-400' }}">Selesai</div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Approval Actions -->
+            @can('gr.approve')
+            @if($gr->status === 'pending' && !$gr->is_fully_approved)
+                @php
+                    $canApprove = false;
+                    $matrix = \App\Models\ApprovalMatrix::where('document_type', 'GR')
+                        ->where('level', $gr->current_approval_level)
+                        ->where('is_active', true)
+                        ->first();
+                    
+                    if ($matrix && app(\App\Services\ApprovalService::class)->canUserApprove(auth()->user(), $matrix)) {
+                        $canApprove = true;
+                    }
+                @endphp
+
+                @if($canApprove)
+                    <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 mb-6 border-l-4 border-gold-500">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="text-md font-bold text-gray-900 dark:text-white">Menunggu Persetujuan Anda</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Anda bertanggung jawab untuk persetujuan Level {{ $gr->current_approval_level }}</p>
+                            </div>
+                            <div class="flex gap-4">
+                                <button type="button" onclick="document.getElementById('approveGRModal').classList.remove('hidden')"
+                                    class="inline-flex items-center px-6 py-2 bg-green-600 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest hover:bg-green-700 shadow-lg transition">
+                                    <x-heroicon-o-check class="w-4 h-4 mr-2" />
+                                    Setujui
+                                </button>
+                                <button type="button" onclick="document.getElementById('rejectGRModal').classList.remove('hidden')"
+                                    class="inline-flex items-center px-6 py-2 bg-red-600 border border-transparent rounded-md font-bold text-xs text-white uppercase tracking-widest hover:bg-red-700 shadow-lg transition">
+                                    <x-heroicon-o-x-mark class="w-4 h-4 mr-2" />
+                                    Tolak
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6 flex items-center shadow-sm">
+                        <x-heroicon-o-information-circle class="w-5 h-5 text-blue-500 mr-3" />
+                        <p class="text-sm text-blue-700 dark:text-blue-300">
+                            Menunggu persetujuan Level {{ $gr->current_approval_level }} (Role: {{ str_replace('_', ' ', $matrix->role_name ?? 'N/A') }})
+                        </p>
+                    </div>
+                @endif
+            @endif
+            @endcan
+
+            <!-- Audit Trail / Approval History -->
+            <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
+                <div class="p-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-6 flex items-center">
+                        <x-heroicon-o-clock class="w-5 h-5 mr-2 text-gray-400" />
+                        Riwayat Persetujuan & Aktivitas
+                    </h3>
+                    
+                    <div class="flow-root">
+                        <ul role="list" class="-mb-8">
+                            @foreach($gr->approvalLogs as $log)
+                                <li>
+                                    <div class="relative pb-8">
+                                        @if(!$loop->last)
+                                            <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200 dark:bg-dark-700" aria-hidden="true"></span>
+                                        @endif
+                                        <div class="relative flex space-x-3">
+                                            <div>
+                                                <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white dark:ring-dark-800 
+                                                    {{ $log->status === 'approved' ? 'bg-green-500' : 'bg-red-500' }}">
+                                                    @if($log->status === 'approved')
+                                                        <x-heroicon-s-check class="w-5 h-5 text-white" />
+                                                    @else
+                                                        <x-heroicon-s-x-mark class="w-5 h-5 text-white" />
+                                                    @endif
+                                                </span>
+                                            </div>
+                                            <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                                <div>
+                                                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                        <span class="font-bold text-gray-900 dark:text-white">{{ $log->user->name }}</span> 
+                                                        {{ $log->status === 'approved' ? 'menyetujui' : 'menolak' }} 
+                                                        <span class="font-medium text-gold-600">Level {{ $log->level }}</span>
+                                                    </p>
+                                                    @if($log->comment)
+                                                        <p class="mt-1 text-sm italic text-gray-600 dark:text-gray-400">"{{ $log->comment }}"</p>
+                                                    @endif
+                                                </div>
+                                                <div class="whitespace-nowrap text-right text-xs text-gray-500">
+                                                    <time datetime="{{ $log->created_at }}">{{ $log->created_at->format('d M Y, H:i') }}</time>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            @endforeach
+                            
+                            <li>
+                                <div class="relative pb-8">
+                                    <div class="relative flex space-x-3">
+                                        <div>
+                                            <span class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center ring-8 ring-white dark:ring-dark-800">
+                                                <x-heroicon-s-paper-airplane class="w-5 h-5 text-white" />
+                                            </span>
+                                        </div>
+                                        <div class="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                                            <div>
+                                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                    <span class="font-bold text-gray-900 dark:text-white">{{ $gr->receivedBy->name }}</span> mencatat Penerimaan Barang
+                                                </p>
+                                            </div>
+                                            <div class="whitespace-nowrap text-right text-xs text-gray-500">
+                                                <time datetime="{{ $gr->created_at }}">{{ $gr->created_at->format('d M Y, H:i') }}</time>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approve GR Modal -->
+    <x-confirm-modal id="approveGRModal" title="Setujui Penerimaan Barang"
+        message="Apakah Anda yakin ingin menyetujui penerimaan ini untuk Level {{ $gr->current_approval_level }}?" 
+        confirmColor="green" icon="check">
+        <x-slot name="body">
+            <form id="approveGRForm" action="{{ route('projects.gr.status', [$project, $gr]) }}" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="approved">
+                <div class="text-left">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Catatan Persetujuan (Opsional)</label>
+                    <textarea name="comment" rows="3" 
+                        class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm transition-all" 
+                        placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="approveGRForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-green-600 text-base font-bold text-white hover:bg-green-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm">
+                Ya, Setujui
+            </button>
+            <button type="button" onclick="document.getElementById('approveGRModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
+    </x-confirm-modal>
+
+    <!-- Reject GR Modal -->
+    <x-confirm-modal id="rejectGRModal" title="Tolak Penerimaan Barang"
+        message="Harap masukkan alasan penolakan untuk penerimaan ini." 
+        confirmColor="red" icon="x-mark">
+        <x-slot name="body">
+            <form id="rejectGRForm" action="{{ route('projects.gr.status', [$project, $gr]) }}" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="rejected">
+                <div class="text-left">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Alasan Penolakan</label>
+                    <textarea name="comment" required rows="3" 
+                        class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm transition-all" 
+                        placeholder="Wajib diisi..."></textarea>
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="rejectGRForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                Ya, Tolak
+            </button>
+            <button type="button" onclick="document.getElementById('rejectGRModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
+    </x-confirm-modal>
         </div>
     </div>
 </x-app-layout>

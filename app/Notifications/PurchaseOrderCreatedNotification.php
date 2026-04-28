@@ -19,12 +19,9 @@ class PurchaseOrderCreatedNotification extends Notification implements ShouldQue
         $this->purchaseOrder = $purchaseOrder;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -32,12 +29,15 @@ class PurchaseOrderCreatedNotification extends Notification implements ShouldQue
      */
     public function toArray(object $notifiable): array
     {
+        $senderName = $this->purchaseOrder->createdBy->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'type' => 'purchase_order_created',
             'title' => 'Purchase Order Baru',
-            'message' => "PO #{$this->purchaseOrder->code} telah dibuat",
+            'message' => "{$senderName} membuat PO #{$this->purchaseOrder->po_number} untuk {$this->purchaseOrder->supplier?->name}",
             'po_id' => $this->purchaseOrder->id,
-            'po_code' => $this->purchaseOrder->code,
+            'po_code' => $this->purchaseOrder->po_number,
             'project_id' => $this->purchaseOrder->project_id,
             'supplier_name' => $this->purchaseOrder->supplier?->name,
             'total_amount' => $this->purchaseOrder->total_amount,
@@ -49,13 +49,26 @@ class PurchaseOrderCreatedNotification extends Notification implements ShouldQue
     }
 
     /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
+        ];
+    }
+
+    /**
      * Get the FCM representation of the notification.
      */
     public function toFcm(object $notifiable): array
     {
+        $senderName = $this->purchaseOrder->createdBy->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'title' => 'Purchase Order Baru',
-            'body' => "PO #{$this->purchaseOrder->code} telah dibuat untuk {$this->purchaseOrder->supplier?->name}",
+            'body' => "{$senderName} membuat PO #{$this->purchaseOrder->po_number} untuk {$this->purchaseOrder->supplier?->name}",
             'data' => [
                 'type' => 'purchase_order_created',
                 'po_id' => (string) $this->purchaseOrder->id,

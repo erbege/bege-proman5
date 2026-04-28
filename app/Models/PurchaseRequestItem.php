@@ -15,6 +15,7 @@ class PurchaseRequestItem extends Model
         'material_id',
         'material_request_item_id',
         'quantity',
+        'ordered_quantity',
         'estimated_price',
         'notes',
     ];
@@ -44,5 +45,10 @@ class PurchaseRequestItem extends Model
     public function getTotalPriceAttribute(): float
     {
         return $this->quantity * $this->estimated_price;
+    }
+
+    public function getRemainingToOrderAttribute(): float
+    {
+        return max(0, $this->quantity - $this->ordered_quantity);
     }
 }

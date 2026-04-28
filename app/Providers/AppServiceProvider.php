@@ -6,6 +6,8 @@ use App\Models\AhspBasePrice;
 use App\Models\Project;
 use App\Observers\AhspBasePriceObserver;
 use App\Observers\ProjectObserver;
+use App\Models\User;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -37,6 +39,12 @@ class AppServiceProvider extends ServiceProvider
                 );
             });
         }
+
+        // Define gate for Scramble API Documentation access
+        Gate::define('viewApiDocs', function (?User $user) {
+            // Allow anyone to view API documentation as requested
+            return true;
+        });
     }
 }
 

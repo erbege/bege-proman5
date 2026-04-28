@@ -23,8 +23,8 @@ class EnsureUserIsProjectMember
             return $next($request);
         }
 
-        // Users with financials.manage (e.g. Estimators/PMs) often need global access
-        if ($user->can('financials.manage')) {
+        // Users with financials.manage or projects.view.all often need global access
+        if ($user->can('financials.manage') || $user->can('projects.view.all')) {
             return $next($request);
         }
 

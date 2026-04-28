@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 class ProjectController extends Controller
 {
     use ApiResponse;
+    private const ELEVATED_ROLES = ['Superadmin', 'super-admin', 'administrator'];
 
     /**
      * List all projects.
@@ -24,7 +25,13 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('projects.view');
         $query = Project::with(['creator']);
+
+        $user = auth()->user();
+        if ($user) {
+            $this->applyVisibilityScope($query, $user);
+        }
 
         if ($request->has('status')) {
             $query->where('status', $request->status);
@@ -53,6 +60,12 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
+        $this->authorize('projects.view');
+        $user = auth()->user();
+        if (!$user || !$this->canViewProject($project, $user)) {
+            return $this->errorResponse('Unauthorized', 403);
+        }
+
         return $this->successResponse(
             'Project details retrieved successfully.',
             new ProjectResource($project->load(['creator']))
@@ -95,5 +108,25 @@ class ProjectController extends Controller
             'rab_items_count' => $rabItems->count(),
             'scheduled_items_count' => $rabItems->whereNotNull('planned_start')->count(),
         ]);
+    }
+
+    private function applyVisibilityScope($query, $user): void
+    {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
+            return;
+        }
+
+        $query->whereHas('team', function ($q) use ($user) {
+            $q->where('users.id', $user->id);
+        });
+    }
+
+    private function canViewProject(Project $project, $user): bool
+    {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
+            return true;
+        }
+
+        return $project->team()->where('users.id', $user->id)->exists();
     }
 }

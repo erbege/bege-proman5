@@ -19,12 +19,9 @@ class ProgressReportCreatedNotification extends Notification implements ShouldQu
         $this->progressReport = $progressReport;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -32,10 +29,13 @@ class ProgressReportCreatedNotification extends Notification implements ShouldQu
      */
     public function toArray(object $notifiable): array
     {
+        $senderName = $this->progressReport->reportedBy->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'type' => 'progress_report_created',
             'title' => 'Laporan Progres Baru',
-            'message' => "Laporan progres baru untuk proyek {$this->progressReport->project->name}",
+            'message' => "{$senderName} mengirim laporan progres baru untuk proyek {$this->progressReport->project->name}",
             'report_id' => $this->progressReport->id,
             'project_id' => $this->progressReport->project_id,
             'project_name' => $this->progressReport->project->name,
@@ -50,6 +50,16 @@ class ProgressReportCreatedNotification extends Notification implements ShouldQu
     }
 
     /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
+        ];
+    }
+
+    /**
      * Get the FCM representation of the notification.
      */
     public function toFcm(object $notifiable): array
@@ -57,9 +67,12 @@ class ProgressReportCreatedNotification extends Notification implements ShouldQu
         $project = $this->progressReport->project;
         $progress = $this->progressReport->progress_percentage ?? 0;
 
+        $senderName = $this->progressReport->reportedBy->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'title' => 'Laporan Progres Baru',
-            'body' => "Progres {$project->name}: {$progress}%",
+            'body' => "{$senderName} melaporkan progres {$project->name}: {$progress}%",
             'data' => [
                 'type' => 'progress_report_created',
                 'report_id' => (string) $this->progressReport->id,

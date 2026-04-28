@@ -58,8 +58,8 @@ class ProjectTeam extends Model
     public static function getRoles(): array
     {
         return [
-            'project_manager' => 'Project Manager',
-            'site_manager' => 'Site Manager',
+            'project-manager' => 'Project Manager',
+            'site-manager' => 'Site Manager',
             'engineer' => 'Engineer',
             'supervisor' => 'Supervisor',
             'logistics' => 'Logistik',
@@ -68,8 +68,8 @@ class ProjectTeam extends Model
             'administrator' => 'Administrator',
             'architect' => 'Arsitek',
             'designer' => 'Designer',
-            'project_admin' => 'Project Admin',
-            'quantity_surveyor' => 'Quantity Surveyor',
+            'project-admin' => 'Project Admin',
+            'quantity-surveyor' => 'Quantity Surveyor',
             'drafter' => 'Drafter',
             'superintendent' => 'Superintendent',
             'tukang' => 'Tukang',

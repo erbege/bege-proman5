@@ -31,12 +31,9 @@ class GenericNotification extends Notification implements ShouldQueue
         $this->extraData = $extraData;
     }
 
-    /**
-     * Get the notification's delivery channels.
-     */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -50,6 +47,16 @@ class GenericNotification extends Notification implements ShouldQueue
             'message' => $this->message,
             'url' => $this->url ?? route('dashboard'),
         ], $this->extraData);
+    }
+
+    /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
+        ];
     }
 
     /**

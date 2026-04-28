@@ -1,11 +1,11 @@
 <div>
     {{-- Header with filters and actions --}}
     <div class="flex items-center justify-between px-3 py-1.5 border-b border-gray-100 dark:border-dark-700">
-        <div class="flex items-center space-x-4">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Semua Notifikasi</h3>
+        <div class="flex items-center space-x-3">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100">Semua Notifikasi</h3>
             @if($unreadCount > 0)
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gold-100 text-gold-800 dark:bg-gold-900/30 dark:text-gold-400">
-                    {{ $unreadCount }} belum dibaca
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gold-500 text-white uppercase tracking-wider">
+                    {{ $unreadCount }} Baru
                 </span>
             @endif
         </div>
@@ -35,10 +35,10 @@
             Semua
         </button>
         <button wire:click="setFilter('unread')"
-            class="px-3 py-1.5 text-sm font-medium transition-colors {{ $filter === 'unread' ? 'text-gold-600 dark:text-gold-400 border-b-2 border-gold-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+            class="px-4 py-2 text-sm font-medium transition-colors relative {{ $filter === 'unread' ? 'text-gold-600 dark:text-gold-400 border-b-2 border-gold-500' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
             Belum Dibaca
             @if($unreadCount > 0)
-                <span class="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                <span class="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-red-500 text-white font-bold">
                     {{ $unreadCount }}
                 </span>
             @endif
@@ -58,19 +58,28 @@
                             @php
                                 $type = $notification->data['type'] ?? 'general';
                                 $iconClass = match($type) {
-                                    'purchase_request_status' => 'text-blue-500 bg-blue-100 dark:bg-blue-900/30',
-                                    'purchase_order_created' => 'text-green-500 bg-green-100 dark:bg-green-900/30',
-                                    'progress_report_created' => 'text-purple-500 bg-purple-100 dark:bg-purple-900/30',
-                                    'material_request_status' => 'text-orange-500 bg-orange-100 dark:bg-orange-900/30',
-                                    'project_assignment' => 'text-indigo-500 bg-indigo-100 dark:bg-indigo-900/30',
-                                    'schedule_changed' => 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30',
-                                    default => 'text-gray-500 bg-gray-100 dark:bg-gray-900/30'
+                                    'purchase_request_status' => 'text-blue-500 bg-blue-50 dark:bg-blue-900/20',
+                                    'purchase_request_created' => 'text-blue-600 bg-blue-50 dark:bg-blue-900/20',
+                                    'purchase_order_created' => 'text-green-500 bg-green-50 dark:bg-green-900/20',
+                                    'progress_report_created' => 'text-purple-500 bg-purple-50 dark:bg-purple-900/20',
+                                    'material_request_status' => 'text-orange-500 bg-orange-50 dark:bg-orange-900/20',
+                                    'material_request_created' => 'text-orange-600 bg-orange-50 dark:bg-orange-900/20',
+                                    'project_assignment' => 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20',
+                                    'schedule_changed' => 'text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20',
+                                    'project_file_uploaded', 'project_file_updated' => 'text-blue-500 bg-blue-50 dark:bg-blue-900/20',
+                                    'project_file_commented' => 'text-cyan-500 bg-cyan-50 dark:bg-cyan-900/20',
+                                    'project_file_status_changed' => 'text-teal-500 bg-teal-50 dark:bg-teal-900/20',
+                                    'goods_receipt' => 'text-green-600 bg-green-50 dark:bg-green-900/20',
+                                    default => 'text-gray-500 bg-gray-50 dark:bg-gray-900/20'
                                 };
                             @endphp
                             <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $iconClass }}">
                                 @switch($type)
                                     @case('purchase_request_status')
                                         <x-heroicon-s-document-check class="w-5 h-5" />
+                                        @break
+                                    @case('purchase_request_created')
+                                        <x-heroicon-s-document-plus class="w-5 h-5" />
                                         @break
                                     @case('purchase_order_created')
                                         <x-heroicon-s-shopping-cart class="w-5 h-5" />
@@ -81,11 +90,27 @@
                                     @case('material_request_status')
                                         <x-heroicon-s-cube class="w-5 h-5" />
                                         @break
+                                    @case('material_request_created')
+                                        <x-heroicon-s-cube-transparent class="w-5 h-5" />
+                                        @break
                                     @case('project_assignment')
                                         <x-heroicon-s-user-plus class="w-5 h-5" />
                                         @break
                                     @case('schedule_changed')
                                         <x-heroicon-s-calendar-days class="w-5 h-5" />
+                                        @break
+                                    @case('project_file_uploaded')
+                                    @case('project_file_updated')
+                                        <x-heroicon-s-document-text class="w-5 h-5" />
+                                        @break
+                                    @case('project_file_commented')
+                                        <x-heroicon-s-chat-bubble-left-right class="w-5 h-5" />
+                                        @break
+                                    @case('project_file_status_changed')
+                                        <x-heroicon-s-check-circle class="w-5 h-5" />
+                                        @break
+                                    @case('goods_receipt')
+                                        <x-heroicon-s-clipboard-document-check class="w-5 h-5" />
                                         @break
                                     @default
                                         <x-heroicon-s-bell class="w-5 h-5" />

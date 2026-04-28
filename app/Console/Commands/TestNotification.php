@@ -28,7 +28,10 @@ class TestNotification extends Command
             return 1;
         }
 
-        $user->notify(new ProjectAssignmentNotification($project, 'test-role'));
+        \App\Services\NotificationHelper::sendToUser(
+            $user, 
+            new ProjectAssignmentNotification($project, 'test-role')
+        );
 
         $this->info("Notification sent to: {$user->email}");
         $this->info("User now has {$user->unreadNotifications()->count()} unread notifications.");

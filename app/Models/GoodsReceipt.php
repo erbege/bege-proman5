@@ -7,9 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
+
 class GoodsReceipt extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logFillable()
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
 
     protected $fillable = [
         'gr_number',
@@ -19,10 +30,19 @@ class GoodsReceipt extends Model
         'delivery_note_number',
         'notes',
         'received_by',
+        'status',
+        'current_approval_level',
+        'max_approval_level',
+        'is_fully_approved',
+        'approved_by',
+        'approved_at',
+        'rejection_reason',
     ];
 
     protected $casts = [
         'receipt_date' => 'date',
+        'approved_at' => 'datetime',
+        'is_fully_approved' => 'boolean',
     ];
 
     // Relationships
@@ -41,9 +61,19 @@ class GoodsReceipt extends Model
         return $this->belongsTo(User::class, 'received_by');
     }
 
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     public function items(): HasMany
     {
         return $this->hasMany(GoodsReceiptItem::class);
+    }
+
+    public function approvalLogs(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(ApprovalLog::class, 'approvable');
     }
 
     // Boot

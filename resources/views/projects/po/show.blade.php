@@ -170,7 +170,7 @@
             </div>
 
             <!-- Approval Actions -->
-            @can('financials.manage')
+            @can('po.approve')
             @if($po->status === 'pending' && !$po->is_fully_approved)
                 @php
                     $canApprove = false;
@@ -178,7 +178,8 @@
                         ->where('level', $po->current_approval_level)
                         ->where('is_active', true)
                         ->first();
-                    if ($matrix && auth()->user()->hasRole($matrix->role_name)) {
+                    
+                    if ($matrix && app(\App\Services\ApprovalService::class)->canUserApprove(auth()->user(), $matrix)) {
                         $canApprove = true;
                     }
                 @endphp
@@ -302,45 +303,59 @@
     </x-confirm-modal>
 
     <!-- Approve PO Modal -->
-    <x-confirm-modal id="approvePOModal" title="Approve Purchase Order"
-        message="Apakah Anda yakin ingin menyetujui PO ini untuk Level {{ $po->current_approval_level }}?" confirmColor="green" icon="check">
-        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-4">
-            @csrf
-            <input type="hidden" name="status" value="approved">
-            
-            <div class="mb-4 text-left">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan Persetujuan (Opsional)</label>
-                <textarea name="comment" rows="3" class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500 text-sm" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-            </div>
-
-            <div class="flex justify-end gap-3">
-                <button type="button" onclick="document.getElementById('approvePOModal').classList.add('hidden')"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700">Ya, Approve</button>
-            </div>
-        </form>
+    <x-confirm-modal id="approvePOModal" title="Setujui Purchase Order"
+        message="Apakah Anda yakin ingin menyetujui Purchase Order ini untuk Level {{ $po->current_approval_level }}?" 
+        confirmColor="green" icon="check">
+        <x-slot name="body">
+            <form id="approvePOForm" action="{{ route('projects.po.status', [$project, $po]) }}" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="approved">
+                <div class="text-left">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Catatan Persetujuan (Opsional)</label>
+                    <textarea name="comment" rows="3" 
+                        class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm transition-all" 
+                        placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="approvePOForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-green-600 text-base font-bold text-white hover:bg-green-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm">
+                Ya, Setujui
+            </button>
+            <button type="button" onclick="document.getElementById('approvePOModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
     </x-confirm-modal>
 
     <!-- Reject PO Modal -->
-    <x-confirm-modal id="rejectPOModal" title="Reject Purchase Order"
-        message="Harap masukkan alasan penolakan PO ini." confirmColor="red" icon="x-mark">
-        <form action="{{ route('projects.po.status', [$project, $po]) }}" method="POST" class="p-4">
-            @csrf
-            <input type="hidden" name="status" value="rejected">
-            
-            <div class="mb-4 text-left">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alasan Penolakan</label>
-                <textarea name="comment" required rows="3" class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500 text-sm" placeholder="Wajib diisi..."></textarea>
-            </div>
-
-            <div class="flex justify-end gap-3">
-                <button type="button" onclick="document.getElementById('rejectPOModal').classList.add('hidden')"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Ya, Tolak</button>
-            </div>
-        </form>
+    <x-confirm-modal id="rejectPOModal" title="Tolak Purchase Order"
+        message="Harap masukkan alasan penolakan untuk Purchase Order ini." 
+        confirmColor="red" icon="x-mark">
+        <x-slot name="body">
+            <form id="rejectPOForm" action="{{ route('projects.po.status', [$project, $po]) }}" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="rejected">
+                <div class="text-left">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Alasan Penolakan</label>
+                    <textarea name="comment" required rows="3" 
+                        class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm transition-all" 
+                        placeholder="Wajib diisi..."></textarea>
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="rejectPOForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                Ya, Tolak
+            </button>
+            <button type="button" onclick="document.getElementById('rejectPOModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
     </x-confirm-modal>
 </x-app-layout>t>
 

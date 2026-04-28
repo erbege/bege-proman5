@@ -198,6 +198,12 @@ export async function initializeFcm() {
     const messaging = await initializeFirebase();
     if (!messaging) return false;
 
+    // Check current permission status
+    if (Notification.permission !== 'granted') {
+        console.log('[FCM] Notification permission not granted yet. Skipping automatic token registration.');
+        return false;
+    }
+
     const token = await requestNotificationPermission();
     if (!token) return false;
 

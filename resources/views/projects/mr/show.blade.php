@@ -18,12 +18,14 @@
                     class="inline-flex items-center px-4 py-2 bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-300">
                     Kembali
                 </a>
+                @can('mr.manage')
                 @if($mr->status === 'pending')
                     <a href="{{ route('projects.mr.edit', [$project, $mr]) }}"
                         class="inline-flex items-center px-4 py-2 bg-yellow-500 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-yellow-600">
                         Edit
                     </a>
                 @endif
+                @endcan
             </div>
         </div>
     </x-slot>
@@ -169,6 +171,7 @@
             </div>
 
             <!-- Approval Actions -->
+            @can('mr.approve')
             @if($mr->status === 'pending' && !$mr->is_fully_approved)
                 @php
                     $canApprove = false;
@@ -176,7 +179,8 @@
                         ->where('level', $mr->current_approval_level)
                         ->where('is_active', true)
                         ->first();
-                    if ($matrix && auth()->user()->hasRole($matrix->role_name)) {
+                    
+                    if ($matrix && app(\App\Services\ApprovalService::class)->canUserApprove(auth()->user(), $matrix)) {
                         $canApprove = true;
                     }
                 @endphp
@@ -210,6 +214,7 @@
                         </p>
                     </div>
                 @endif
+            @endcan
             @elseif($mr->is_fully_approved && $mr->status === 'approved')
                 <div class="bg-white dark:bg-dark-800 overflow-hidden shadow-sm sm:rounded-lg p-4 mb-6 border-l-4 border-green-500">
                     <div class="flex justify-between items-center">
@@ -307,45 +312,59 @@
     </div>
 
     <!-- Approve MR Modal -->
-    <x-confirm-modal id="approveMRModal" title="Approve Material Request"
-        message="Apakah Anda yakin ingin menyetujui permintaan material ini untuk Level {{ $mr->current_approval_level }}?" confirmColor="green" icon="check">
-        <form action="{{ route('projects.mr.status', [$project, $mr]) }}" method="POST" class="p-4">
-            @csrf
-            <input type="hidden" name="status" value="approved">
-            
-            <div class="mb-4 text-left">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Catatan Persetujuan (Opsional)</label>
-                <textarea name="comment" rows="3" class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500 text-sm" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
-            </div>
-
-            <div class="flex justify-end gap-3">
-                <button type="button" onclick="document.getElementById('approveMRModal').classList.add('hidden')"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700">Ya, Approve</button>
-            </div>
-        </form>
+    <x-confirm-modal id="approveMRModal" title="Setujui Material Request"
+        message="Apakah Anda yakin ingin menyetujui permintaan material ini untuk Level {{ $mr->current_approval_level }}?" 
+        confirmColor="green" icon="check">
+        <x-slot name="body">
+            <form id="approveMRForm" action="{{ route('projects.mr.status', [$project, $mr]) }}" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="approved">
+                <div class="text-left">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Catatan Persetujuan (Opsional)</label>
+                    <textarea name="comment" rows="3" 
+                        class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 text-sm transition-all" 
+                        placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="approveMRForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-green-600 text-base font-bold text-white hover:bg-green-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm">
+                Ya, Setujui
+            </button>
+            <button type="button" onclick="document.getElementById('approveMRModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
     </x-confirm-modal>
 
     <!-- Reject MR Modal -->
-    <x-confirm-modal id="rejectMRModal" title="Reject Material Request"
-        message="Harap masukkan alasan penolakan permintaan ini." confirmColor="red" icon="x-mark">
-        <form action="{{ route('projects.mr.status', [$project, $mr]) }}" method="POST" class="p-4">
-            @csrf
-            <input type="hidden" name="status" value="rejected">
-            
-            <div class="mb-4 text-left">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Alasan Penolakan</label>
-                <textarea name="comment" required rows="3" class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-gold-500 focus:ring-gold-500 text-sm" placeholder="Wajib diisi..."></textarea>
-            </div>
-
-            <div class="flex justify-end gap-3">
-                <button type="button" onclick="document.getElementById('rejectMRModal').classList.add('hidden')"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700">Ya, Tolak</button>
-            </div>
-        </form>
+    <x-confirm-modal id="rejectMRModal" title="Tolak Material Request"
+        message="Harap masukkan alasan penolakan untuk permintaan material ini." 
+        confirmColor="red" icon="x-mark">
+        <x-slot name="body">
+            <form id="rejectMRForm" action="{{ route('projects.mr.status', [$project, $mr]) }}" method="POST">
+                @csrf
+                <input type="hidden" name="status" value="rejected">
+                <div class="text-left">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Alasan Penolakan</label>
+                    <textarea name="comment" required rows="3" 
+                        class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm transition-all" 
+                        placeholder="Wajib diisi..."></textarea>
+                </div>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="rejectMRForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                Ya, Tolak
+            </button>
+            <button type="button" onclick="document.getElementById('rejectMRModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
     </x-confirm-modal>
 </x-app-layout>
 

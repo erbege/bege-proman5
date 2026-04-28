@@ -261,9 +261,10 @@ class ScheduleController extends Controller
             ->where('users.id', '!=', auth()->id())
             ->get();
 
-        \Illuminate\Support\Facades\Notification::send(
-            $teamMembers,
-            new \App\Notifications\ScheduleChangedNotification($project, 'auto_applied', $message)
+        \App\Services\NotificationHelper::sendToProjectTeam(
+            $project,
+            new \App\Notifications\ScheduleChangedNotification($project, 'auto_applied', $message),
+            auth()->id()
         );
 
         if ($request->ajax()) {

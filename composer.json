@@ -26,6 +26,7 @@
         "maatwebsite/excel": "^3.1",
         "openai-php/laravel": "^0.18.0",
         "predis/predis": "^3.3",
+        "pusher/pusher-php-server": "7.2",
         "spatie/laravel-activitylog": "^4.10",
         "spatie/laravel-permission": "^6.24"
     },
@@ -97,7 +98,8 @@
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
-            "php-http/discovery": true
+            "php-http/discovery": true,
+            "composer/installers": true
         }
     },
     "minimum-stability": "stable",

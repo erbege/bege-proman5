@@ -16,7 +16,7 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400">Kelola anggota tim untuk proyek {{ $project->name }}
                 </p>
             </div>
-            @can('financials.manage')
+            @can('projects.manage-team')
             <div class="flex flex-wrap gap-2">
                 <button wire:click="openModal" type="button"
                     class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
@@ -111,7 +111,7 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-1.5 text-center">
-                                    @can('financials.manage')
+                                    @can('projects.manage-team')
                                     <button wire:click="toggleStatus({{ $member->id }})" class="cursor-pointer">
                                         @if($member->is_active)
                                             <span
@@ -132,7 +132,7 @@
                                     @endcan
                                 </td>
                                 <td class="px-3 py-1.5 text-right text-sm space-x-2">
-                                    @can('financials.manage')
+                                    @can('projects.manage-team')
                                     <button wire:click="openModal({{ $member->id }})" title="Edit"
                                         class="text-gold-600 hover:text-gold-900 dark:text-gold-400">
                                         <x-heroicon-o-pencil-square class="w-5 h-5" />

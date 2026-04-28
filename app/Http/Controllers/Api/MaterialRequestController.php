@@ -22,7 +22,7 @@ class MaterialRequestController extends Controller
 
     protected $mrService;
 
-    private const ELEVATED_ROLES = ['super-admin', 'Superadmin', 'administrator'];
+    private const ELEVATED_ROLES = ['Superadmin', 'super-admin', 'administrator'];
 
     public function __construct(MaterialRequestService $mrService)
     {
@@ -105,9 +105,55 @@ class MaterialRequestController extends Controller
         );
     }
 
+    /**
+     * Approve material request.
+     * 
+     * Approve a pending material request at the current level.
+     */
+    public function approve(Request $request, MaterialRequest $materialRequest)
+    {
+        $this->authorize('mr.approve');
+        
+        try {
+            $this->mrService->approvalService()->approve($materialRequest, $request->comment);
+            
+            return $this->successResponse(
+                'Material request approved successfully', 
+                new MaterialRequestResource($materialRequest->load('approvalLogs'))
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 422);
+        }
+    }
+
+    /**
+     * Reject material request.
+     * 
+     * Reject a pending material request.
+     */
+    public function reject(Request $request, MaterialRequest $materialRequest)
+    {
+        $this->authorize('mr.approve');
+        
+        $request->validate([
+            'comment' => 'required|string|max:500'
+        ]);
+
+        try {
+            $this->mrService->approvalService()->reject($materialRequest, $request->comment);
+            
+            return $this->successResponse(
+                'Material request rejected', 
+                new MaterialRequestResource($materialRequest->load('approvalLogs'))
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 422);
+        }
+    }
+
     private function applyVisibilityScope($query, $user): void
     {
-        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
             return;
         }
 
@@ -122,7 +168,7 @@ class MaterialRequestController extends Controller
 
     private function canViewRequest(MaterialRequest $materialRequest, $user): bool
     {
-        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
             return true;
         }
 

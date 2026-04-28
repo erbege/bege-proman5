@@ -69,9 +69,32 @@ class ProgressReportController extends Controller
             $scheduleCalculator->updateFromProgress($project);
         }
 
+        // Notify stakeholders
+        $this->notifyStakeholders($report);
+
         return response()->json([
             'message' => 'Progress report created successfully',
             'data' => $report->load(['reportedBy', 'rabItem'])
         ], 201);
+    }
+
+    /**
+     * Notify relevant stakeholders about the new progress report.
+     */
+    protected function notifyStakeholders(ProgressReport $report): void
+    {
+        $users = collect();
+        if ($report->project && $report->project->createdBy) {
+            $users->push($report->project->createdBy);
+        }
+
+        // Add Project Managers explicitly as they are stakeholders but not necessarily 'admins' in helper
+        $projectManagers = \App\Models\User::role('project-manager')->get();
+        $users = $users->merge($projectManagers);
+
+        \App\Services\NotificationHelper::sendToUsers(
+            $users,
+            new \App\Notifications\ProgressReportCreatedNotification($report)
+        );
     }
 }

@@ -23,7 +23,7 @@ class PurchaseRequestController extends Controller
 
     protected $prService;
 
-    private const ELEVATED_ROLES = ['super-admin', 'Superadmin', 'administrator'];
+    private const ELEVATED_ROLES = ['Superadmin', 'super-admin', 'administrator'];
 
     public function __construct(PurchaseRequestService $prService)
     {
@@ -111,23 +111,20 @@ class PurchaseRequestController extends Controller
      * 
      * Approve a pending purchase request.
      */
-    public function approve(PurchaseRequest $purchaseRequest)
+    public function approve(Request $request, PurchaseRequest $purchaseRequest)
     {
-        $this->authorize('financials.manage');
-        if ($purchaseRequest->status !== 'pending') {
-            return $this->errorResponse('Request is not pending', 422);
+        $this->authorize('pr.approve');
+        
+        try {
+            $this->prService->approvalService()->approve($purchaseRequest, $request->comment);
+            
+            return $this->successResponse(
+                'Purchase request approved successfully', 
+                new PurchaseRequestResource($purchaseRequest->load('approvalLogs'))
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 422);
         }
-
-        $purchaseRequest->update([
-            'status' => 'approved',
-            'approved_by' => auth()->id(),
-            'approved_at' => now(),
-        ]);
-
-        return $this->successResponse(
-            'Purchase request approved', 
-            new PurchaseRequestResource($purchaseRequest)
-        );
     }
 
     /**
@@ -135,24 +132,24 @@ class PurchaseRequestController extends Controller
      * 
      * Reject a pending purchase request.
      */
-    public function reject(RejectPurchaseRequestRequest $request, PurchaseRequest $purchaseRequest)
+    public function reject(Request $request, PurchaseRequest $purchaseRequest)
     {
-        $this->authorize('financials.manage');
-        if ($purchaseRequest->status !== 'pending') {
-            return $this->errorResponse('Request is not pending', 422);
-        }
-
-        $validated = $request->validated();
-
-        $purchaseRequest->update([
-            'status' => 'rejected',
-            'rejection_reason' => $validated['reason'] ?? null,
+        $this->authorize('pr.approve');
+        
+        $request->validate([
+            'reason' => 'required|string|max:500'
         ]);
 
-        return $this->successResponse(
-            'Purchase request rejected', 
-            new PurchaseRequestResource($purchaseRequest)
-        );
+        try {
+            $this->prService->approvalService()->reject($purchaseRequest, $request->reason);
+            
+            return $this->successResponse(
+                'Purchase request rejected successfully', 
+                new PurchaseRequestResource($purchaseRequest->load('approvalLogs'))
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse($e->getMessage(), 422);
+        }
     }
 
     /**
@@ -165,7 +162,7 @@ class PurchaseRequestController extends Controller
     public function availableMrItems(Request $request, \App\Models\Project $project)
     {
         $user = auth()->user();
-        if (!$user->projects()->where('projects.id', $project->id)->exists() && !$user->hasAnyRole(self::ELEVATED_ROLES)) {
+        if (!$user->projects()->where('projects.id', $project->id)->exists() && !$user->hasAnyRole(self::ELEVATED_ROLES) && !$user->can('projects.view.all')) {
             return $this->errorResponse('Unauthorized access to project', 403);
         }
 
@@ -194,7 +191,7 @@ class PurchaseRequestController extends Controller
 
     private function applyVisibilityScope($query, $user): void
     {
-        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
             return;
         }
 
@@ -209,7 +206,7 @@ class PurchaseRequestController extends Controller
 
     private function canViewRequest(PurchaseRequest $purchaseRequest, $user): bool
     {
-        if ($user->hasAnyRole(self::ELEVATED_ROLES)) {
+        if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
             return true;
         }
 

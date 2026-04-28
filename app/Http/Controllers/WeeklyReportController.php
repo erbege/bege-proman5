@@ -26,6 +26,7 @@ class WeeklyReportController extends Controller
      */
     public function index(Project $project)
     {
+        $this->authorize('weekly_report.view');
         $reports = WeeklyReport::where('project_id', $project->id)
             ->with('creator')
             ->orderByDesc('week_number')
@@ -42,6 +43,7 @@ class WeeklyReportController extends Controller
      */
     public function create(Project $project)
     {
+        $this->authorize('weekly_report.manage');
         $nextWeek = $this->service->getNextWeekNumber($project);
         $period = $this->service->calculatePeriod($project, $nextWeek);
         $projectImages = $this->service->getProjectImages($project);
@@ -54,6 +56,7 @@ class WeeklyReportController extends Controller
      */
     public function store(Request $request, Project $project)
     {
+        $this->authorize('weekly_report.manage');
         $validated = $request->validate([
             'week_number' => 'required|integer|min:1',
             'period_start' => 'required|date',
@@ -122,6 +125,7 @@ class WeeklyReportController extends Controller
      */
     public function show(Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.view');
         $report->load(['coverImage.latestVersion', 'creator']);
 
         return view('projects.weekly-reports.show', compact('project', 'report'));
@@ -132,6 +136,7 @@ class WeeklyReportController extends Controller
      */
     public function edit(Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $report->load(['coverImage.latestVersion', 'creator']);
         $projectImages = $this->service->getProjectImages($project);
 
@@ -146,6 +151,8 @@ class WeeklyReportController extends Controller
      */
     public function update(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
+        
         $validated = $request->validate([
             'cover_title' => 'nullable|string|max:255',
             'cover_image_id' => 'nullable|exists:project_files,id',
@@ -158,6 +165,10 @@ class WeeklyReportController extends Controller
             'problems' => 'nullable|string',
             'status' => 'nullable|in:draft,published',
         ]);
+
+        if (isset($validated['status']) && $validated['status'] === 'published') {
+            $this->authorize('weekly_report.publish');
+        }
 
         // Handle cover image upload
         if ($request->hasFile('cover_image_upload')) {
@@ -207,12 +218,18 @@ class WeeklyReportController extends Controller
      */
     public function updateCover(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
+        
         $validated = $request->validate([
             'cover_title' => 'nullable|string|max:255',
             'status' => 'nullable|in:draft,published',
             'cover_image_id' => 'nullable|exists:project_files,id',
             'cover_image_upload' => 'nullable|image|max:5120',
         ]);
+
+        if (isset($validated['status']) && $validated['status'] === 'published') {
+            $this->authorize('weekly_report.publish');
+        }
 
         if ($request->hasFile('cover_image_upload')) {
             if ($report->cover_image_path) {
@@ -245,6 +262,7 @@ class WeeklyReportController extends Controller
      */
     public function updateDetail(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $request->validate([
             'detail_data' => 'required|array',
         ]);
@@ -262,6 +280,7 @@ class WeeklyReportController extends Controller
      */
     public function uploadDocumentation(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $request->validate([
             'photos' => 'required|array|min:1',
             'photos.*' => 'image|max:5120',
@@ -300,6 +319,7 @@ class WeeklyReportController extends Controller
      */
     public function addProgressPhotos(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $request->validate([
             'photo_paths' => 'required|array|min:1',
             'photo_paths.*' => 'string',
@@ -333,6 +353,7 @@ class WeeklyReportController extends Controller
      */
     public function removeDocumentation(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $request->validate([
             'type' => 'required|in:project_file,upload',
             'id' => 'required_if:type,project_file',
@@ -365,6 +386,7 @@ class WeeklyReportController extends Controller
      */
     public function updateDocumentationIds(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $request->validate([
             'documentation_ids' => 'nullable|array',
             'documentation_ids.*' => 'exists:project_files,id',
@@ -383,6 +405,7 @@ class WeeklyReportController extends Controller
      */
     public function updateActivities(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $request->validate([
             'activities' => 'nullable|string',
             'problems' => 'nullable|string',
@@ -433,6 +456,7 @@ class WeeklyReportController extends Controller
      */
     public function destroy(Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         // Delete uploaded cover image if exists
         if ($report->cover_image_path) {
             $disk = SystemSetting::getStorageDisk();
@@ -451,6 +475,7 @@ class WeeklyReportController extends Controller
      */
     public function exportPdf(Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.view');
         $report->load(['coverImage.latestVersion', 'creator']);
 
         $pdf = Pdf::loadView('projects.weekly-reports.pdf', [
@@ -471,6 +496,7 @@ class WeeklyReportController extends Controller
      */
     public function regenerate(Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $periodEnd = \Carbon\Carbon::parse($report->period_end);
         $periodStart = \Carbon\Carbon::parse($report->period_start);
 
@@ -492,6 +518,7 @@ class WeeklyReportController extends Controller
      */
     public function autoGenerate(Request $request, Project $project)
     {
+        $this->authorize('weekly_report.manage');
         $weekNumber = $request->input('week_number');
 
         try {
@@ -510,6 +537,7 @@ class WeeklyReportController extends Controller
      */
     public function autoGenerateAll(Project $project)
     {
+        $this->authorize('weekly_report.manage');
         try {
             $generated = $this->service->autoGenerateAll($project);
             $count = count($generated);
@@ -533,6 +561,7 @@ class WeeklyReportController extends Controller
      */
     public function updateCumulative(Request $request, Project $project, WeeklyReport $report)
     {
+        $this->authorize('weekly_report.manage');
         $request->validate([
             'items' => 'required|array',
             'items.*' => 'numeric|min:0',
@@ -737,6 +766,7 @@ class WeeklyReportController extends Controller
      */
     public function bulkDestroy(Request $request, Project $project)
     {
+        $this->authorize('weekly_report.manage');
         $validated = $request->validate([
             'ids' => 'required|array|min:1',
             'ids.*' => 'exists:weekly_reports,id',

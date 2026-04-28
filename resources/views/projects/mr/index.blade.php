@@ -15,11 +15,13 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->code }}</p>
             </div>
+            @can('mr.manage')
             <a href="{{ route('projects.mr.create', $project) }}"
                 class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                 <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                 Buat MR Baru
             </a>
+            @endcan
         </div>
     </x-slot>
 
@@ -93,10 +95,12 @@
                                             <td class="px-3 py-1.5 whitespace-nowrap text-right text-sm font-medium">
                                                 <a href="{{ route('projects.mr.show', [$project, $mr]) }}"
                                                     class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-2">Detail</a>
+                                                @can('mr.manage')
                                                 @if($mr->status === 'pending')
                                                     <a href="{{ route('projects.mr.edit', [$project, $mr]) }}"
                                                         class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300">Edit</a>
                                                 @endif
+                                                @endcan
                                             </td>
                                         </tr>
                                     @endforeach
@@ -114,11 +118,13 @@
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Mulai dengan membuat permintaan
                                 material baru.</p>
                             <div class="mt-6">
+                                @can('mr.manage')
                                 <a href="{{ route('projects.mr.create', $project) }}"
                                     class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                                     <x-heroicon-o-plus class="w-4 h-4 mr-2" />
                                     Buat MR Baru
                                 </a>
+                                @endcan
                             </div>
                         </div>
                     @endif

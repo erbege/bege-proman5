@@ -60,9 +60,15 @@
                                                         {{ str_replace(['_', '-'], ' ', $matrix->role_name) }}
                                                     </p>
                                                 </div>
-                                                @if($matrix->min_amount > 0)
+                                                @if($matrix->min_amount > 0 || $matrix->max_amount > 0)
                                                     <p class="text-xs text-blue-600 dark:text-blue-400 mt-1 font-medium">
-                                                        Berlaku jika > Rp {{ number_format($matrix->min_amount, 0, ',', '.') }}
+                                                        @if($matrix->min_amount > 0 && $matrix->max_amount > 0)
+                                                            Rp {{ number_format($matrix->min_amount, 0, ',', '.') }} - {{ number_format($matrix->max_amount, 0, ',', '.') }}
+                                                        @elseif($matrix->min_amount > 0)
+                                                            > Rp {{ number_format($matrix->min_amount, 0, ',', '.') }}
+                                                        @else
+                                                            < Rp {{ number_format($matrix->max_amount, 0, ',', '.') }}
+                                                        @endif
                                                     </p>
                                                 @else
                                                     <p class="text-xs text-gray-500 mt-1 italic">Selalu aktif</p>
@@ -98,96 +104,146 @@
     </div>
 
     <!-- Add Matrix Modal -->
-    <x-confirm-modal id="addMatrixModal" title="Tambah Aturan Approval" message="Tentukan tingkatan level dan role yang bertanggung jawab." confirmColor="gold" icon="shield-check">
-        <form action="{{ route('settings.approval-matrix.store') }}" method="POST" class="p-4 text-left">
-            @csrf
-            <div class="grid grid-cols-2 gap-4">
-                <div class="col-span-2 md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipe Dokumen</label>
-                    <select name="document_type" required class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm">
-                        <option value="MR">Material Request (MR)</option>
-                        <option value="PR">Purchase Request (PR)</option>
-                        <option value="PO">Purchase Order (PO)</option>
-                    </select>
-                </div>
-                <div class="col-span-2 md:col-span-1">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Level Approval</label>
-                    <input type="number" name="level" required min="1" class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm" placeholder="Contoh: 1">
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role Penanggung Jawab</label>
-                    <select name="role_name" required class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm">
-                        <option value="">Pilih Role...</option>
-                        @foreach($roles as $role)
-                            <option value="{{ $role->name }}">{{ ucwords(str_replace(['_', '-'], ' ', $role->name)) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nominal Minimum (Khusus PO)</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 text-sm">Rp</span>
-                        </div>
-                        <input type="number" name="min_amount" value="0" class="w-full pl-10 rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm">
+    <x-confirm-modal id="addMatrixModal" title="Tambah Aturan Approval" 
+        message="Tentukan tingkatan level dan role yang bertanggung jawab." 
+        confirmColor="gold" icon="shield-check">
+        <x-slot name="body">
+            <form id="addMatrixForm" action="{{ route('settings.approval-matrix.store') }}" method="POST">
+                @csrf
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Tipe Dokumen</label>
+                        <select name="document_type" required class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all">
+                            <option value="MR">Material Request (MR)</option>
+                            <option value="PR">Purchase Request (PR)</option>
+                            <option value="PO">Purchase Order (PO)</option>
+                        </select>
                     </div>
-                    <p class="text-[10px] text-gray-400 mt-1 italic">*Kosongkan atau isi 0 jika selalu aktif untuk semua nominal.</p>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Level Approval</label>
+                        <input type="number" name="level" required min="1" class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all" placeholder="Contoh: 1">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Role Penanggung Jawab</label>
+                        <select name="role_name" required class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all">
+                            <option value="">Pilih Role...</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->name }}">{{ ucwords(str_replace(['_', '-'], ' ', $role->name)) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Nominal Minimum (PO)</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 text-sm">Rp</span>
+                            </div>
+                            <input type="number" name="min_amount" value="0" class="w-full pl-10 rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all">
+                        </div>
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Nominal Maksimum (PO)</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 text-sm">Rp</span>
+                            </div>
+                            <input type="number" name="max_amount" class="w-full pl-10 rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all" placeholder="Opsional">
+                        </div>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-[10px] text-gray-400 italic">*Rentang nominal hanya berlaku untuk Purchase Order (PO). Kosongkan jika tidak ada batasan.</p>
+                    </div>
                 </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button" onclick="document.getElementById('addMatrixModal').classList.add('hidden')"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-gold-500 text-gray-900 rounded-md text-sm font-bold hover:bg-gold-600 transition shadow-md">Simpan Aturan</button>
-            </div>
-        </form>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="addMatrixForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-gold-500 text-base font-bold text-gray-900 hover:bg-gold-600 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gold-500 sm:w-auto sm:text-sm">
+                Simpan Aturan
+            </button>
+            <button type="button" onclick="document.getElementById('addMatrixModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
     </x-confirm-modal>
 
     <!-- Edit Matrix Modal -->
-    <x-confirm-modal id="editMatrixModal" title="Edit Aturan Approval" message="Perbarui peran atau ambang batas nominal." confirmColor="blue" icon="pencil-square">
-        <form id="editMatrixForm" method="POST" class="p-4 text-left">
-            @csrf
-            @method('PUT')
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role Penanggung Jawab</label>
-                    <select name="role_name" id="edit_role_name" required class="w-full rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm">
-                        @foreach($roles as $role)
-                            <option value="{{ $role->name }}">{{ ucwords(str_replace(['_', '-'], ' ', $role->name)) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nominal Minimum (Khusus PO)</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 text-sm">Rp</span>
+    <x-confirm-modal id="editMatrixModal" title="Edit Aturan Approval" 
+        message="Perbarui peran atau ambang batas nominal." 
+        confirmColor="blue" icon="pencil-square">
+        <x-slot name="body">
+            <form id="editMatrixForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Role Penanggung Jawab</label>
+                        <select name="role_name" id="edit_role_name" required class="w-full rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all">
+                            @foreach($roles as $role)
+                                <option value="{{ $role->name }}">{{ ucwords(str_replace(['_', '-'], ' ', $role->name)) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Nominal Minimum</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">Rp</span>
+                                </div>
+                                <input type="number" name="min_amount" id="edit_min_amount" class="w-full pl-10 rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all">
+                            </div>
                         </div>
-                        <input type="number" name="min_amount" id="edit_min_amount" class="w-full pl-10 rounded-md border-gray-300 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm">
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">Nominal Maksimum</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">Rp</span>
+                                </div>
+                                <input type="number" name="max_amount" id="edit_max_amount" class="w-full pl-10 rounded-xl border-gray-200 dark:bg-dark-900 dark:border-dark-700 dark:text-gray-300 focus:border-gold-500 focus:ring-gold-500 text-sm transition-all">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="hidden" name="is_active" value="0">
+                        <input type="checkbox" name="is_active" id="edit_is_active" value="1" class="rounded-lg border-gray-200 text-gold-600 shadow-sm focus:ring-gold-500">
+                        <label class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Aturan ini aktif</label>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" name="is_active" id="edit_is_active" value="1" class="rounded border-gray-300 text-gold-600 shadow-sm focus:ring-gold-500">
-                    <label class="ml-2 block text-sm text-gray-700 dark:text-gray-300 italic">Aturan ini aktif</label>
-                </div>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-                <button type="button" onclick="document.getElementById('editMatrixModal').classList.add('hidden')"
-                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-200 transition">Batal</button>
-                <button type="submit"
-                    class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-bold hover:bg-blue-700 transition shadow-md">Update Aturan</button>
-            </div>
-        </form>
+            </form>
+        </x-slot>
+        <x-slot name="footer">
+            <button type="submit" form="editMatrixForm"
+                class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-blue-600 text-base font-bold text-white hover:bg-blue-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm">
+                Update Aturan
+            </button>
+            <button type="button" onclick="document.getElementById('editMatrixModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
     </x-confirm-modal>
 
-    <!-- Delete Confirm Form -->
-    <form id="deleteForm" method="POST" class="hidden">
-        @csrf
-        @method('DELETE')
-    </form>
+    <!-- Delete Matrix Modal -->
+    <x-confirm-modal id="deleteMatrixModal" title="Hapus Aturan Approval" 
+        message="Apakah Anda yakin ingin menghapus aturan approval ini? Tindakan ini tidak dapat dibatalkan." 
+        confirmColor="red" icon="trash">
+        <x-slot name="footer">
+            <form id="deleteMatrixForm" method="POST">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                    class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-red-600 text-base font-bold text-white hover:bg-red-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:w-auto sm:text-sm">
+                    Ya, Hapus Aturan
+                </button>
+            </form>
+            <button type="button" onclick="document.getElementById('deleteMatrixModal').classList.add('hidden')"
+                class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                Batal
+            </button>
+        </x-slot>
+    </x-confirm-modal>
 
     <script>
         function openEditModal(matrix) {
@@ -196,17 +252,16 @@
             
             document.getElementById('edit_role_name').value = matrix.role_name;
             document.getElementById('edit_min_amount').value = matrix.min_amount;
+            document.getElementById('edit_max_amount').value = matrix.max_amount || '';
             document.getElementById('edit_is_active').checked = matrix.is_active;
             
             document.getElementById('editMatrixModal').classList.remove('hidden');
         }
 
         function confirmDelete(url) {
-            if (confirm('Apakah Anda yakin ingin menghapus aturan approval ini?')) {
-                const form = document.getElementById('deleteForm');
-                form.action = url;
-                form.submit();
-            }
+            const form = document.getElementById('deleteMatrixForm');
+            form.action = url;
+            document.getElementById('deleteMatrixModal').classList.remove('hidden');
         }
     </script>
 </x-app-layout>

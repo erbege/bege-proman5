@@ -17,6 +17,7 @@
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $report->period_label }}</p>
             </div>
             <div class="flex space-x-2">
+                @can('weekly_report.manage')
                 <form action="{{ route('projects.weekly-reports.regenerate', [$project, $report]) }}" method="POST"
                     class="inline">
                     @csrf
@@ -29,6 +30,8 @@
                         Regenerate Data
                     </button>
                 </form>
+                @endcan
+                
                 <a href="{{ route('projects.weekly-reports.pdf', [$project, $report]) }}"
                     class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,6 +40,8 @@
                     </svg>
                     Export PDF
                 </a>
+
+                @can('weekly_report.manage')
                 <a href="{{ route('projects.weekly-reports.edit', [$project, $report]) }}"
                     class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,6 +50,7 @@
                     </svg>
                     Edit
                 </a>
+                @endcan
             </div>
         </div>
     </x-slot>
@@ -244,7 +250,8 @@
                                         <td
                                             class="px-2 py-1 text-center border dark:border-gray-600 text-xs text-green-700 dark:text-green-200 bg-green-50 dark:bg-green-900/50 p-0">
                                             <input type="number" step="0.0001" min="0"
-                                                class="w-full text-center text-xs bg-green-100 dark:bg-green-900 border-0 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 py-1 px-1 text-green-800 dark:text-green-100 font-medium"
+                                                :disabled="!canManage"
+                                                class="w-full text-center text-xs bg-green-100 dark:bg-green-900 border-0 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400 py-1 px-1 text-green-800 dark:text-green-100 font-medium disabled:opacity-75 disabled:cursor-not-allowed"
                                                 :value="row.item.actual.current"
                                                 @input="updateActualCurrent(row.item, parseFloat($event.target.value) || 0)">
                                         </td>
@@ -417,6 +424,7 @@
                     saveStatus: '',
                     saveMessage: '',
                     saveUrl: '{{ route("projects.weekly-reports.update-cumulative", [$project, $report]) }}',
+                    canManage: @json(auth()->user()->can('weekly_report.manage')),
 
                     fmt(val) {
                         return parseFloat(val || 0).toFixed(4);

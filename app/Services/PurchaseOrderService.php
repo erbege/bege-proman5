@@ -19,6 +19,11 @@ class PurchaseOrderService
         $this->approvalService = $approvalService;
     }
 
+    public function approvalService(): ApprovalService
+    {
+        return $this->approvalService;
+    }
+
     /**
      * Create a new Purchase Order from validated request data.
      *
@@ -59,20 +64,35 @@ class PurchaseOrderService
 
             // Create Items
             foreach ($data['items'] as $item) {
-                $po->items()->create([
+                $poItem = $po->items()->create([
                     'material_id' => $item['material_id'],
+                    'purchase_request_item_id' => $item['purchase_request_item_id'] ?? null,
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                     'total_price' => $item['quantity'] * $item['unit_price'],
                     'notes' => $item['notes'] ?? null,
                 ]);
+
+                // Update PR item ordered quantity if linked
+                if ($poItem->purchase_request_item_id) {
+                    $prItem = \App\Models\PurchaseRequestItem::find($poItem->purchase_request_item_id);
+                    if ($prItem) {
+                        $prItem->increment('ordered_quantity', $poItem->quantity);
+                        
+                        // Collect PR IDs if not already provided
+                        if (!isset($prIds)) $prIds = [];
+                        if (!in_array($prItem->purchase_request_id, $prIds)) {
+                            $prIds[] = $prItem->purchase_request_id;
+                        }
+                    }
+                }
             }
 
             // Initialize Approval Process
             $this->approvalService->submit($po);
 
             // Sync with multiple PRs via Pivot
-            $prIds = $data['purchase_request_ids'] ?? $data['pr_ids'] ?? [];
+            $prIds = array_unique(array_merge($prIds ?? [], $data['purchase_request_ids'] ?? $data['pr_ids'] ?? []));
             if (!empty($prIds)) {
                 $po->purchaseRequests()->sync($prIds);
                 
@@ -80,28 +100,9 @@ class PurchaseOrderService
                 PurchaseRequest::whereIn('id', $prIds)->update(['status' => 'approved']);
             }
 
-            // Notify project team members
-            $this->notifyTeam($po, $project, $creatorId);
-
             return $po;
         });
     }
 
-    /**
-     * Notify team members about PO creation.
-     */
-    private function notifyTeam(PurchaseOrder $po, Project $project, int $creatorId): void
-    {
-        $po->load('supplier');
-        $teamMembers = $project->team()
-            ->where('users.id', '!=', $creatorId)
-            ->get();
 
-        if ($teamMembers->isNotEmpty()) {
-            Notification::send(
-                $teamMembers,
-                new PurchaseOrderCreatedNotification($po)
-            );
-        }
-    }
 }

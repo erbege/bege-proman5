@@ -90,14 +90,6 @@ class MaterialRequestController extends Controller
             return $mr;
         });
 
-        // Notify project team + admins about new MR
-        $mr->load(['project', 'requestedBy']);
-        \App\Services\NotificationHelper::sendToProjectTeam(
-            $project,
-            new \App\Notifications\MaterialRequestCreatedNotification($mr),
-            auth()->id()
-        );
-
         return redirect()->route('projects.mr.index', $project)->with('success', 'Material Request berhasil dibuat dan diajukan untuk approval.');
     }
 
@@ -209,7 +201,7 @@ class MaterialRequestController extends Controller
 
     public function updateStatus(Request $request, Project $project, MaterialRequest $mr)
     {
-        $this->authorize('mr.manage');
+        $this->authorize('mr.approve');
         $request->validate([
             'status' => 'required|in:approved,rejected',
             'comment' => 'nullable|string|max:500'
@@ -222,12 +214,7 @@ class MaterialRequestController extends Controller
                 $this->approvalService->reject($mr, $request->comment ?? 'Rejected by user');
             }
 
-            // Notify the requester
-            if ($mr->requestedBy && $mr->requestedBy->id !== auth()->id()) {
-                $mr->requestedBy->notify(
-                    new \App\Notifications\MaterialRequestStatusNotification($mr, $request->status)
-                );
-            }
+            // Notification is now handled by ApprovalService
 
             return back()->with('success', 'Status MR berhasil diperbarui.');
         } catch (\Exception $e) {

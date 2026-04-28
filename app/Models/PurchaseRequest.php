@@ -35,6 +35,9 @@ class PurchaseRequest extends Model
         'requested_by',
         'approved_by',
         'approved_at',
+        'current_approval_level',
+        'max_approval_level',
+        'is_fully_approved',
     ];
 
     protected $casts = [
@@ -93,6 +96,18 @@ class PurchaseRequest extends Model
         static::creating(function ($model) {
             if (empty($model->pr_number)) {
                 $model->pr_number = static::generateNumber();
+            }
+        });
+
+        static::updating(function ($model) {
+            // Prevent editing if already approved, except for status transitions
+            if ($model->getOriginal('status') === 'approved' || $model->getOriginal('is_fully_approved')) {
+                $restrictedFields = ['project_id', 'requested_by', 'pr_number', 'request_date', 'required_date'];
+                foreach ($restrictedFields as $field) {
+                    if ($model->isDirty($field)) {
+                        throw new \Exception("Dokumen yang sudah disetujui tidak dapat diedit.");
+                    }
+                }
             }
         });
     }

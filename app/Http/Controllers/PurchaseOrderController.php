@@ -23,7 +23,7 @@ class PurchaseOrderController extends Controller
      */
     public function index(Project $project)
     {
-        $this->authorize('procurement.manage');
+        $this->authorize('procurement.view');
 
         $orders = $project->purchaseOrders()
             ->with(['supplier', 'createdBy'])
@@ -86,7 +86,7 @@ class PurchaseOrderController extends Controller
      */
     public function show(Project $project, PurchaseOrder $po)
     {
-        $this->authorize('procurement.manage');
+        $this->authorize('procurement.view');
 
         $po->load(['items.material', 'supplier', 'createdBy', 'project', 'approvalLogs.user']);
         return view('projects.po.show', compact('project', 'po'));
@@ -97,7 +97,7 @@ class PurchaseOrderController extends Controller
      */
     public function updateStatus(Request $request, Project $project, PurchaseOrder $po)
     {
-        $this->authorize('financials.manage');
+        $this->authorize('po.approve');
 
         $request->validate([
             'status' => 'required|in:approved,rejected',
@@ -122,7 +122,7 @@ class PurchaseOrderController extends Controller
      */
     public function print(Project $project, PurchaseOrder $po)
     {
-        $this->authorize('procurement.manage');
+        $this->authorize('procurement.view');
 
         if (!$po->is_fully_approved) {
             return back()->with('error', 'PO harus disetujui sepenuhnya sebelum dicetak.');

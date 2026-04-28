@@ -28,7 +28,7 @@ class PurchaseRequestStatusNotification extends Notification implements ShouldQu
      */
     public function via(object $notifiable): array
     {
-        return ['database', FcmChannel::class];
+        return ['database', 'broadcast', FcmChannel::class];
     }
 
     /**
@@ -38,17 +38,21 @@ class PurchaseRequestStatusNotification extends Notification implements ShouldQu
     {
         $statusText = match ($this->status) {
             'approved' => 'disetujui',
+            'level_approved' => 'disetujui di satu level',
             'rejected' => 'ditolak',
             'pending' => 'menunggu persetujuan',
             default => $this->status,
         };
 
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'type' => 'purchase_request_status',
             'title' => 'Status Purchase Request',
-            'message' => "PR #{$this->purchaseRequest->code} telah {$statusText}",
+            'message' => "{$senderName} mengubah status PR #{$this->purchaseRequest->pr_number} menjadi {$statusText}",
             'pr_id' => $this->purchaseRequest->id,
-            'pr_code' => $this->purchaseRequest->code,
+            'pr_code' => $this->purchaseRequest->pr_number,
             'project_id' => $this->purchaseRequest->project_id,
             'status' => $this->status,
             'remarks' => $this->remarks,
@@ -56,6 +60,16 @@ class PurchaseRequestStatusNotification extends Notification implements ShouldQu
                 'project' => $this->purchaseRequest->project_id,
                 'pr' => $this->purchaseRequest->id,
             ]),
+        ];
+    }
+
+    /**
+     * Get the broadcast representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): array
+    {
+        return [
+            'data' => $this->toArray($notifiable),
         ];
     }
 
@@ -70,9 +84,12 @@ class PurchaseRequestStatusNotification extends Notification implements ShouldQu
             default => $this->status,
         };
 
+        $senderName = auth()->user()->name ?? 'Seseorang';
+        $receiverName = $notifiable->name ?: 'Anda';
+
         return [
             'title' => 'Status Purchase Request',
-            'body' => "PR #{$this->purchaseRequest->code} telah {$statusText}",
+            'body' => "{$senderName} mengubah status PR #{$this->purchaseRequest->pr_number} menjadi {$statusText}",
             'data' => [
                 'type' => 'purchase_request_status',
                 'pr_id' => (string) $this->purchaseRequest->id,

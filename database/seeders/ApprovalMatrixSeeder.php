@@ -14,16 +14,16 @@ class ApprovalMatrixSeeder extends Seeder
     {
         $matrices = [
             // Material Request (MR)
-            ['document_type' => 'MR', 'level' => 1, 'role_name' => 'site_manager', 'min_amount' => 0],
+            ['document_type' => 'MR', 'level' => 1, 'role_name' => 'site-manager', 'min_amount' => 0],
             
             // Purchase Request (PR)
-            ['document_type' => 'PR', 'level' => 1, 'role_name' => 'site_manager', 'min_amount' => 0],
-            ['document_type' => 'PR', 'level' => 2, 'role_name' => 'project_manager', 'min_amount' => 0],
+            ['document_type' => 'PR', 'level' => 1, 'role_name' => 'site-manager', 'min_amount' => 0],
+            ['document_type' => 'PR', 'level' => 2, 'role_name' => 'project-manager', 'min_amount' => 0],
             
             // Purchase Order (PO)
-            ['document_type' => 'PO', 'level' => 1, 'role_name' => 'procurement', 'min_amount' => 0],
-            ['document_type' => 'PO', 'level' => 2, 'role_name' => 'project_manager', 'min_amount' => 0],
-            ['document_type' => 'PO', 'level' => 3, 'role_name' => 'director', 'min_amount' => 100000000], // > 100 Juta
+            ['document_type' => 'PO', 'level' => 1, 'role_name' => 'purchasing', 'min_amount' => 0],
+            ['document_type' => 'PO', 'level' => 2, 'role_name' => 'project-manager', 'min_amount' => 0],
+            ['document_type' => 'PO', 'level' => 3, 'role_name' => 'administrator', 'min_amount' => 100000000], // > 100 Juta
         ];
 
         foreach ($matrices as $matrix) {

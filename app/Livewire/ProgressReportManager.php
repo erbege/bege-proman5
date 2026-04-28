@@ -47,6 +47,7 @@ class ProgressReportManager extends Component
 
     public function mount(Project $project)
     {
+        $this->authorize('progress.view');
         $this->project = $project;
         $this->reportDate = now()->format('Y-m-d');
     }
@@ -58,6 +59,7 @@ class ProgressReportManager extends Component
 
     public function openModal()
     {
+        $this->authorize('progress.create');
         $this->resetValidation();
         $this->reset(['rabItemId', 'reportDate', 'progressPercentage', 'description', 'issues', 'weather', 'workerCount', 'photos']);
         $this->reportDate = now()->format('Y-m-d');
@@ -71,6 +73,7 @@ class ProgressReportManager extends Component
 
     public function showDetail($id)
     {
+        $this->authorize('progress.view');
         $this->selectedReport = ProgressReport::with(['rabItem', 'reporter'])->find($id);
 
         // Precompute photo URLs to avoid repeated accessor calls
@@ -89,6 +92,7 @@ class ProgressReportManager extends Component
 
     public function save()
     {
+        $this->authorize('progress.create');
         $this->validate([
             'rabItemId' => 'nullable|exists:rab_items,id',
             'reportDate' => 'required|date',
@@ -160,6 +164,7 @@ class ProgressReportManager extends Component
 
     public function confirmDelete(int $id)
     {
+        $this->authorize('progress.delete');
         $this->deleteId = $id;
         $this->showDeleteModal = true;
     }
@@ -172,6 +177,7 @@ class ProgressReportManager extends Component
 
     public function delete()
     {
+        $this->authorize('progress.delete');
         $report = ProgressReport::find($this->deleteId);
 
         if (!$report) {

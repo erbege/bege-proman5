@@ -65,7 +65,7 @@
             </a>
             @endcan
 
-            <!-- Logistik Dropdown (MR, PR, PO, GR) -->
+            @canany(['mr.view', 'pr.view', 'po.view', 'gr.view', 'usage.view', 'procurement.view'])
             <div class="relative" x-data="{ 
                 open: false,
                 updatePosition() {
@@ -105,23 +105,29 @@
                                 Material Request
                             </a>
                             @endcan
-                            @can('procurement.view')
+                            @can('pr.view')
                             <a href="{{ route('projects.pr.index', $project) }}"
                                 class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('projects.pr.*') ? 'bg-gray-100 dark:bg-dark-600 text-gold-700 dark:text-gold-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600' }}">
                                 <x-heroicon-o-shopping-cart class="w-4 h-4 mr-2" />
                                 Purchase Request
                             </a>
+                            @endcan
+                            @can('po.view')
                             <a href="{{ route('projects.po.index', $project) }}"
                                 class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('projects.po.*') ? 'bg-gray-100 dark:bg-dark-600 text-gold-700 dark:text-gold-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600' }}">
                                 <x-heroicon-o-document-text class="w-4 h-4 mr-2" />
                                 Purchase Order
                             </a>
+                            @endcan
+                            @can('gr.view')
                             <a href="{{ route('projects.gr.index', $project) }}"
                                 class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('projects.gr.*') ? 'bg-gray-100 dark:bg-dark-600 text-gold-700 dark:text-gold-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600' }}">
                                 <x-heroicon-o-truck class="w-4 h-4 mr-2" />
                                 Terima Barang
                             </a>
+                            @endcan
                             <hr class="my-1 border-gray-200 dark:border-gray-600">
+                            @can('usage.view')
                             <a href="{{ route('projects.usage.index', $project) }}"
                                 class="flex items-center px-4 py-2 text-sm {{ request()->routeIs('projects.usage.*') ? 'bg-gray-100 dark:bg-dark-600 text-gold-700 dark:text-gold-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600' }}">
                                 <x-heroicon-o-chart-bar class="w-4 h-4 mr-2" />
@@ -132,6 +138,7 @@
                     </div>
                 </template>
             </div>
+            @endcanany
 
             <!-- Progress -->
             <a href="{{ route('projects.progress.index', $project) }}"
@@ -143,6 +150,7 @@
             </a>
 
             <!-- Weekly Reports -->
+            @can('weekly_report.view')
             <a href="{{ route('projects.weekly-reports.index', $project) }}"
                 class="px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-150 {{ request()->routeIs('projects.weekly-reports.*') ? 'bg-gold-50 text-gold-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700' }}">
                 <div class="flex items-center">
@@ -150,6 +158,7 @@
                     Weekly Report
                 </div>
             </a>
+            @endcan
 
             <!-- Financial / Cost Control -->
             @can('financials.view-report')

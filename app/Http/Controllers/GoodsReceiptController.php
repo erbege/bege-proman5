@@ -3,20 +3,27 @@
 namespace App\Http\Controllers;
 
 use App\Models\GoodsReceipt;
-use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
-use App\Models\PurchaseOrderItem;
+use App\Services\GoodsReceiptService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class GoodsReceiptController extends Controller
 {
+    protected $grService;
+
+    public function __construct(GoodsReceiptService $grService)
+    {
+        $this->grService = $grService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Project $project)
     {
+        $this->authorize('gr.view');
+
         $receipts = $project->goodsReceipts()
             ->with(['purchaseOrder.supplier', 'receivedBy', 'items'])
             ->latest()
@@ -30,6 +37,8 @@ class GoodsReceiptController extends Controller
      */
     public function create(Project $project)
     {
+        $this->authorize('gr.create');
+
         $poId = request('po_id');
         $po = null;
         $items = [];
@@ -75,6 +84,8 @@ class GoodsReceiptController extends Controller
      */
     public function store(Request $request, Project $project)
     {
+        $this->authorize('gr.create');
+
         $validated = $request->validate([
             'purchase_order_id' => 'required|exists:purchase_orders,id',
             'receipt_date' => 'required|date',
@@ -82,79 +93,35 @@ class GoodsReceiptController extends Controller
             'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
             'items.*.purchase_order_item_id' => 'required|exists:purchase_order_items,id',
+            'items.*.material_id' => 'required|exists:materials,id',
             'items.*.received_qty' => 'required|numeric|min:0.01',
             'items.*.notes' => 'nullable|string',
         ]);
 
-        $po = PurchaseOrder::findOrFail($validated['purchase_order_id']);
+        // Transform items for service
+        $items = array_map(function($item) {
+            return [
+                'purchase_order_item_id' => $item['purchase_order_item_id'],
+                'material_id' => $item['material_id'],
+                'quantity' => $item['received_qty'],
+                'notes' => $item['notes'],
+            ];
+        }, $validated['items']);
 
-        DB::transaction(function () use ($validated, $project, $po) {
-            
-            $gr = GoodsReceipt::create([
+        try {
+            $this->grService->createGoodsReceipt([
                 'project_id' => $project->id,
-                'purchase_order_id' => $po->id,
+                'purchase_order_id' => $validated['purchase_order_id'],
                 'receipt_date' => $validated['receipt_date'],
                 'delivery_note_number' => $validated['delivery_note_number'],
                 'notes' => $validated['notes'],
-                'received_by' => auth()->id(),
-            ]);
+                'items' => $items,
+            ], auth()->id());
 
-            foreach ($validated['items'] as $item) {
-                $poItem = PurchaseOrderItem::find($item['purchase_order_item_id']);
-                
-                // Validate over-receiving?
-                $remaining = $poItem->quantity - $poItem->received_qty;
-                if ($item['received_qty'] > $remaining + 0.0001) { // Floating point tolerance
-                     // For now allow simple warning or clamp, but here we proceed as trusting user (maybe over-delivery allowed?)
-                     // Ideally strict check.
-                }
-
-                $gr->items()->create([
-                    'purchase_order_item_id' => $poItem->id,
-                    'material_id' => $poItem->material_id,
-                    'quantity' => $item['received_qty'],
-                    'notes' => $item['notes'] ?? null,
-                ]);
-
-                // Update PO Item
-                $poItem->received_qty += $item['received_qty'];
-                $poItem->save();
-
-                // Update Inventory with Row Lock for atomic calculation
-                $inventory = Inventory::firstOrCreate(
-                    ['project_id' => $project->id, 'material_id' => $poItem->material_id],
-                    ['quantity' => 0, 'reserved_qty' => 0, 'average_cost' => 0]
-                );
-                
-                // Reload with lock for update
-                $inventory = Inventory::where('id', $inventory->id)->lockForUpdate()->first();
-
-                // Calculate Moving Average Cost
-                $oldQty = (float) $inventory->quantity;
-                $oldAvgCost = (float) $inventory->average_cost;
-                $newQty = (float) $item['received_qty'];
-                $unitPrice = (float) $poItem->unit_price;
-
-                $totalNewQty = $oldQty + $newQty;
-                if ($totalNewQty > 0) {
-                    $inventory->average_cost = (($oldQty * $oldAvgCost) + ($newQty * $unitPrice)) / $totalNewQty;
-                    $inventory->save();
-                }
-
-                $inventory->addStock(
-                    $item['received_qty'],
-                    'GoodsReceipt',
-                    $gr->id,
-                    'GR: ' . $gr->gr_number,
-                    auth()->id()
-                );
-            }
-
-            // Update PO Status
-            $po->updateReceiveStatus();
-        });
-
-        return redirect()->route('projects.gr.index', $project)->with('success', 'Penerimaan Barang berhasil dicatat.');
+            return redirect()->route('projects.gr.index', $project)->with('success', 'Penerimaan Barang berhasil dicatat dan diajukan untuk approval.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
     }
 
     /**
@@ -162,7 +129,39 @@ class GoodsReceiptController extends Controller
      */
     public function show(Project $project, GoodsReceipt $gr)
     {
-        $gr->load(['items.material', 'receivedBy', 'purchaseOrder.supplier']);
+        $this->authorize('gr.view');
+
+        $gr->load(['items.material', 'receivedBy', 'purchaseOrder.supplier', 'approvalLogs.user']);
         return view('projects.gr.show', compact('project', 'gr'));
+    }
+
+    /**
+     * Update status (Approval).
+     */
+    public function updateStatus(Request $request, Project $project, GoodsReceipt $gr)
+    {
+        $this->authorize('gr.approve');
+
+        $request->validate([
+            'status' => 'required|in:approved,rejected',
+            'comment' => 'nullable|string|max:500'
+        ]);
+
+        try {
+            if ($request->status === 'approved') {
+                $this->grService->approvalService()->approve($gr, $request->comment);
+                
+                // If fully approved, finalize (update inventory)
+                if ($gr->is_fully_approved) {
+                    $this->grService->finalize($gr);
+                }
+            } else {
+                $this->grService->approvalService()->reject($gr, $request->comment ?? 'Rejected by user');
+            }
+
+            return back()->with('success', 'Status GR berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
     }
 }

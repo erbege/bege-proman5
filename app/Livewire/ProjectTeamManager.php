@@ -141,7 +141,8 @@ class ProjectTeamManager extends Component
             $assignedUser = User::find($this->userId);
             $project = Project::find($this->projectId);
             if ($assignedUser && $project) {
-                $assignedUser->notify(
+                \App\Services\NotificationHelper::sendToUser(
+                    $assignedUser,
                     new \App\Notifications\ProjectAssignmentNotification($project, $this->role)
                 );
             }

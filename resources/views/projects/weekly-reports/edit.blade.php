@@ -71,7 +71,9 @@
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
                             <select x-model="formData.status" class="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-dark-700 dark:text-white focus:ring-primary-500 focus:border-primary-500">
                                 <option value="draft">Draft</option>
+                                @can('weekly_report.publish')
                                 <option value="published">Published</option>
+                                @endcan
                             </select>
                         </div>
                         <div class="grid grid-cols-2 gap-4">

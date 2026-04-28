@@ -20,6 +20,7 @@ class RolePermissionSeeder extends Seeder
         $permissions = [
             // Projects
             'projects.view',
+            'projects.view.all',
             'projects.create',
             'projects.update',
             'projects.delete',
@@ -57,27 +58,31 @@ class RolePermissionSeeder extends Seeder
 
             // Material Request
             'mr.view',
-            'mr.create',
-            'mr.update',
-            'mr.delete',
+            'mr.manage', // Replaces create/update/delete in some places
             'mr.approve',
 
             // Purchase Request
             'pr.view',
             'pr.create',
             'pr.update',
-            'pr.delete',
             'pr.approve',
+            'pr.import', // Import MR to PR
 
             // Purchase Order
             'po.view',
             'po.create',
             'po.update',
-            'po.delete',
+            'po.approve',
+            'po.import', // Import PR to PO
 
             // Goods Receipt
             'gr.view',
             'gr.create',
+            'gr.approve',
+
+            // Procurement General
+            'procurement.view',
+            'procurement.manage',
 
             // Material Usage
             'usage.view',
@@ -91,8 +96,10 @@ class RolePermissionSeeder extends Seeder
 
             // Dashboard & Reports
             'dashboard.view',
-            'reports.view',
             'reports.export',
+            'weekly_report.view',
+            'weekly_report.manage',
+            'weekly_report.publish',
 
             // Settings
             'settings.view',
@@ -102,27 +109,34 @@ class RolePermissionSeeder extends Seeder
 
             // Financials
             'financials.view',
+            'financials.view-report',
             'financials.manage',
+
+            // Analysis
+            'analysis.view',
+            'analysis.manage',
+            'analysis.run-ai',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::findOrCreate($permission);
         }
 
         // Create roles and assign permissions
 
-        // Super Admin - all permissions (legacy)
-        $superAdmin = Role::create(['name' => 'super-admin']);
-        $superAdmin->givePermissionTo(Permission::all());
+        // Superadmin - all permissions
+        $superadmin = Role::findOrCreate('Superadmin');
+        $superadmin->syncPermissions(Permission::all());
 
-        // Superadmin - all permissions (new standard name)
-        $superadmin = Role::create(['name' => 'Superadmin']);
-        $superadmin->givePermissionTo(Permission::all());
+        // Alias for Superadmin to maintain compatibility if needed, but we'll use 'Superadmin' primarily
+        Role::findOrCreate('super-admin')->syncPermissions(Permission::all());
+        Role::findOrCreate('administrator')->syncPermissions(Permission::all());
 
         // Project Manager
-        $projectManager = Role::create(['name' => 'project-manager']);
+        $projectManager = Role::findOrCreate('project-manager');
         $projectManager->givePermissionTo([
             'projects.view',
+            'projects.view.all',
             'projects.create',
             'projects.update',
             'projects.manage-team',
@@ -137,11 +151,17 @@ class RolePermissionSeeder extends Seeder
             'inventory.view',
             'suppliers.view',
             'mr.view',
+            'mr.manage',
             'mr.approve',
             'pr.view',
             'pr.approve',
             'po.view',
+            'po.approve',
             'gr.view',
+            'gr.create',
+            'gr.approve',
+            'procurement.view',
+            'procurement.manage',
             'usage.view',
             'progress.view',
             'progress.update',
@@ -149,11 +169,18 @@ class RolePermissionSeeder extends Seeder
             'reports.view',
             'reports.export',
             'financials.view',
+            'financials.view-report',
             'financials.manage',
+            'analysis.view',
+            'analysis.manage',
+            'analysis.run-ai',
+            'weekly_report.view',
+            'weekly_report.manage',
+            'weekly_report.publish',
         ]);
 
         // Site Manager
-        $siteManager = Role::create(['name' => 'site-manager']);
+        $siteManager = Role::findOrCreate('site-manager');
         $siteManager->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -173,7 +200,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Logistics
-        $logistics = Role::create(['name' => 'logistics']);
+        $logistics = Role::findOrCreate('logistics');
         $logistics->givePermissionTo([
             'projects.view',
             'materials.view',
@@ -190,11 +217,13 @@ class RolePermissionSeeder extends Seeder
             'gr.view',
             'gr.create',
             'usage.view',
+            'procurement.view',
             'dashboard.view',
+            'projects.view.all',
         ]);
 
         // Purchasing
-        $purchasing = Role::create(['name' => 'purchasing']);
+        $purchasing = Role::findOrCreate('purchasing');
         $purchasing->givePermissionTo([
             'projects.view',
             'materials.view',
@@ -209,15 +238,18 @@ class RolePermissionSeeder extends Seeder
             'po.create',
             'po.update',
             'gr.view',
+            'procurement.view',
             'dashboard.view',
             'reports.view',
             'financials.view',
+            'projects.view.all',
         ]);
 
         // Estimator (Quantity Surveyor)
-        $estimator = Role::create(['name' => 'estimator']);
+        $estimator = Role::findOrCreate('estimator');
         $estimator->givePermissionTo([
             'projects.view',
+            'projects.view.all',
             'rab.view',
             'rab.create',
             'rab.update',
@@ -231,11 +263,11 @@ class RolePermissionSeeder extends Seeder
             'reports.view',
             'reports.export',
             'financials.view',
-            'financials.manage',
+            'weekly_report.view',
         ]);
 
         // Engineer
-        $engineer = Role::create(['name' => 'engineer']);
+        $engineer = Role::findOrCreate('engineer');
         $engineer->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -248,7 +280,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Viewer (Read-only)
-        $viewer = Role::create(['name' => 'viewer']);
+        $viewer = Role::findOrCreate('viewer');
         $viewer->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -263,7 +295,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Administrator
-        $administrator = Role::create(['name' => 'administrator']);
+        $administrator = Role::findOrCreate('administrator');
         $administrator->givePermissionTo([
             'projects.view',
             'projects.create',
@@ -287,7 +319,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Architect
-        $architect = Role::create(['name' => 'architect']);
+        $architect = Role::findOrCreate('architect');
         $architect->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -298,7 +330,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Designer
-        $designer = Role::create(['name' => 'designer']);
+        $designer = Role::findOrCreate('designer');
         $designer->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -309,7 +341,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Project Admin
-        $projectAdmin = Role::create(['name' => 'project-admin']);
+        $projectAdmin = Role::findOrCreate('project-admin');
         $projectAdmin->givePermissionTo([
             'projects.view',
             'projects.update',
@@ -332,7 +364,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Supervisor
-        $supervisor = Role::create(['name' => 'supervisor']);
+        $supervisor = Role::findOrCreate('supervisor');
         $supervisor->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -346,7 +378,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Quantity Surveyor
-        $quantitySurveyor = Role::create(['name' => 'quantity-surveyor']);
+        $quantitySurveyor = Role::findOrCreate('quantity-surveyor');
         $quantitySurveyor->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -362,7 +394,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Drafter
-        $drafter = Role::create(['name' => 'drafter']);
+        $drafter = Role::findOrCreate('drafter');
         $drafter->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -373,7 +405,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Superintendent
-        $superintendent = Role::create(['name' => 'superintendent']);
+        $superintendent = Role::findOrCreate('superintendent');
         $superintendent->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -391,7 +423,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Tukang (Worker)
-        $tukang = Role::create(['name' => 'tukang']);
+        $tukang = Role::findOrCreate('tukang');
         $tukang->givePermissionTo([
             'projects.view',
             'materials.view',
@@ -400,7 +432,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Operator
-        $operator = Role::create(['name' => 'operator']);
+        $operator = Role::findOrCreate('operator');
         $operator->givePermissionTo([
             'projects.view',
             'materials.view',
@@ -409,7 +441,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // HSE (Health, Safety, Environment)
-        $hse = Role::create(['name' => 'hse']);
+        $hse = Role::findOrCreate('hse');
         $hse->givePermissionTo([
             'projects.view',
             'rab.view',
@@ -421,7 +453,7 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // Surveyor
-        $surveyor = Role::create(['name' => 'surveyor']);
+        $surveyor = Role::findOrCreate('surveyor');
         $surveyor->givePermissionTo([
             'projects.view',
             'rab.view',
