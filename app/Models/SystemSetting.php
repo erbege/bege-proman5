@@ -114,8 +114,8 @@ class SystemSetting extends Model
             }
         }
 
-        // Local/public storage - use relative URL for better compatibility
-        return '/storage/' . $path;
+        // Local/public storage - use absolute URL for better compatibility across different contexts (broadcasts, etc)
+        return asset('storage/' . $path);
     }
 
     /**

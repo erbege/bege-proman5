@@ -16,7 +16,7 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $report->period_label }}</p>
             </div>
-            <div class="flex space-x-2">
+            <div x-data="{}" class="flex items-center space-x-2">
                 @can('weekly_report.manage')
                 <form action="{{ route('projects.weekly-reports.regenerate', [$project, $report]) }}" method="POST"
                     class="inline">
@@ -32,6 +32,23 @@
                 </form>
                 @endcan
                 
+                @if($report->status === 'draft')
+                @can('weekly_report.publish')
+                <form action="{{ route('projects.weekly-reports.publish', [$project, $report]) }}" method="POST"
+                    class="inline">
+                    @csrf
+                    <button type="submit"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Publish ke Owner
+                    </button>
+                </form>
+                @endcan
+                @endif
+
                 <a href="{{ route('projects.weekly-reports.pdf', [$project, $report]) }}"
                     class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,11 +68,20 @@
                     Edit
                 </a>
                 @endcan
+
+                <button @click="window.dispatchEvent(new CustomEvent('open-discussion'))"
+                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    Diskusi
+                </button>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-4">
+    <div class="py-4" x-data="{}">
         <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
             @if (session('success'))
                 <div
@@ -374,8 +400,17 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         @foreach($docs as $doc)
                             @if($doc['url'])
-                                <div class="aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
+                                <div class="relative group aspect-square rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700">
                                     <img src="{{ $doc['url'] }}" alt="{{ $doc['name'] }}" class="w-full h-full object-cover">
+                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                                        <button @click="window.dispatchEvent(new CustomEvent('open-discussion', { detail: { target: 'photo', id: '{{ $doc['id'] }}', url: '{{ $doc['url'] }}' } }))"
+                                            class="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white backdrop-blur-sm transition-all transform hover:scale-110"
+                                            title="Komentari foto ini">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                             @endif
                         @endforeach
@@ -406,6 +441,139 @@
                         <div
                             class="p-4 bg-gray-50 dark:bg-dark-700 rounded-lg min-h-[100px] text-gray-700 dark:text-gray-300">
                             {!! nl2br(e($report->problems ?? 'Tidak ada kendala yang dilaporkan.')) !!}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discussion Side Panel -->
+    <div x-data="discussionPanel()" 
+         @open-discussion.window="open($event.detail)"
+         x-show="isOpen" 
+         x-cloak
+         class="fixed inset-0 z-50 overflow-hidden" 
+         aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+        <div class="absolute inset-0 overflow-hidden">
+            <!-- Background overlay -->
+            <div x-show="isOpen" 
+                 x-transition:enter="ease-in-out duration-500" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in-out duration-500" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0" 
+                 @click="isOpen = false"
+                 class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+                <div x-show="isOpen" 
+                     x-transition:enter="transform transition ease-in-out duration-500 sm:duration-700" 
+                     x-transition:enter-start="translate-x-full" 
+                     x-transition:enter-end="translate-x-0" 
+                     x-transition:leave="transform transition ease-in-out duration-500 sm:duration-700" 
+                     x-transition:leave-start="translate-x-0" 
+                     x-transition:leave-end="translate-x-full" 
+                     class="pointer-events-auto w-screen max-w-md">
+                    <div class="flex h-full flex-col overflow-y-scroll bg-white dark:bg-dark-800 shadow-xl">
+                        <div class="px-4 py-6 sm:px-6 bg-indigo-600 text-white">
+                            <div class="flex items-start justify-between">
+                                <h2 class="text-lg font-bold" id="slide-over-title">Diskusi Laporan</h2>
+                                <div class="ml-3 flex h-7 items-center">
+                                    <button @click="isOpen = false" type="button" class="rounded-md bg-indigo-600 text-indigo-200 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
+                                        <span class="sr-only">Close panel</span>
+                                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="mt-1 text-sm text-indigo-100">Diskusikan progres dan dokumentasi minggu ini secara real-time.</p>
+                        </div>
+                        
+                        <div class="relative flex-1 flex flex-col min-h-0">
+                            <!-- Target Context (if any) -->
+                            <div x-show="currentTarget" x-transition class="p-4 bg-gray-50 dark:bg-dark-700 border-b dark:border-gray-600">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">Menanggapi Foto:</span>
+                                    <button @click="currentTarget = null" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Hapus Konteks</button>
+                                </div>
+                                <div class="mt-2 flex items-center">
+                                    <a :href="currentTarget?.url" target="_blank" class="block hover:opacity-75 transition-opacity">
+                                        <img :src="currentTarget?.url" class="h-16 w-16 object-cover rounded border dark:border-gray-600 shadow-sm">
+                                    </a>
+                                    <div class="ml-3">
+                                        <p class="text-xs text-gray-600 dark:text-gray-300 italic" x-text="currentTarget?.id"></p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Comments List -->
+                            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="comments-container">
+                                <template x-for="comment in comments" :key="comment.id">
+                                    <div class="flex flex-col" :class="comment.user?.id === {{ auth()->id() }} ? 'items-end' : 'items-start'">
+                                        <div class="flex items-center mb-1 space-x-2" :class="comment.user?.id === {{ auth()->id() }} ? 'flex-row-reverse space-x-reverse' : ''">
+                                            <span class="text-xs font-bold text-gray-900 dark:text-gray-200" x-text="comment.user?.name"></span>
+                                            <span class="text-[10px] text-gray-500 dark:text-gray-400" x-text="comment.created_at_human"></span>
+                                        </div>
+                                        
+                                        <!-- Context Badge & Preview -->
+                                        <div x-show="comment.metadata?.target === 'photo'" class="mb-2 w-full">
+                                            <a :href="comment.metadata?.url" target="_blank" class="block group relative">
+                                                <img :src="comment.metadata?.url" 
+                                                     class="h-20 w-20 object-cover rounded-lg border-2 border-indigo-100 dark:border-indigo-900 shadow-sm group-hover:opacity-75 transition-opacity">
+                                                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <svg class="w-6 h-6 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                                                    </svg>
+                                                </div>
+                                                <span class="mt-1 block text-[8px] text-indigo-600 dark:text-indigo-400 font-bold uppercase">Lihat Foto Konteks</span>
+                                            </a>
+                                        </div>
+
+                                        <div class="max-w-[85%] px-4 py-2 rounded-2xl text-sm shadow-sm"
+                                             :class="comment.user?.id === {{ auth()->id() }} 
+                                                ? 'bg-indigo-600 text-white rounded-tr-none' 
+                                                : 'bg-gray-100 dark:bg-dark-700 text-gray-800 dark:text-gray-200 rounded-tl-none'">
+                                            <p x-text="comment.content"></p>
+                                        </div>
+                                    </div>
+                                </template>
+                                
+                                <div x-show="comments.length === 0" class="flex flex-col items-center justify-center h-full text-gray-400">
+                                    <svg class="w-12 h-12 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                    </svg>
+                                    <p class="text-sm italic">Belum ada diskusi.</p>
+                                </div>
+                            </div>
+
+                            <!-- Input Area -->
+                            <div class="p-4 bg-white dark:bg-dark-800 border-t dark:border-gray-700">
+                                <form @submit.prevent="postComment" class="relative">
+                                    <textarea 
+                                        x-model="newComment"
+                                        @keydown.enter.prevent="if(!$event.shiftKey) postComment()"
+                                        rows="2"
+                                        class="block w-full rounded-xl border-gray-300 dark:border-gray-600 dark:bg-dark-700 dark:text-gray-200 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm resize-none pr-12"
+                                        placeholder="Ketik pesan..."
+                                    ></textarea>
+                                    <button 
+                                        type="submit"
+                                        :disabled="!newComment.trim() || isPosting"
+                                        class="absolute right-2 bottom-2 p-2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 disabled:opacity-50 transition-colors"
+                                    >
+                                        <svg x-show="!isPosting" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                        </svg>
+                                        <svg x-show="isPosting" class="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -575,6 +743,93 @@
                             this.saving = false;
                         }
                     },
+                };
+            }
+
+            function discussionPanel() {
+                return {
+                    isOpen: false,
+                    comments: @json(\App\Http\Resources\Api\CommentResource::collection($report->comments)->resolve()),
+                    newComment: '',
+                    isPosting: false,
+                    currentTarget: null,
+                    projectId: {{ $project->id }},
+                    reportId: {{ $report->id }},
+
+                    init() {
+                        console.log('Discussion panel initialized for report:', this.reportId);
+                        if (window.Echo) {
+                            window.Echo.private(`project.${this.projectId}`)
+                                .listen('CommentPosted', (e) => {
+                                    if (e.commentable_type === 'App\\Models\\WeeklyReport' && 
+                                        e.commentable_id == this.reportId) {
+                                        // Avoid duplicates if we already pushed via postComment
+                                        if (!this.comments.find(c => c.id == e.comment.id)) {
+                                            this.comments.push(e.comment);
+                                            this.scrollToBottom();
+                                        }
+                                    }
+                                });
+                        }
+                    },
+
+                    open(detail = null) {
+                        this.isOpen = true;
+                        if (detail) {
+                            this.currentTarget = detail;
+                        }
+                        this.scrollToBottom();
+                    },
+
+                    async postComment() {
+                        if (!this.newComment.trim() || this.isPosting) return;
+                        
+                        this.isPosting = true;
+                        try {
+                            const response = await fetch('/api/comments', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                    'Accept': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    commentable_type: 'App\\Models\\WeeklyReport',
+                                    commentable_id: this.reportId,
+                                    content: this.newComment,
+                                    metadata: this.currentTarget ? { 
+                                        target: this.currentTarget.target, 
+                                        id: this.currentTarget.id,
+                                        url: this.currentTarget.url
+                                    } : null
+                                })
+                            });
+
+                            const result = await response.json();
+                            if (response.ok && result.success) {
+                                // Only push if not already added by Echo/real-time
+                                if (!this.comments.find(c => c.id == result.data.id)) {
+                                    this.comments.push(result.data);
+                                }
+                                this.newComment = '';
+                                this.currentTarget = null;
+                                this.scrollToBottom();
+                            }
+                        } catch (e) {
+                            console.error('Failed to post comment:', e);
+                        } finally {
+                            this.isPosting = false;
+                        }
+                    },
+
+                    scrollToBottom() {
+                        this.$nextTick(() => {
+                            const container = document.getElementById('comments-container');
+                            if (container) {
+                                container.scrollTop = container.scrollHeight;
+                            }
+                        });
+                    }
                 };
             }
         </script>

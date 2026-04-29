@@ -21,9 +21,11 @@ class ProjectController extends Controller
         // Data Scoping: If not superadmin/privileged, only show projects where user is in the team
         if (!$user->hasRole(['super-admin', 'Superadmin', 'administrator', 'Project Manager', 'Estimator']) && 
             !$user->can('projects.view.all')) {
-            $query->whereHas('team', function ($q) use ($user) {
-                $q->where('user_id', $user->id)
-                  ->where('is_active', true);
+            $query->where(function($q) use ($user) {
+                $q->whereHas('team', function ($sq) use ($user) {
+                    $sq->where('user_id', $user->id)
+                      ->where('is_active', true);
+                })->orWhere('owner_id', $user->id);
             });
         }
 
@@ -40,6 +42,7 @@ class ProjectController extends Controller
         }
 
         $users = User::all();
+        $owners = User::role('owner')->get();
         $types = [
             'construction' => 'Konstruksi',
             'architecture' => 'Arsitektur',
@@ -47,7 +50,7 @@ class ProjectController extends Controller
             'exterior' => 'Eksterior',
         ];
 
-        return view('projects.create', compact('users', 'types'));
+        return view('projects.create', compact('users', 'types', 'owners'));
     }
 
     public function store(Request $request)
@@ -67,6 +70,7 @@ class ProjectController extends Controller
             'contract_value' => 'required|numeric|min:0',
             'location' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'owner_id' => 'nullable|exists:users,id',
         ]);
 
         // Auto-generate code if empty
@@ -93,11 +97,12 @@ class ProjectController extends Controller
     {
         $user = Auth::user();
         
-        // Authorization check: User must be in team or be admin/privileged
+        // Authorization check: User must be in team, be the owner, or be admin/privileged
         if (!$user->hasRole(['super-admin', 'Superadmin', 'administrator']) && 
             !$user->can('projects.view.all') && 
+            $project->owner_id != $user->id &&
             !$project->team()->where('user_id', $user->id)->where('is_active', true)->exists()) {
-            abort(403, 'Anda tidak terdaftar dalam tim proyek ini.');
+            abort(403, 'Anda tidak memiliki akses ke proyek ini.');
         }
 
         $project->load(['rabSections.items', 'creator']);
@@ -127,6 +132,7 @@ class ProjectController extends Controller
         }
 
         $users = User::all();
+        $owners = User::role('owner')->get();
         $types = [
             'construction' => 'Konstruksi',
             'architecture' => 'Arsitektur',
@@ -141,7 +147,7 @@ class ProjectController extends Controller
             'cancelled' => 'Dibatalkan',
         ];
 
-        return view('projects.edit', compact('project', 'users', 'types', 'statuses'));
+        return view('projects.edit', compact('project', 'users', 'types', 'statuses', 'owners'));
     }
 
     public function update(Request $request, Project $project)
@@ -161,6 +167,7 @@ class ProjectController extends Controller
             'status' => 'required|in:draft,active,on_hold,completed,cancelled',
             'location' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
+            'owner_id' => 'nullable|exists:users,id',
         ]);
 
         // Only allow contract_value update if user has permission

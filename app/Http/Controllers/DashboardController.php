@@ -16,6 +16,12 @@ class DashboardController extends Controller
     public function index()
     {
         $user = auth()->user();
+
+        // Redirect owners to their exclusive dashboard
+        if ($user->hasRole('owner')) {
+            return redirect()->route('owner.dashboard');
+        }
+
         $isPrivileged = $user->hasRole(['super-admin', 'Superadmin', 'administrator']) || 
                         $user->can('financials.manage') || 
                         $user->can('projects.view.all');

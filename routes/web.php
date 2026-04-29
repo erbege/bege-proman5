@@ -20,6 +20,7 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/owner/dashboard', [App\Http\Controllers\OwnerDashboardController::class, 'index'])->name('owner.dashboard');
 
     // Projects
     Route::resource('projects', ProjectController::class);
@@ -206,6 +207,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::patch('/weekly-reports/{report}/update-documentation-ids', [App\Http\Controllers\WeeklyReportController::class, 'updateDocumentationIds'])->name('weekly-reports.update-documentation-ids');
         Route::patch('/weekly-reports/{report}/update-activities', [App\Http\Controllers\WeeklyReportController::class, 'updateActivities'])->name('weekly-reports.update-activities');
         Route::post('/weekly-reports/bulk-delete', [App\Http\Controllers\WeeklyReportController::class, 'bulkDestroy'])->name('weekly-reports.bulk-destroy');
+        Route::post('/weekly-reports/{report}/publish', [App\Http\Controllers\WeeklyReportController::class, 'publish'])->name('weekly-reports.publish');
 
         // Material Usage
         Route::get('/usage', [App\Http\Controllers\MaterialUsageController::class, 'index'])->name('usage.index');

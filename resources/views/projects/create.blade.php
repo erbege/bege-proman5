@@ -39,10 +39,26 @@
 
                         <!-- Client Name -->
                         <div>
-                            <x-input-label for="client_name" :value="__('Nama Klien')" />
+                            <x-input-label for="client_name" :value="__('Nama Klien (Instansi)')" />
                             <x-text-input id="client_name" name="client_name" type="text" class="mt-1 block w-full"
                                 :value="old('client_name')" required />
                             <x-input-error class="mt-2" :messages="$errors->get('client_name')" />
+                        </div>
+
+                        <!-- Owner Account -->
+                        <div>
+                            <x-input-label for="owner_id" :value="__('Akun Owner (Portal)')" />
+                            <select id="owner_id" name="owner_id"
+                                class="mt-1 block w-full border-gray-300 dark:border-dark-700 dark:bg-dark-900 dark:text-gray-300 focus:border-gold-500 dark:focus:border-gold-600 focus:ring-gold-500 dark:focus:ring-gold-600 rounded-md shadow-sm">
+                                <option value="">-- Tanpa Akun Owner --</option>
+                                @foreach($owners as $owner)
+                                    <option value="{{ $owner->id }}" {{ old('owner_id') == $owner->id ? 'selected' : '' }}>
+                                        {{ $owner->name }} ({{ $owner->email }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-[10px] text-gray-500">Pilih akun user yang akan mengakses Portal Owner.</p>
+                            <x-input-error class="mt-2" :messages="$errors->get('owner_id')" />
                         </div>
 
                         <!-- Type -->

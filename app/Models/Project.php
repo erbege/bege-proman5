@@ -36,6 +36,7 @@ class Project extends Model
         'location',
         'notes',
         'created_by',
+        'owner_id',
     ];
 
     protected $casts = [
@@ -48,6 +49,11 @@ class Project extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function owner(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
     public function rabSections(): HasMany

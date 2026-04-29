@@ -156,4 +156,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead']);
     Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy']);
     Route::delete('/notifications', [\App\Http\Controllers\NotificationController::class, 'destroyAll']);
+
+    // ========================================================================
+    // Contextual Comments (Real-time)
+    // ========================================================================
+    Route::get('/comments', [Api\CommentController::class, 'index']);
+    Route::post('/comments', [Api\CommentController::class, 'store']);
 });

@@ -116,6 +116,7 @@ class RolePermissionSeeder extends Seeder
             'analysis.view',
             'analysis.manage',
             'analysis.run-ai',
+            'weekly_report.comment',
         ];
 
         foreach ($permissions as $permission) {
@@ -462,6 +463,16 @@ class RolePermissionSeeder extends Seeder
             'progress.view',
             'progress.create',
             'dashboard.view',
+        ]);
+
+        // Owner (Client Portal) - Strictly Limited
+        $owner = Role::findOrCreate('owner');
+        $owner->syncPermissions([
+            'projects.view',
+            'dashboard.view',
+            'weekly_report.view',
+            'weekly_report.comment',
+            'analysis.view',
         ]);
     }
 }

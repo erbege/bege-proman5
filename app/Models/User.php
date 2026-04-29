@@ -91,7 +91,8 @@ class User extends Authenticatable
     // Helper Methods
     public function isProjectMember(Project $project): bool
     {
-        return $this->projects()->where('projects.id', $project->id)->exists();
+        return $project->owner_id == $this->id || 
+               $this->projects()->where('projects.id', $project->id)->exists();
     }
 
     public function getProjectRole(Project $project): ?string

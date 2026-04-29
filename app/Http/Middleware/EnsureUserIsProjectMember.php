@@ -38,6 +38,11 @@ class EnsureUserIsProjectMember
 
         if ($project instanceof Project) {
             if (!$user->isProjectMember($project)) {
+                // Double check: is user an owner of this project?
+                if ($user->hasRole('owner') && $project->owner_id == $user->id) {
+                    return $next($request);
+                }
+                
                 abort(403, 'Anda tidak terdaftar sebagai tim dalam proyek ini.');
             }
         }

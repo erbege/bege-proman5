@@ -27,8 +27,16 @@ class WeeklyReportController extends Controller
     public function index(Project $project)
     {
         $this->authorize('weekly_report.view');
-        $reports = WeeklyReport::where('project_id', $project->id)
-            ->with('creator')
+        $user = auth()->user();
+        
+        $query = WeeklyReport::where('project_id', $project->id);
+
+        // Owners can only see published reports
+        if ($user->hasRole('owner')) {
+            $query->published();
+        }
+
+        $reports = $query->with('creator')
             ->orderByDesc('week_number')
             ->paginate(20);
 
@@ -126,7 +134,14 @@ class WeeklyReportController extends Controller
     public function show(Project $project, WeeklyReport $report)
     {
         $this->authorize('weekly_report.view');
-        $report->load(['coverImage.latestVersion', 'creator']);
+        $user = auth()->user();
+
+        // Owners can only see published reports
+        if ($user->hasRole('owner') && $report->status !== 'published') {
+            abort(403, 'Laporan ini belum dipublikasikan untuk Klien.');
+        }
+
+        $report->load(['coverImage.latestVersion', 'creator', 'comments.user']);
 
         return view('projects.weekly-reports.show', compact('project', 'report'));
     }
@@ -211,6 +226,15 @@ class WeeklyReportController extends Controller
         return redirect()
             ->route('projects.weekly-reports.show', [$project, $report])
             ->with('success', 'Weekly report berhasil diperbarui.');
+    }
+
+    public function publish(Project $project, WeeklyReport $report)
+    {
+        $this->authorize('weekly_report.publish');
+
+        $report->update(['status' => 'published']);
+
+        return back()->with('success', 'Laporan mingguan berhasil dipublikasikan ke Owner.');
     }
 
     /**

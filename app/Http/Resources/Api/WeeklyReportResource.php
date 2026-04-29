@@ -30,6 +30,7 @@ class WeeklyReportResource extends JsonResource
                 'id' => $this->created_by,
                 'name' => $this->creator?->name,
             ],
+            'comments' => CommentResource::collection($this->whenLoaded('comments')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

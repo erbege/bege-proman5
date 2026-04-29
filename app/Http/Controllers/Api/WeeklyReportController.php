@@ -136,7 +136,7 @@ class WeeklyReportController extends Controller
             return $this->errorResponse('Weekly report not found for this project.', 404);
         }
 
-        $report->load(['coverImage.latestVersion', 'creator']);
+        $report->load(['coverImage.latestVersion', 'creator', 'comments.user']);
 
         return $this->successResponse(
             'Weekly report detail retrieved.',
