@@ -1,0 +1,1 @@
+lakukan analisis komprehensif dan berikan rekomendasi perubahan yang perlu dilakukan pada rencana refactoring logikan dan workflow modul progress report dan kaitannya dengan weekly report berdasarkan best practice dengan mengambil referensi aplikasi sejenis yang umum dipakai di indonesia. simpan hasil analisis dalam file format markdown.

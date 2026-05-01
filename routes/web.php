@@ -20,7 +20,19 @@ Route::get('/', function () {
 Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/owner/dashboard', [App\Http\Controllers\OwnerDashboardController::class, 'index'])->name('owner.dashboard');
+
+    // Portal Owner
+    Route::middleware(['owner_portal'])->prefix('owner')->name('owner.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Portal\Owner\DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/projects', [\App\Http\Controllers\Portal\Owner\ProjectController::class, 'index'])->name('projects.index');
+        Route::get('/projects/{project}', [\App\Http\Controllers\Portal\Owner\ProjectController::class, 'show'])->name('projects.show');
+        Route::get('/projects/{project}/gallery', [\App\Http\Controllers\Portal\Owner\GalleryController::class, 'index'])->name('projects.gallery');
+        Route::get('/weekly-reports/{report}', [\App\Http\Controllers\Portal\Owner\WeeklyReportController::class, 'show'])->name('weekly-reports.show');
+        Route::get('/weekly-reports/{report}/pdf', [\App\Http\Controllers\Portal\Owner\WeeklyReportController::class, 'exportPdf'])->name('weekly-reports.pdf');
+        Route::post('/weekly-reports/{report}/comments', [\App\Http\Controllers\Portal\Owner\CommentController::class, 'store'])->name('weekly-reports.comments.store');
+        Route::get('/notifications', [\App\Http\Controllers\Portal\Owner\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Portal\Owner\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    });
 
     // Projects
     Route::resource('projects', ProjectController::class);
@@ -207,7 +219,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::patch('/weekly-reports/{report}/update-documentation-ids', [App\Http\Controllers\WeeklyReportController::class, 'updateDocumentationIds'])->name('weekly-reports.update-documentation-ids');
         Route::patch('/weekly-reports/{report}/update-activities', [App\Http\Controllers\WeeklyReportController::class, 'updateActivities'])->name('weekly-reports.update-activities');
         Route::post('/weekly-reports/bulk-delete', [App\Http\Controllers\WeeklyReportController::class, 'bulkDestroy'])->name('weekly-reports.bulk-destroy');
-        Route::post('/weekly-reports/{report}/publish', [App\Http\Controllers\WeeklyReportController::class, 'publish'])->name('weekly-reports.publish');
+        Route::post('/weekly-reports/{report}/toggle-publish', [App\Http\Controllers\WeeklyReportController::class, 'togglePublish'])->name('weekly-reports.toggle-publish');
 
         // Material Usage
         Route::get('/usage', [App\Http\Controllers\MaterialUsageController::class, 'index'])->name('usage.index');

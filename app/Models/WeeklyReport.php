@@ -120,6 +120,11 @@ class WeeklyReport extends Model
         return $result;
     }
 
+    public function getAllDocumentationPhotosAttribute(): array
+    {
+        return $this->documentation_files;
+    }
+
     public function getPeriodLabelAttribute(): string
     {
         return $this->period_start->format('d M Y') . ' - ' . $this->period_end->format('d M Y');

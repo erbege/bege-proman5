@@ -176,7 +176,15 @@ class WeeklyReportController extends Controller
             $validated['cover_image_id'] = null; // Clear if uploading manual
         }
 
+        $oldStatus = $report->status;
         $report->update($validated);
+
+        if ($oldStatus !== 'published' && $report->status === 'published') {
+            $owner = $report->project->owner;
+            if ($owner) {
+                $owner->notify(new \App\Notifications\WeeklyReportPublished($report));
+            }
+        }
 
         return $this->successResponse(
             'Cover berhasil diperbarui.',

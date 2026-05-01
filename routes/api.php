@@ -162,4 +162,22 @@ Route::middleware('auth:sanctum')->group(function () {
     // ========================================================================
     Route::get('/comments', [Api\CommentController::class, 'index']);
     Route::post('/comments', [Api\CommentController::class, 'store']);
+    Route::delete('/comments/{id}', [Api\CommentController::class, 'destroy']);
+
+    // ========================================================================
+    // Owner Portal API
+    // ========================================================================
+    Route::middleware(['owner_portal'])->prefix('owner')->name('api.owner.')->group(function () {
+        Route::get('/dashboard', [\App\Http\Controllers\Api\Portal\Owner\DashboardController::class, 'index'])->name('dashboard');
+        
+        // Notifications
+        Route::get('/notifications', [\App\Http\Controllers\Api\Portal\Owner\NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/recent', [\App\Http\Controllers\Api\Portal\Owner\NotificationController::class, 'recent'])->name('notifications.recent');
+        Route::post('/notifications/{id}/read', [\App\Http\Controllers\Api\Portal\Owner\NotificationController::class, 'markAsRead'])->name('notifications.read');
+        Route::post('/notifications/read-all', [\App\Http\Controllers\Api\Portal\Owner\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+        Route::delete('/notifications/{id}', [\App\Http\Controllers\Api\Portal\Owner\NotificationController::class, 'destroy'])->name('notifications.destroy');
+    });
+
+    // Toggle Publish for Weekly Reports (Available for PM/Admin via API)
+    Route::post('/projects/{project}/weekly-reports/{report}/toggle-publish', [Api\WeeklyReportController::class, 'togglePublish']);
 });

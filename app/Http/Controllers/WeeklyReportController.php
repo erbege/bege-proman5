@@ -221,20 +221,42 @@ class WeeklyReportController extends Controller
             $report->documentation_uploads = $existingUploads;
         }
 
+        $oldStatus = $report->status;
         $report->update($validated);
+
+        if ($oldStatus !== 'published' && $report->status === 'published') {
+            $owner = $report->project->owner;
+            if ($owner) {
+                $owner->notify(new \App\Notifications\WeeklyReportPublished($report));
+            }
+        }
 
         return redirect()
             ->route('projects.weekly-reports.show', [$project, $report])
             ->with('success', 'Weekly report berhasil diperbarui.');
     }
 
-    public function publish(Project $project, WeeklyReport $report)
+    public function togglePublish(Project $project, WeeklyReport $report)
     {
         $this->authorize('weekly_report.publish');
 
-        $report->update(['status' => 'published']);
+        $isPublishing = $report->status !== 'published';
+        $report->update([
+            'status' => $isPublishing ? 'published' : 'draft'
+        ]);
 
-        return back()->with('success', 'Laporan mingguan berhasil dipublikasikan ke Owner.');
+        if ($isPublishing) {
+            // Notify Owner
+            $owner = $report->project->owner;
+            if ($owner) {
+                $owner->notify(new \App\Notifications\WeeklyReportPublished($report));
+            }
+            $message = 'Laporan mingguan berhasil dipublikasikan ke Owner.';
+        } else {
+            $message = 'Laporan mingguan berhasil ditarik (unpublish).';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -272,7 +294,15 @@ class WeeklyReportController extends Controller
             $validated['cover_image_id'] = null;
         }
 
+        $oldStatus = $report->status;
         $report->update($validated);
+
+        if ($oldStatus !== 'published' && $report->status === 'published') {
+            $owner = $report->project->owner;
+            if ($owner) {
+                $owner->notify(new \App\Notifications\WeeklyReportPublished($report));
+            }
+        }
 
         return response()->json([
             'success' => true,

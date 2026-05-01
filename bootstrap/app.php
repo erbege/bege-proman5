@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
             'project_member' => \App\Http\Middleware\EnsureUserIsProjectMember::class,
+            'owner_portal' => \App\Http\Middleware\OwnerPortal::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

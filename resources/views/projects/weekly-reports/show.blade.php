@@ -32,12 +32,24 @@
                 </form>
                 @endcan
                 
-                @if($report->status === 'draft')
                 @can('weekly_report.publish')
-                <form action="{{ route('projects.weekly-reports.publish', [$project, $report]) }}" method="POST"
-                    class="inline">
-                    @csrf
-                    <button type="submit"
+                @if($report->status === 'published')
+                    <button type="button"
+                        onclick="document.getElementById('unpublishModal').classList.remove('hidden')"
+                        class="inline-flex items-center px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Unpublish Laporan
+                    </button>
+
+                    <form id="unpublishForm" action="{{ route('projects.weekly-reports.toggle-publish', [$project, $report]) }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
+                @else
+                    <button type="button"
+                        onclick="document.getElementById('publishModal').classList.remove('hidden')"
                         class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -45,9 +57,12 @@
                         </svg>
                         Publish ke Owner
                     </button>
-                </form>
-                @endcan
+
+                    <form id="publishForm" action="{{ route('projects.weekly-reports.toggle-publish', [$project, $report]) }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
                 @endif
+                @endcan
 
                 <a href="{{ route('projects.weekly-reports.pdf', [$project, $report]) }}"
                     class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors">
@@ -834,6 +849,39 @@
             }
         </script>
     @endpush
+
+    <!-- Modals -->
+    @can('weekly_report.publish')
+        <x-confirm-modal id="unpublishModal" title="Tarik Laporan dari Owner"
+            message="Apakah Anda yakin ingin menarik laporan ini dari Owner? Laporan ini tidak akan lagi terlihat di dashboard Owner." 
+            confirmColor="yellow" icon="exclamation-triangle">
+            <x-slot name="footer">
+                <button type="submit" form="unpublishForm"
+                    class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-amber-600 text-base font-bold text-white hover:bg-amber-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 sm:w-auto sm:text-sm">
+                    Ya, Tarik Laporan
+                </button>
+                <button type="button" onclick="document.getElementById('unpublishModal').classList.add('hidden')"
+                    class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </x-slot>
+        </x-confirm-modal>
+
+        <x-confirm-modal id="publishModal" title="Publish Laporan ke Owner"
+            message="Apakah Anda yakin ingin menerbitkan laporan ini ke Owner? Owner akan menerima notifikasi dan dapat melihat detail laporan ini." 
+            confirmColor="green" icon="check">
+            <x-slot name="footer">
+                <button type="submit" form="publishForm"
+                    class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-5 py-2.5 bg-green-600 text-base font-bold text-white hover:bg-green-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:w-auto sm:text-sm">
+                    Ya, Publish Laporan
+                </button>
+                <button type="button" onclick="document.getElementById('publishModal').classList.add('hidden')"
+                    class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-200 dark:border-dark-600 shadow-sm px-5 py-2.5 bg-white dark:bg-dark-800 text-base font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all sm:mt-0 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </x-slot>
+        </x-confirm-modal>
+    @endcan
 </x-app-layout>
 
 
