@@ -97,6 +97,54 @@
                     </div>
                 @endforelse
             </div>
+
+            <!-- Monthly Reports -->
+            <div class="flex items-center justify-between mb-4 mt-8">
+                <h3 class="text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-widest">Laporan Bulanan
+                </h3>
+                <span
+                    class="px-2.5 py-1 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 text-[10px] font-bold rounded uppercase tracking-tight">
+                    {{ $monthlyReports->count() }} Laporan
+                </span>
+            </div>
+
+            <div class="space-y-3">
+                @forelse($monthlyReports as $report)
+                    <div class="portal-card portal-card-hover p-4 hover:border-primary-200 dark:hover:border-primary-800/50 group">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex items-start gap-3 flex-1 min-w-0">
+                                <div
+                                    class="w-9 h-9 bg-slate-100 dark:bg-slate-800 rounded flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold text-[10px] flex-shrink-0 group-hover:bg-primary-600 group-hover:text-white dark:group-hover:bg-primary-600 dark:group-hover:text-white transition-all uppercase">
+                                    {{ \Carbon\Carbon::createFromDate($report->year, $report->month, 1)->format('M') }}
+                                </div>
+                                <div class="min-w-0">
+                                    <h4 class="text-sm font-bold text-slate-900 dark:text-white">
+                                        {{ \Carbon\Carbon::createFromDate($report->year, $report->month, 1)->translatedFormat('F Y') }}
+                                    </h4>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        {{ \Carbon\Carbon::parse($report->period_start)->format('d M') }} -
+                                        {{ \Carbon\Carbon::parse($report->period_end)->format('d M') }}
+                                    </p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-300 font-semibold mt-1">
+                                        Progress: {{ number_format($report->cumulative_data['totals']['actual_cumulative'] ?? 0, 1) }}%
+                                    </p>
+                                </div>
+                            </div>
+                            <a href="{{ route('owner.monthly-reports.show', $report) }}"
+                                class="flex-shrink-0 p-2 text-primary-700 dark:text-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 rounded transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                    </path>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                @empty
+                    <div class="portal-card p-8 text-center">
+                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Belum ada laporan bulanan.</p>
+                    </div>
+                @endforelse
+            </div>
         </div>
 
         <!-- Project Info Sidebar -->

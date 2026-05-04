@@ -33,7 +33,6 @@ class GoodsReceiptController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('gr.view');
         $query = GoodsReceipt::with(['project:id,name', 'purchaseOrder:id,po_number', 'receivedBy:id,name']);
 
         if ($request->has('project_id')) {

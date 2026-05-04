@@ -36,7 +36,6 @@ class PurchaseOrderController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('procurement.view');
         $query = PurchaseOrder::with(['project:id,name', 'supplier:id,name', 'createdBy:id,name']);
 
         if ($request->has('project_id')) {

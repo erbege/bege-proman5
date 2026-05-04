@@ -29,6 +29,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/projects/{project}/gallery', [\App\Http\Controllers\Portal\Owner\GalleryController::class, 'index'])->name('projects.gallery');
         Route::get('/weekly-reports/{report}', [\App\Http\Controllers\Portal\Owner\WeeklyReportController::class, 'show'])->name('weekly-reports.show');
         Route::get('/weekly-reports/{report}/pdf', [\App\Http\Controllers\Portal\Owner\WeeklyReportController::class, 'exportPdf'])->name('weekly-reports.pdf');
+        Route::get('/monthly-reports/{report}', [\App\Http\Controllers\Portal\Owner\MonthlyReportController::class, 'show'])->name('monthly-reports.show');
+        Route::get('/monthly-reports/{report}/pdf', [\App\Http\Controllers\Portal\Owner\MonthlyReportController::class, 'exportPdf'])->name('monthly-reports.pdf');
         Route::post('/weekly-reports/{report}/comments', [\App\Http\Controllers\Portal\Owner\CommentController::class, 'store'])->name('weekly-reports.comments.store');
         Route::get('/notifications', [\App\Http\Controllers\Portal\Owner\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/mark-all-read', [\App\Http\Controllers\Portal\Owner\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
@@ -196,7 +198,18 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/progress/create', [ProgressReportController::class, 'create'])->name('progress.create');
         Route::post('/progress', [ProgressReportController::class, 'store'])->name('progress.store');
         Route::get('/progress/{report}', [ProgressReportController::class, 'show'])->name('progress.show');
+        Route::get('/progress/{report}/pdf', [ProgressReportController::class, 'exportPdf'])->name('progress.pdf');
+        Route::get('/progress/{report}/review', [ProgressReportController::class, 'reviewPage'])->name('progress.review');
+        Route::put('/progress/{report}', [ProgressReportController::class, 'update'])->name('progress.update');
         Route::delete('/progress/{report}', [ProgressReportController::class, 'destroy'])->name('progress.destroy');
+
+        // Progress Report Workflow
+        Route::post('/progress/{report}/submit', [ProgressReportController::class, 'submit'])->name('progress.submit');
+        Route::post('/progress/{report}/approve', [ProgressReportController::class, 'approve'])->name('progress.approve');
+        Route::post('/progress/{report}/reject', [ProgressReportController::class, 'reject'])->name('progress.reject');
+        Route::post('/progress/{report}/publish', [ProgressReportController::class, 'publish'])->name('progress.publish');
+
+        // Weekly Reports
 
         // Weekly Reports
         Route::get('/weekly-reports', [App\Http\Controllers\WeeklyReportController::class, 'index'])->name('weekly-reports.index');
@@ -219,7 +232,38 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::patch('/weekly-reports/{report}/update-documentation-ids', [App\Http\Controllers\WeeklyReportController::class, 'updateDocumentationIds'])->name('weekly-reports.update-documentation-ids');
         Route::patch('/weekly-reports/{report}/update-activities', [App\Http\Controllers\WeeklyReportController::class, 'updateActivities'])->name('weekly-reports.update-activities');
         Route::post('/weekly-reports/bulk-delete', [App\Http\Controllers\WeeklyReportController::class, 'bulkDestroy'])->name('weekly-reports.bulk-destroy');
-        Route::post('/weekly-reports/{report}/toggle-publish', [App\Http\Controllers\WeeklyReportController::class, 'togglePublish'])->name('weekly-reports.toggle-publish');
+        
+        // Weekly Report Approval Workflow
+        Route::post('/weekly-reports/{report}/submit', [App\Http\Controllers\WeeklyReportController::class, 'submitForReview'])->name('weekly-reports.submit');
+        Route::post('/weekly-reports/{report}/approve', [App\Http\Controllers\WeeklyReportController::class, 'approve'])->name('weekly-reports.approve');
+        Route::post('/weekly-reports/{report}/reject', [App\Http\Controllers\WeeklyReportController::class, 'reject'])->name('weekly-reports.reject');
+        Route::post('/weekly-reports/{report}/publish', [App\Http\Controllers\WeeklyReportController::class, 'publish'])->name('weekly-reports.publish');
+
+        // Monthly Reports
+        Route::get('/monthly-reports', [App\Http\Controllers\MonthlyReportController::class, 'index'])->name('monthly-reports.index');
+        Route::get('/monthly-reports/create', [App\Http\Controllers\MonthlyReportController::class, 'create'])->name('monthly-reports.create');
+        Route::post('/monthly-reports', [App\Http\Controllers\MonthlyReportController::class, 'store'])->name('monthly-reports.store');
+        Route::post('/monthly-reports/auto-generate-all', [App\Http\Controllers\MonthlyReportController::class, 'autoGenerateAll'])->name('monthly-reports.auto-generate-all');
+        Route::get('/monthly-reports/{report}', [App\Http\Controllers\MonthlyReportController::class, 'show'])->name('monthly-reports.show');
+        Route::get('/monthly-reports/{report}/edit', [App\Http\Controllers\MonthlyReportController::class, 'edit'])->name('monthly-reports.edit');
+        Route::put('/monthly-reports/{report}', [App\Http\Controllers\MonthlyReportController::class, 'update'])->name('monthly-reports.update');
+        Route::delete('/monthly-reports/{report}', [App\Http\Controllers\MonthlyReportController::class, 'destroy'])->name('monthly-reports.destroy');
+        Route::get('/monthly-reports/{report}/pdf', [App\Http\Controllers\MonthlyReportController::class, 'exportPdf'])->name('monthly-reports.pdf');
+        Route::post('/monthly-reports/{report}/regenerate', [App\Http\Controllers\MonthlyReportController::class, 'regenerate'])->name('monthly-reports.regenerate');
+        Route::patch('/monthly-reports/{report}/cumulative', [App\Http\Controllers\MonthlyReportController::class, 'updateCumulative'])->name('monthly-reports.update-cumulative');
+        Route::post('/monthly-reports/{report}/update-cover', [App\Http\Controllers\MonthlyReportController::class, 'updateCover'])->name('monthly-reports.update-cover');
+        Route::post('/monthly-reports/{report}/upload-documentation', [App\Http\Controllers\MonthlyReportController::class, 'addDocumentation'])->name('monthly-reports.upload-documentation');
+        Route::post('/monthly-reports/{report}/add-progress-photos', [App\Http\Controllers\MonthlyReportController::class, 'addProgressPhotos'])->name('monthly-reports.add-progress-photos');
+        Route::delete('/monthly-reports/{report}/remove-documentation', [App\Http\Controllers\MonthlyReportController::class, 'removeDocumentation'])->name('monthly-reports.remove-documentation');
+        Route::patch('/monthly-reports/{report}/update-activities', [App\Http\Controllers\MonthlyReportController::class, 'updateActivities'])->name('monthly-reports.update-activities');
+        Route::post('/monthly-reports/bulk-delete', [App\Http\Controllers\MonthlyReportController::class, 'bulkDestroy'])->name('monthly-reports.bulk-destroy');
+        Route::post('/monthly-reports/{report}/copy-previous', [App\Http\Controllers\MonthlyReportController::class, 'copyFromPrevious'])->name('monthly-reports.copy-previous');
+        
+        // Monthly Report Approval Workflow
+        Route::post('/monthly-reports/{report}/submit', [App\Http\Controllers\MonthlyReportController::class, 'submit'])->name('monthly-reports.submit');
+        Route::post('/monthly-reports/{report}/approve', [App\Http\Controllers\MonthlyReportController::class, 'approve'])->name('monthly-reports.approve');
+        Route::post('/monthly-reports/{report}/reject', [App\Http\Controllers\MonthlyReportController::class, 'reject'])->name('monthly-reports.reject');
+        Route::post('/monthly-reports/{report}/publish', [App\Http\Controllers\MonthlyReportController::class, 'publish'])->name('monthly-reports.publish');
 
         // Material Usage
         Route::get('/usage', [App\Http\Controllers\MaterialUsageController::class, 'index'])->name('usage.index');

@@ -187,6 +187,173 @@ class ScheduleCalculator
     }
 
     /**
+     * Get enhanced S-Curve data for the Progress Dashboard chart.
+     *
+     * Returns planned, actual, and projected cumulative curves,
+     * deviation per week, current-week marker, and summary KPIs.
+     */
+    public function getEnhancedScurveData(Project $project): array
+    {
+        $schedules = $project->schedules()->orderBy('week_number')->get();
+
+        // Auto-generate if no schedule data exists and project has RAB with dates
+        if ($schedules->isEmpty()) {
+            $hasScheduledItems = $project->rabItems()
+                ->whereNotNull('planned_start')
+                ->whereNotNull('planned_end')
+                ->exists();
+
+            if ($hasScheduledItems && $project->start_date && $project->end_date) {
+                $this->generateSchedule($project);
+                $schedules = $project->schedules()->orderBy('week_number')->get();
+            }
+        }
+
+        if ($schedules->isEmpty()) {
+            return [
+                'hasData' => false,
+                'labels' => [],
+                'planned' => [],
+                'actual' => [],
+                'projected' => [],
+                'deviation' => [],
+                'currentWeekIndex' => null,
+                'summary' => [
+                    'currentWeek' => 0,
+                    'totalWeeks' => 0,
+                    'actualProgress' => 0,
+                    'plannedProgress' => 0,
+                    'variance' => 0,
+                    'spiIndex' => 0,
+                    'estimatedCompletionWeek' => null,
+                    'status' => 'no_data',
+                ],
+            ];
+        }
+
+        $labels = [];
+        $planned = [];
+        $actual = [];
+        $deviation = [];
+
+        $startDate = $project->start_date;
+        $today = now();
+        $currentWeekIndex = null;
+
+        foreach ($schedules as $index => $schedule) {
+            // Format: "M1 (05 Jan)" for readability
+            $weekStartFormatted = $schedule->week_start
+                ? $schedule->week_start->format('d M')
+                : '';
+            $labels[] = 'M' . $schedule->week_number . ($weekStartFormatted ? " ({$weekStartFormatted})" : '');
+
+            $plannedVal = round((float) $schedule->planned_cumulative, 2);
+            $actualVal = round((float) $schedule->actual_cumulative, 2);
+
+            $planned[] = $plannedVal;
+            $actual[] = $actualVal;
+            $deviation[] = round($actualVal - $plannedVal, 2);
+
+            // Determine current week (the week that contains today)
+            if ($schedule->week_start && $schedule->week_end) {
+                if ($today->between($schedule->week_start, $schedule->week_end->endOfDay())) {
+                    $currentWeekIndex = $index;
+                }
+            }
+        }
+
+        // If today is past the last week, set current to last
+        if ($currentWeekIndex === null && $today->gt($schedules->last()->week_end ?? $today)) {
+            $currentWeekIndex = count($schedules) - 1;
+        }
+        // If today is before the first week, set current to first
+        if ($currentWeekIndex === null && $startDate && $today->lt($startDate)) {
+            $currentWeekIndex = 0;
+        }
+
+        // --- Build Projected Curve ---
+        // Linear projection from current velocity to 100%
+        $projected = array_fill(0, count($schedules), null);
+
+        $lastActualIndex = null;
+        $lastActualValue = 0;
+        foreach ($actual as $i => $val) {
+            if ($val > 0) {
+                $lastActualIndex = $i;
+                $lastActualValue = $val;
+            }
+        }
+
+        if ($lastActualIndex !== null && $lastActualIndex > 0 && $lastActualValue < 100) {
+            // Calculate average weekly velocity from actual data
+            $velocity = $lastActualValue / ($lastActualIndex + 1);
+
+            // Set projected from current actual point forward
+            for ($i = 0; $i < $lastActualIndex; $i++) {
+                $projected[$i] = null; // No projection for past weeks
+            }
+            $projected[$lastActualIndex] = $lastActualValue; // Start point
+
+            for ($i = $lastActualIndex + 1; $i < count($schedules); $i++) {
+                $projectedVal = min(100, round($lastActualValue + $velocity * ($i - $lastActualIndex), 2));
+                $projected[$i] = $projectedVal;
+            }
+        }
+
+        // --- Summary KPIs ---
+        $totalWeeks = count($schedules);
+        $currentWeek = $currentWeekIndex !== null ? $currentWeekIndex + 1 : $totalWeeks;
+        $currentPlanned = $planned[$currentWeekIndex ?? $totalWeeks - 1] ?? 0;
+        $currentActual = $actual[$currentWeekIndex ?? $totalWeeks - 1] ?? 0;
+        $variance = round($currentActual - $currentPlanned, 2);
+
+        // Schedule Performance Index (SPI) = Actual / Planned
+        $spiIndex = $currentPlanned > 0 ? round($currentActual / $currentPlanned, 3) : ($currentActual > 0 ? 1.0 : 0);
+
+        // Estimated completion week (linear extrapolation)
+        $estimatedCompletionWeek = null;
+        if ($lastActualIndex !== null && $lastActualValue > 0 && $lastActualValue < 100) {
+            $velocity = $lastActualValue / ($lastActualIndex + 1);
+            if ($velocity > 0) {
+                $estimatedCompletionWeek = (int) ceil(100 / $velocity);
+            }
+        } elseif ($lastActualValue >= 100) {
+            $estimatedCompletionWeek = $lastActualIndex + 1;
+        }
+
+        // Status determination
+        $status = 'on_track';
+        if ($variance > 2) {
+            $status = 'ahead';
+        } elseif ($variance < -2) {
+            $status = 'behind';
+        }
+        if ($lastActualValue >= 100) {
+            $status = 'completed';
+        }
+
+        return [
+            'hasData' => true,
+            'labels' => $labels,
+            'planned' => $planned,
+            'actual' => $actual,
+            'projected' => $projected,
+            'deviation' => $deviation,
+            'currentWeekIndex' => $currentWeekIndex,
+            'summary' => [
+                'currentWeek' => $currentWeek,
+                'totalWeeks' => $totalWeeks,
+                'actualProgress' => round($currentActual, 2),
+                'plannedProgress' => round($currentPlanned, 2),
+                'variance' => $variance,
+                'spiIndex' => $spiIndex,
+                'estimatedCompletionWeek' => $estimatedCompletionWeek,
+                'status' => $status,
+            ],
+        ];
+    }
+
+    /**
      * Update schedule when progress is reported
      */
     public function updateFromProgress(Project $project): void

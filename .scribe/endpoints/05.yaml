@@ -1,19 +1,19 @@
-name: 'Procurement: Purchase Orders'
+name: 'Procurement: Material Requests'
 description: ''
 endpoints:
   -
     custom: []
     httpMethods:
       - GET
-    uri: api/purchase-orders
+    uri: api/material-requests
     metadata:
       custom: []
-      groupName: 'Procurement: Purchase Orders'
+      groupName: 'Procurement: Material Requests'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'List purchase orders.'
-      description: 'Get a paginated list of purchase orders.'
+      title: 'List material requests.'
+      description: 'Get a paginated list of material requests.'
       authenticated: true
       deprecated: false
     headers:
@@ -49,15 +49,15 @@ endpoints:
     custom: []
     httpMethods:
       - GET
-    uri: 'api/purchase-orders/{purchaseOrder_id}'
+    uri: 'api/material-requests/{materialRequest_id}'
     metadata:
       custom: []
-      groupName: 'Procurement: Purchase Orders'
+      groupName: 'Procurement: Material Requests'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Get purchase order details.'
-      description: 'Get detailed information about a specific purchase order.'
+      title: 'Get material request details.'
+      description: 'Get detailed information about a specific material request.'
       authenticated: true
       deprecated: false
     headers:
@@ -65,10 +65,10 @@ endpoints:
       Content-Type: application/json
       Accept: application/json
     urlParameters:
-      purchaseOrder_id:
+      materialRequest_id:
         custom: []
-        name: purchaseOrder_id
-        description: 'The ID of the purchaseOrder.'
+        name: materialRequest_id
+        description: 'The ID of the materialRequest.'
         required: true
         example: 1
         type: integer
@@ -77,7 +77,7 @@ endpoints:
         nullable: false
         deprecated: false
     cleanUrlParameters:
-      purchaseOrder_id: 1
+      materialRequest_id: 1
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []
@@ -105,15 +105,15 @@ endpoints:
     custom: []
     httpMethods:
       - POST
-    uri: api/purchase-orders
+    uri: api/material-requests
     metadata:
       custom: []
-      groupName: 'Procurement: Purchase Orders'
+      groupName: 'Procurement: Material Requests'
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Create new purchase order.'
-      description: 'Create a new purchase order using the service layer.'
+      title: 'Create new material request.'
+      description: 'Create a new material request for a project.'
       authenticated: true
       deprecated: false
     headers:
@@ -136,45 +136,12 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
-      supplier_id:
+      request_date:
         custom: []
-        name: supplier_id
-        description: 'The <code>id</code> of an existing record in the suppliers table.'
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      order_date:
-        custom: []
-        name: order_date
+        name: request_date
         description: 'Must be a valid date.'
-        required: true
-        example: '2026-04-27T12:22:41'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      expected_delivery:
-        custom: []
-        name: expected_delivery
-        description: 'Must be a valid date. Must be a date after or equal to <code>order_date</code>.'
         required: false
-        example: '2052-05-20'
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      payment_terms:
-        custom: []
-        name: payment_terms
-        description: ''
-        required: false
-        example: architecto
+        example: '2026-05-04T05:26:41'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -203,17 +170,6 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
-      purchase_request_ids:
-        custom: []
-        name: purchase_request_ids
-        description: 'The <code>id</code> of an existing record in the purchase_requests table.'
-        required: false
-        example: null
-        type: 'string[]'
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
       'items[].material_id':
         custom: []
         name: 'items[].material_id'
@@ -236,53 +192,120 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
-      'items[].unit_price':
+      'items[].unit':
         custom: []
-        name: 'items[].unit_price'
-        description: 'Must be at least 0.'
-        required: true
-        example: 84
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      'items[].tax_rate':
-        custom: []
-        name: 'items[].tax_rate'
-        description: 'Must be at least 0. Must not be greater than 100.'
+        name: 'items[].unit'
+        description: 'Must not be greater than 50 characters.'
         required: false
-        example: 16
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      'items[].discount_amount':
-        custom: []
-        name: 'items[].discount_amount'
-        description: 'Must be at least 0.'
-        required: false
-        example: 77
-        type: number
+        example: g
+        type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
         deprecated: false
     cleanBodyParameters:
       project_id: architecto
-      supplier_id: architecto
-      order_date: '2026-04-27T12:22:41'
-      expected_delivery: '2052-05-20'
-      payment_terms: architecto
+      request_date: '2026-05-04T05:26:41'
       notes: architecto
       items:
         -
           material_id: architecto
           quantity: 39
-          unit_price: 84
-          tax_rate: 16
-          discount_amount: 77
+          unit: g
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/material-requests/{materialRequest_id}/approve'
+    metadata:
+      custom: []
+      groupName: 'Procurement: Material Requests'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Approve material request.'
+      description: 'Approve a pending material request at the current level.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      materialRequest_id:
+        custom: []
+        name: materialRequest_id
+        description: 'The ID of the materialRequest.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      materialRequest_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/material-requests/{materialRequest_id}/reject'
+    metadata:
+      custom: []
+      groupName: 'Procurement: Material Requests'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Reject material request.'
+      description: 'Reject a pending material request.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      materialRequest_id:
+        custom: []
+        name: materialRequest_id
+        description: 'The ID of the materialRequest.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      materialRequest_id: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
     fileParameters: []
     responses: []
     responseFields: []

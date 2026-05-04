@@ -4,530 +4,613 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weekly Report - {{ $project->name }} - Week {{ $report->week_number }}</title>
+    <title>Laporan Mingguan - {{ $project->name }} - Minggu {{ $report->week_number }}</title>
     <style>
-        /* -----------------------------------------------------------
-           Page Setup & Reset
-           ----------------------------------------------------------- */
+        /* =========================================================
+           PUPR Standard — Laporan Mingguan PDF Styling
+           ========================================================= */
         @page {
-            size: A4;
-            /* Margin: Top, Right, Bottom, Left (lebih lebar untuk jilid) */
-            margin: 25mm 20mm 30mm 30mm;
+            size: A4 portrait;
+            margin: 20mm 15mm 25mm 20mm;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: 'Times New Roman', 'DejaVu Serif', serif;
             font-size: 10pt;
-            line-height: 1.5;
-            color: #334155; /* Slate 700 */
+            line-height: 1.4;
+            color: #000;
             background: #fff;
         }
 
-        .page-break {
-            page-break-after: always;
-        }
+        .page-break { page-break-after: always; }
+        .no-break   { page-break-inside: avoid; }
 
-        .no-break {
-            page-break-inside: avoid;
-        }
-
-        /* -----------------------------------------------------------
-           Running Header & Footer (DomPDF Support)
-           ----------------------------------------------------------- */
-        header {
-            position: fixed;
-            top: -15mm;
-            left: 0;
-            right: 0;
-            height: 10mm;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 8pt;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.5pt;
-        }
-
-        .header-left { float: left; }
-        .header-right { float: right; font-weight: bold; color: #64748b; }
-
+        /* --- Running Footer --- */
         footer {
             position: fixed;
             bottom: -15mm;
-            left: 0;
-            right: 0;
+            left: 0; right: 0;
             height: 10mm;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 5pt;
-            font-size: 8pt;
-            color: #94a3b8;
+            border-top: 0.5pt solid #999;
+            padding-top: 3pt;
+            font-size: 7pt;
+            color: #666;
         }
-
-        .footer-left { float: left; }
+        .footer-left  { float: left; }
         .footer-right { float: right; }
         .page-number:after { content: counter(page); }
 
-        /* -----------------------------------------------------------
-           Cover Page Styling
-           ----------------------------------------------------------- */
-        .cover-wrap {
+        /* --- Kop Surat (Letterhead) --- */
+        .kop-surat {
+            border: 2pt solid #000;
+            padding: 10pt;
+            margin-bottom: 15pt;
+        }
+
+        .kop-title {
             text-align: center;
-            height: 100%;
-            position: relative;
-            padding-top: 40pt;
-        }
-
-        .cover-title {
-            font-size: 24pt;
-            font-weight: bold;
-            color: #0f172a;
-            margin-bottom: 10pt;
-            text-transform: uppercase;
-        }
-
-        .cover-subtitle {
             font-size: 14pt;
-            color: #475569;
-            margin-bottom: 40pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1pt;
+            border-bottom: 2pt solid #000;
+            padding-bottom: 8pt;
+            margin-bottom: 8pt;
         }
 
-        .week-badge {
-            display: inline-block;
-            background: #2563eb;
-            color: #ffffff;
-            padding: 10pt 30pt;
-            font-size: 32pt;
-            font-weight: 900;
-            border-radius: 4pt;
-            margin-bottom: 20pt;
-        }
-
-        .period-box {
-            font-size: 12pt;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 50pt;
-        }
-
-        .cover-img-wrap {
-            width: 100%;
-            height: 250pt;
-            overflow: hidden;
-            border: 5pt solid #f1f5f9;
-            border-radius: 8pt;
-            margin-bottom: 50pt;
-        }
-
-        .cover-img-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .cover-details-table {
-            width: 90%;
-            margin: 0 auto;
-            text-align: left;
-            border-top: 2pt solid #2563eb;
-            background: #f8fafc;
-            padding: 15pt;
-        }
-
-        .cover-details-table td {
-            padding: 4pt 8pt;
+        .kop-subtitle {
+            text-align: center;
             font-size: 11pt;
+            font-weight: bold;
+            margin-bottom: 4pt;
+        }
+
+        .kop-info {
+            text-align: center;
+            font-size: 9pt;
+            color: #333;
+        }
+
+        /* --- Section Headers --- */
+        .section-title {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1.5pt solid #000;
+            padding-bottom: 3pt;
+            margin-top: 15pt;
+            margin-bottom: 10pt;
+        }
+
+        .section-number {
+            font-weight: bold;
+            margin-right: 5pt;
+        }
+
+        /* --- Data Kontrak Table --- */
+        table.kontrak-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+            font-size: 9pt;
+        }
+
+        table.kontrak-table td {
+            padding: 3pt 5pt;
             vertical-align: top;
         }
 
-        .label-cell {
+        table.kontrak-table .label {
             width: 30%;
             font-weight: bold;
-            color: #475569;
         }
 
-        /* -----------------------------------------------------------
-           Section Content Styling
-           ----------------------------------------------------------- */
-        .section-header {
-            background-color: #1e293b;
-            color: #f8fafc;
-            padding: 6pt 12pt;
-            font-size: 12pt;
-            font-weight: bold;
-            margin-bottom: 15pt;
-            margin-top: 10pt;
-            border-radius: 2pt;
-        }
-
-        .sub-section-title {
-            font-size: 11pt;
-            font-weight: bold;
-            color: #0f172a;
-            margin-bottom: 8pt;
-            padding-bottom: 2pt;
-            border-bottom: 1px solid #cbd5e1;
-        }
-
-        /* -----------------------------------------------------------
-           Tables Styling
-           ----------------------------------------------------------- */
-        table.main-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20pt;
-            font-size: 8pt;
-            table-layout: fixed;
-        }
-
-        table.main-table th {
-            background: #f1f5f9;
-            color: #1e293b;
-            font-weight: bold;
-            text-transform: uppercase;
-            border: 1px solid #94a3b8;
-            padding: 4pt 2pt;
+        table.kontrak-table .separator {
+            width: 3%;
             text-align: center;
         }
 
-        table.main-table td {
-            border: 1px solid #cbd5e1;
-            padding: 4pt;
+        /* --- Progress Table (Cumulative) --- */
+        table.progress-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+            font-size: 7.5pt;
+        }
+
+        table.progress-table th,
+        table.progress-table td {
+            border: 0.5pt solid #000;
+            padding: 2pt 3pt;
             vertical-align: middle;
         }
 
-        /* Alternating row colors for readability */
-        table.main-table tbody tr:nth-child(even) {
-            background-color: #f8fafc;
+        table.progress-table th {
+            background: #e8e8e8;
+            font-weight: bold;
+            text-align: center;
+            font-size: 7pt;
         }
 
-        .col-plan { background-color: #eff6ff; }
-        .col-actual { background-color: #f0fdf4; }
-        .col-dev { background-color: #fefce8; }
+        table.progress-table .section-row td {
+            font-weight: bold;
+            background: #f0f0f0;
+        }
+
+        table.progress-table .grand-total td {
+            font-weight: bold;
+            background: #d0d0d0;
+            font-size: 8pt;
+            border-top: 1.5pt solid #000;
+        }
 
         .text-center { text-align: center; }
-        .text-right { text-align: right; }
-        .bold { font-weight: bold; }
+        .text-right  { text-align: right; }
+        .text-left   { text-align: left; }
+        .bold        { font-weight: bold; }
 
-        .status-pos { color: #15803d; font-weight: bold; }
-        .status-neg { color: #b91c1c; font-weight: bold; }
+        .val-pos { color: #006600; }
+        .val-neg { color: #cc0000; }
 
-        /* -----------------------------------------------------------
-           Documentation Grid
-           ----------------------------------------------------------- */
-        .doc-grid {
+        /* --- Detail / Daily Log Table --- */
+        table.daily-table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 10pt;
-            margin-bottom: 20pt;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+            font-size: 8pt;
         }
 
-        .doc-card {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            padding: 5pt;
-            text-align: center;
-            width: 25%;
-        }
-
-        .doc-card img {
-            width: 100%;
-            height: 120pt;
-            object-fit: cover;
-            border-radius: 2pt;
-            margin-bottom: 5pt;
-        }
-
-        .doc-card p {
-            font-size: 7pt;
-            color: #64748b;
-            line-height: 1.2;
-        }
-
-        /* -----------------------------------------------------------
-           Two Column Grid (Activities / Problem)
-           ----------------------------------------------------------- */
-        .grid-row {
-            width: 100%;
-            display: table;
-            table-layout: fixed;
-            border-spacing: 15pt 0;
-            margin-bottom: 20pt;
-        }
-
-        .grid-col {
-            display: table-cell;
+        table.daily-table th,
+        table.daily-table td {
+            border: 0.5pt solid #000;
+            padding: 3pt 4pt;
             vertical-align: top;
-            border: 1px solid #e2e8f0;
-            background: #fdfdfd;
-            border-radius: 4pt;
         }
 
-        .grid-col-header {
-            background: #f1f5f9;
-            padding: 6pt 10pt;
+        table.daily-table th {
+            background: #e8e8e8;
             font-weight: bold;
-            font-size: 10pt;
-            border-bottom: 1px solid #e2e8f0;
-            color: #1e293b;
+            text-align: center;
+            font-size: 8pt;
         }
 
-        .grid-col-body {
-            padding: 10pt;
-            font-size: 9pt;
-            min-height: 100pt;
-            color: #334155;
-        }
-
-        /* -----------------------------------------------------------
-           Signature Block
-           ----------------------------------------------------------- */
-        .signature-section {
-            margin-top: 40pt;
+        /* --- Weather & Labor Table --- */
+        table.weather-table {
             width: 100%;
-            display: table;
-            table-layout: fixed;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+            font-size: 8.5pt;
+        }
+
+        table.weather-table th,
+        table.weather-table td {
+            border: 0.5pt solid #000;
+            padding: 3pt 5pt;
+            vertical-align: middle;
+        }
+
+        table.weather-table th {
+            background: #e8e8e8;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* --- Documentation Grid --- */
+        table.doc-grid {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15pt;
+        }
+
+        table.doc-grid td {
+            width: 50%;
+            padding: 5pt;
+            vertical-align: top;
+            text-align: center;
+        }
+
+        table.doc-grid img {
+            width: 100%;
+            max-height: 180pt;
+            object-fit: cover;
+            border: 0.5pt solid #999;
+        }
+
+        table.doc-grid .caption {
+            font-size: 7.5pt;
+            color: #333;
+            margin-top: 3pt;
+            font-style: italic;
+        }
+
+        /* --- Signature Block --- */
+        .ttd-section {
+            margin-top: 25pt;
+            width: 100%;
+        }
+
+        .ttd-place-date {
+            text-align: right;
+            font-size: 9pt;
+            margin-bottom: 10pt;
+        }
+
+        table.ttd-table {
+            width: 100%;
             border-collapse: collapse;
         }
 
-        .signature-col {
-            display: table-cell;
+        table.ttd-table td {
             text-align: center;
-            padding: 10pt;
-        }
-
-        .signature-label {
-            font-size: 10pt;
-            margin-bottom: 50pt;
-            color: #475569;
-        }
-
-        .signature-name {
-            font-weight: bold;
-            font-size: 10pt;
-            text-decoration: underline;
-            color: #0f172a;
-        }
-
-        .signature-role {
+            vertical-align: top;
+            padding: 5pt 8pt;
             font-size: 9pt;
-            color: #64748b;
+        }
+
+        .ttd-role {
+            font-weight: bold;
+            margin-bottom: 60pt;
+        }
+
+        .ttd-name {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .ttd-position {
+            font-size: 8pt;
+            color: #333;
         }
     </style>
 </head>
 
 <body>
-    <!-- Running Header & Footer -->
-    <header>
-        <div class="header-left">PROMAN-5 System | {{ $project->code }}</div>
-        <div class="header-right">WEEKLY REPORT #{{ $report->week_number }}</div>
-    </header>
-
+    <!-- Running Footer -->
     <footer>
-        <div class="footer-left">Generated by Antigravity AI &bull; {{ now()->format('d M Y, H:i') }}</div>
+        <div class="footer-left">Laporan Mingguan — {{ $project->code }} — Minggu {{ $report->week_number }}</div>
         <div class="footer-right">Halaman <span class="page-number"></span></div>
     </footer>
 
-    <!-- 1. COVER PAGE -->
-    <div class="cover-wrap">
-        <div class="cover-title">{{ $report->cover_title ?? 'Project Progress Report' }}</div>
-        <div class="cover-subtitle">Laporan Mingguan Pelaksanaan Pekerjaan</div>
-
-        <div class="week-badge">WEEK {{ $report->week_number }}</div>
-
-        <div class="period-box">
-            PERIODE: {{ $report->period_start->format('d F Y') }} – {{ $report->period_end->format('d F Y') }}
+    <!-- ============================================================
+         I. KOP SURAT (LETTERHEAD)
+         ============================================================ -->
+    <div class="kop-surat">
+        <div class="kop-title">LAPORAN MINGGUAN</div>
+        <div class="kop-subtitle">( WEEKLY REPORT )</div>
+        <div class="kop-info" style="margin-top: 8pt;">
+            <strong>{{ $project->name }}</strong>
         </div>
-
-        @if($report->cover_image_url)
-        <div class="cover-img-wrap">
-            <img src="{{ $report->cover_image_url }}" alt="Project Documentation">
+        <div class="kop-info">
+            Minggu ke-{{ $report->week_number }} &bull;
+            Periode: {{ $report->period_start->translatedFormat('d F Y') }} s.d. {{ $report->period_end->translatedFormat('d F Y') }}
         </div>
-        @else
-        <div style="height: 100pt;"></div>
-        @endif
-
-        <table class="cover-details-table">
-            <tr>
-                <td class="label-cell">Nama Proyek</td>
-                <td>: {{ $project->name }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Lokasi Pekerjaan</td>
-                <td>: {{ $project->location ?? 'Tidak Terdefinisi' }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Nama Klien / Owner</td>
-                <td>: {{ $project->client_name ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Kontrak No.</td>
-                <td>: {{ $project->contract_number ?? '-' }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Masa Pelaksanaan</td>
-                <td>: {{ $project->start_date ? $project->start_date->format('d/m/Y') : '-' }} s/d {{ $project->end_date ? $project->end_date->format('d/m/Y') : '-' }}</td>
-            </tr>
-        </table>
     </div>
 
-    <div class="page-break"></div>
+    <!-- ============================================================
+         II. DATA UMUM KONTRAK
+         ============================================================ -->
+    <div class="section-title">
+        <span class="section-number">I.</span> DATA UMUM KONTRAK
+    </div>
 
-    <!-- 2. CUMULATIVE PROGRESS -->
-    <div class="section-header">SECTION 01: CUMULATIVE PROGRESS</div>
-    
-    <table class="main-table">
-        <thead>
-            <tr>
-                <th rowspan="2" style="width: 35%;">Uraian Pekerjaan</th>
-                <th rowspan="2" style="width: 5%;">Weight (%)</th>
-                <th colspan="3" class="col-plan">Planned (%)</th>
-                <th colspan="3" class="col-actual">Actual (%)</th>
-                <th colspan="3" class="col-dev">Deviation (%)</th>
-            </tr>
-            <tr>
-                <th class="col-plan">Prev</th>
-                <th class="col-plan">Week</th>
-                <th class="col-plan">Total</th>
-                <th class="col-actual">Prev</th>
-                <th class="col-actual">Week</th>
-                <th class="col-actual">Total</th>
-                <th class="col-dev">Prev</th>
-                <th class="col-dev">Week</th>
-                <th class="col-dev">Total</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if($report->cumulative_data && isset($report->cumulative_data['sections']))
-                @foreach($report->cumulative_data['sections'] as $section)
-                    @include('projects.weekly-reports.partials.pdf-cumulative-section', ['section' => $section, 'level' => 0])
-                @endforeach
-
-                @if(isset($report->cumulative_data['totals']))
-                @php $totals = $report->cumulative_data['totals']; @endphp
-                <tr class="bold" style="background: #e2e8f0; font-size: 9pt;">
-                    <td class="text-right">GRAND TOTAL</td>
-                    <td class="text-center">{{ number_format($totals['weight'] ?? 0, 2) }}</td>
-                    <td class="text-center">{{ number_format($totals['planned_prev'] ?? 0, 4) }}</td>
-                    <td class="text-center">{{ number_format($totals['planned_current'] ?? 0, 4) }}</td>
-                    <td class="text-center">{{ number_format($totals['planned_cumulative'] ?? 0, 4) }}</td>
-                    <td class="text-center">{{ number_format($totals['actual_prev'] ?? 0, 4) }}</td>
-                    <td class="text-center">{{ number_format($totals['actual_current'] ?? 0, 4) }}</td>
-                    <td class="text-center">{{ number_format($totals['actual_cumulative'] ?? 0, 4) }}</td>
-                    <td class="text-center {{ ($totals['deviation_prev'] ?? 0) >= 0 ? 'status-pos' : 'status-neg' }}">{{ number_format($totals['deviation_prev'] ?? 0, 4) }}</td>
-                    <td class="text-center {{ ($totals['deviation_current'] ?? 0) >= 0 ? 'status-pos' : 'status-neg' }}">{{ number_format($totals['deviation_current'] ?? 0, 4) }}</td>
-                    <td class="text-center {{ ($totals['deviation_cumulative'] ?? 0) >= 0 ? 'status-pos' : 'status-neg' }}">{{ number_format($totals['deviation_cumulative'] ?? 0, 4) }}</td>
-                </tr>
-                @endif
-            @else
-                <tr><td colspan="11" class="text-center">Data tidak tersedia.</td></tr>
-            @endif
-        </tbody>
+    <table class="kontrak-table">
+        <tr>
+            <td class="label">Nama Pekerjaan</td>
+            <td class="separator">:</td>
+            <td>{{ $project->name }}</td>
+        </tr>
+        <tr>
+            <td class="label">Nomor / Kode Proyek</td>
+            <td class="separator">:</td>
+            <td>{{ $project->code }}</td>
+        </tr>
+        <tr>
+            <td class="label">Lokasi Pekerjaan</td>
+            <td class="separator">:</td>
+            <td>{{ $project->location ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label">Nama Pemberi Tugas (Owner)</td>
+            <td class="separator">:</td>
+            <td>{{ $project->client_name ?? '-' }}</td>
+        </tr>
+        @if($project->contract_value)
+        <tr>
+            <td class="label">Nilai Kontrak</td>
+            <td class="separator">:</td>
+            <td>{{ $project->formatted_contract_value }}</td>
+        </tr>
+        @endif
+        <tr>
+            <td class="label">Masa Pelaksanaan</td>
+            <td class="separator">:</td>
+            <td>
+                {{ $project->duration_days }} Hari Kalender
+                ({{ $project->start_date ? $project->start_date->translatedFormat('d F Y') : '-' }}
+                s.d.
+                {{ $project->end_date ? $project->end_date->translatedFormat('d F Y') : '-' }})
+            </td>
+        </tr>
+        <tr>
+            <td class="label">Minggu Pelaporan</td>
+            <td class="separator">:</td>
+            <td>Minggu ke-{{ $report->week_number }}
+                ({{ $report->period_start->translatedFormat('d F Y') }} s.d. {{ $report->period_end->translatedFormat('d F Y') }})
+            </td>
+        </tr>
     </table>
 
     <div class="page-break"></div>
 
-    <!-- 3. DETAIL PROGRESS -->
-    <div class="section-header">SECTION 02: DETAIL DAILY REPORT LOGS</div>
-    
+    <!-- ============================================================
+         III. REKAPITULASI PROGRESS KUMULATIF
+         ============================================================ -->
+    <div class="section-title">
+        <span class="section-number">II.</span> REKAPITULASI PROGRESS PEKERJAAN
+    </div>
+
+    <table class="progress-table">
+        <thead>
+            <tr>
+                <th rowspan="2" style="width: 4%;">No</th>
+                <th rowspan="2" style="width: 26%;">Uraian Pekerjaan</th>
+                <th rowspan="2" style="width: 6%;">Bobot (%)</th>
+                <th colspan="2" style="width: 14%;">s.d. Minggu Lalu</th>
+                <th colspan="2" style="width: 14%;">Minggu Ini</th>
+                <th colspan="2" style="width: 14%;">s.d. Minggu Ini</th>
+                <th colspan="3" style="width: 22%;">Deviasi (%)</th>
+            </tr>
+            <tr>
+                <th>Rencana</th>
+                <th>Realisasi</th>
+                <th>Rencana</th>
+                <th>Realisasi</th>
+                <th>Rencana</th>
+                <th>Realisasi</th>
+                <th>Lalu</th>
+                <th>Ini</th>
+                <th>Kum.</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php $rowNum = 0; @endphp
+            @if($report->cumulative_data && isset($report->cumulative_data['sections']))
+                @foreach($report->cumulative_data['sections'] as $section)
+                    @include('projects.weekly-reports.partials.pdf-cumulative-section', ['section' => $section, 'level' => 0, 'rowNum' => &$rowNum])
+                @endforeach
+
+                @if(isset($report->cumulative_data['totals']))
+                    @php $totals = $report->cumulative_data['totals']; @endphp
+                    <tr class="grand-total">
+                        <td colspan="2" class="text-center">JUMLAH TOTAL</td>
+                        <td class="text-center">{{ number_format($totals['weight'] ?? 0, 2) }}</td>
+                        <td class="text-center">{{ number_format($totals['planned_prev'] ?? 0, 2) }}</td>
+                        <td class="text-center">{{ number_format($totals['actual_prev'] ?? 0, 2) }}</td>
+                        <td class="text-center">{{ number_format($totals['planned_current'] ?? 0, 2) }}</td>
+                        <td class="text-center">{{ number_format($totals['actual_current'] ?? 0, 2) }}</td>
+                        <td class="text-center">{{ number_format($totals['planned_cumulative'] ?? 0, 2) }}</td>
+                        <td class="text-center">{{ number_format($totals['actual_cumulative'] ?? 0, 2) }}</td>
+                        <td class="text-center {{ ($totals['deviation_prev'] ?? 0) >= 0 ? 'val-pos' : 'val-neg' }}">{{ number_format($totals['deviation_prev'] ?? 0, 2) }}</td>
+                        <td class="text-center {{ ($totals['deviation_current'] ?? 0) >= 0 ? 'val-pos' : 'val-neg' }}">{{ number_format($totals['deviation_current'] ?? 0, 2) }}</td>
+                        <td class="text-center {{ ($totals['deviation_cumulative'] ?? 0) >= 0 ? 'val-pos' : 'val-neg' }}">{{ number_format($totals['deviation_cumulative'] ?? 0, 2) }}</td>
+                    </tr>
+                @endif
+            @else
+                <tr><td colspan="12" class="text-center" style="padding: 20pt;">Data rekapitulasi belum tersedia.</td></tr>
+            @endif
+        </tbody>
+    </table>
+
+    @php
+        $totals = $report->cumulative_data['totals'] ?? null;
+        $dev = $totals['deviation_cumulative'] ?? 0;
+    @endphp
+    @if($totals)
+    <div class="no-break" style="margin-bottom: 15pt; font-size: 9pt;">
+        <strong>Keterangan:</strong><br>
+        &bull; Bobot Rencana Kumulatif s.d. Minggu Ini: <strong>{{ number_format($totals['planned_cumulative'] ?? 0, 2) }}%</strong><br>
+        &bull; Bobot Realisasi Kumulatif s.d. Minggu Ini: <strong>{{ number_format($totals['actual_cumulative'] ?? 0, 2) }}%</strong><br>
+        &bull; Deviasi Kumulatif: <strong style="color: {{ $dev >= 0 ? '#006600' : '#cc0000' }}">{{ $dev >= 0 ? '+' : '' }}{{ number_format($dev, 2) }}%</strong>
+        ({{ $dev >= 0 ? 'Lebih cepat dari rencana' : 'Terlambat dari rencana' }})
+    </div>
+    @endif
+
+    <div class="page-break"></div>
+
+    <!-- ============================================================
+         IV. CATATAN HARIAN PELAKSANAAN
+         ============================================================ -->
+    <div class="section-title">
+        <span class="section-number">III.</span> CATATAN HARIAN PELAKSANAAN
+    </div>
+
     @if($report->detail_data && count($report->detail_data) > 0)
-        <table class="main-table">
+        <table class="daily-table">
             <thead>
                 <tr>
-                    <th style="width: 12%;">Date</th>
-                    <th style="width: 25%;">Work Item</th>
-                    <th style="width: 7%;">Prog.</th>
-                    <th style="width: 35%;">Remark / Description</th>
-                    <th style="width: 10%;">Weather</th>
-                    <th style="width: 11%;">Reporter</th>
+                    <th style="width: 4%;">No</th>
+                    <th style="width: 12%;">Hari / Tanggal</th>
+                    <th style="width: 24%;">Uraian Pekerjaan</th>
+                    <th style="width: 8%;">Volume (%)</th>
+                    <th style="width: 32%;">Keterangan / Uraian Kegiatan</th>
+                    <th style="width: 10%;">Cuaca</th>
+                    <th style="width: 10%;">Pelapor</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($report->detail_data as $detail)
+                @foreach($report->detail_data as $idx => $detail)
                 <tr class="no-break">
+                    <td class="text-center">{{ $idx + 1 }}</td>
                     <td class="text-center">{{ $detail['date_label'] }}</td>
-                    <td>{{ $detail['rab_item'] ? $detail['rab_item']['code'] . ' - ' . $detail['rab_item']['name'] : '-' }}</td>
-                    <td class="text-center bold status-pos">{{ $detail['progress_percentage'] }}%</td>
-                    <td>{{ $detail['description'] ?? '-' }}</td>
-                    <td class="text-center">{{ $detail['weather'] ?? '-' }} <br> <span style="font-size: 7pt; color: #64748b;">(W: {{ $detail['workers_count'] ?? '0' }})</span></td>
+                    <td>{{ $detail['rab_item'] ? $detail['rab_item']['code'] . ' ' . $detail['rab_item']['name'] : '-' }}</td>
+                    <td class="text-center bold">{{ $detail['progress_percentage'] }}%</td>
+                    <td>{{ $detail['description'] ?? '-' }}@if(!empty($detail['issues']))<br><em style="color: #cc0000;">Kendala: {{ $detail['issues'] }}</em>@endif</td>
+                    <td class="text-center">{{ $detail['weather'] ?? '-' }}</td>
                     <td class="text-center">{{ $detail['reporter'] }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
     @else
-        <p class="text-center" style="padding: 50pt; color: #94a3b8;">Empty Logs.</p>
+        <p style="text-align: center; padding: 30pt; color: #666;">Tidak ada catatan harian pada periode ini.</p>
     @endif
 
-    <!-- 4. ACTIVITY & PROBLEM LOGS -->
-    <div class="no-break">
-        <div class="sub-section-title">SECTION 03: ACTIVITY & PROBLEM SUMMARIES</div>
-        <div class="grid-row">
-            <div class="grid-col">
-                <div class="grid-col-header">Significant Activities This Week</div>
-                <div class="grid-col-body">
-                    {!! nl2br(e($report->activities ?? 'No activities reported.')) !!}
-                </div>
-            </div>
-            <div class="grid-col">
-                <div class="grid-col-header">Obstacles / Pending Issues</div>
-                <div class="grid-col-body">
-                    {!! nl2br(e($report->problems ?? 'No major problems reported.')) !!}
-                </div>
-            </div>
-        </div>
+    <!-- ============================================================
+         V. DATA CUACA DAN TENAGA KERJA
+         ============================================================ -->
+    <div class="section-title">
+        <span class="section-number">IV.</span> DATA CUACA DAN TENAGA KERJA
     </div>
 
-    <!-- 5. DOCUMENTATION -->
+    @if(count($weatherSummary) > 0)
+        <table class="weather-table">
+            <thead>
+                <tr>
+                    <th style="width: 5%;">No</th>
+                    <th style="width: 20%;">Hari / Tanggal</th>
+                    <th style="width: 20%;">Cuaca</th>
+                    <th style="width: 15%;">Jumlah Tenaga Kerja</th>
+                    <th style="width: 40%;">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($weatherSummary as $idx => $ws)
+                <tr>
+                    <td class="text-center">{{ $idx + 1 }}</td>
+                    <td class="text-center">{{ $ws['date'] }}</td>
+                    <td class="text-center">{{ $ws['weather'] }}</td>
+                    <td class="text-center">{{ $ws['workers'] }} orang</td>
+                    <td>{{ $ws['description'] }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @else
+        <p style="text-align: center; padding: 20pt; color: #666;">Data cuaca dan tenaga kerja tidak tersedia.</p>
+    @endif
+
+    <!-- ============================================================
+         VI. KEGIATAN DAN PERMASALAHAN
+         ============================================================ -->
+    <div class="section-title">
+        <span class="section-number">V.</span> KEGIATAN DAN PERMASALAHAN
+    </div>
+
+    <div class="no-break" style="margin-bottom: 15pt;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 9pt;">
+            <tr>
+                <td style="width: 48%; vertical-align: top; border: 0.5pt solid #000; padding: 8pt;">
+                    <div style="font-weight: bold; border-bottom: 0.5pt solid #000; padding-bottom: 3pt; margin-bottom: 5pt;">
+                        A. Kegiatan Utama Minggu Ini
+                    </div>
+                    <div style="white-space: pre-line; line-height: 1.5;">{{ $report->activities ?? 'Tidak ada kegiatan yang dilaporkan.' }}</div>
+                </td>
+                <td style="width: 4%;"></td>
+                <td style="width: 48%; vertical-align: top; border: 0.5pt solid #000; padding: 8pt;">
+                    <div style="font-weight: bold; border-bottom: 0.5pt solid #000; padding-bottom: 3pt; margin-bottom: 5pt;">
+                        B. Permasalahan / Kendala
+                    </div>
+                    <div style="white-space: pre-line; line-height: 1.5;">{{ $report->problems ?? 'Tidak ada permasalahan yang dilaporkan.' }}</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ============================================================
+         VII. DOKUMENTASI FOTO
+         ============================================================ -->
     @php $docs = $report->documentation_files; @endphp
     @if(count($docs) > 0)
         <div class="page-break"></div>
-        <div class="section-header">SECTION 04: PROJECT DOCUMENTATIONS</div>
-        
-        <table class="doc-grid">
-            @foreach(array_chunk($docs, 4) as $chunk)
-            <tr>
-                @foreach($chunk as $doc)
-                <td class="doc-card">
-                    <img src="{{ $doc['url'] }}" alt="Documentation Image">
-                    <p>{{ $doc['name'] }}</p>
-                </td>
+        <div class="section-title">
+            <span class="section-number">VI.</span> DOKUMENTASI FOTO LAPANGAN
+        </div>
+
+        @foreach(array_chunk($docs, 4) as $chunkIdx => $chunk)
+            <table class="doc-grid">
+                @foreach(array_chunk($chunk, 2) as $row)
+                <tr>
+                    @foreach($row as $doc)
+                    <td>
+                        <img src="{{ $doc['url'] }}" alt="Foto Dokumentasi">
+                        <div class="caption">{{ $doc['name'] }}</div>
+                    </td>
+                    @endforeach
+                    @if(count($row) < 2)
+                    <td></td>
+                    @endif
+                </tr>
                 @endforeach
-                @for($i = count($chunk); $i < 4; $i++)
-                <td style="width: 25%;"></td>
-                @endfor
-            </tr>
-            @endforeach
-        </table>
+            </table>
+            @if(!$loop->last)
+                <div class="page-break"></div>
+            @endif
+        @endforeach
     @endif
 
-    <!-- 6. FINAL SIGNATURE BLOCK -->
-    <div class="no-break" style="margin-top: 30pt; border-top: 2px solid #0f172a; padding-top: 10pt;">
-        <div style="font-size: 10pt; font-weight: bold; margin-bottom: 10pt;">APPROVAL & VALIDATIONS:</div>
-        <div class="signature-section">
-            <div class="signature-col">
-                <div class="signature-label">Prepared By,</div>
-                <div class="signature-name">__________________________</div>
-                <div class="signature-role">Supervisor / Site Manager</div>
-            </div>
-            <div class="signature-col">
-                <div class="signature-label">Checked By,</div>
-                <div class="signature-name">__________________________</div>
-                <div class="signature-role">Project Manager</div>
-            </div>
-            <div class="signature-col">
-                <div class="signature-label">Approved By,</div>
-                <div class="signature-name">__________________________</div>
-                <div class="signature-role">Client / Owner Representative</div>
-            </div>
+    <!-- ============================================================
+         VIII. TANDA TANGAN (APPROVAL BLOCK)
+         ============================================================ -->
+    <div class="no-break ttd-section">
+        <div class="section-title" style="margin-top: 5pt;">
+            <span class="section-number">{{ count($docs) > 0 ? 'VII' : 'VI' }}.</span> PENGESAHAN
         </div>
+
+        <div class="ttd-place-date">
+            {{ $project->location ?? '...................' }}, {{ now()->translatedFormat('d F Y') }}
+        </div>
+
+        <table class="ttd-table">
+            <tr>
+                <td style="width: 25%;">
+                    <div class="ttd-role">Dibuat oleh,</div>
+                    <div class="ttd-name">
+                        @if($report->creator)
+                            {{ $report->creator->name }}
+                        @else
+                            __________________________
+                        @endif
+                    </div>
+                    <div class="ttd-position">Pelaksana / Site Manager</div>
+                </td>
+                <td style="width: 25%;">
+                    <div class="ttd-role">Diperiksa oleh,</div>
+                    <div class="ttd-name">
+                        @if($report->reviewer)
+                            {{ $report->reviewer->name }}
+                        @else
+                            __________________________
+                        @endif
+                    </div>
+                    <div class="ttd-position">Konsultan Pengawas</div>
+                </td>
+                <td style="width: 25%;">
+                    <div class="ttd-role">Disetujui oleh,</div>
+                    <div class="ttd-name">
+                        @if($report->approver)
+                            {{ $report->approver->name }}
+                        @else
+                            __________________________
+                        @endif
+                    </div>
+                    <div class="ttd-position">Direksi Teknis / PM</div>
+                </td>
+                <td style="width: 25%;">
+                    <div class="ttd-role">Mengetahui,</div>
+                    <div class="ttd-name">
+                        @if($project->client_name)
+                            {{ $project->client_name }}
+                        @else
+                            __________________________
+                        @endif
+                    </div>
+                    <div class="ttd-position">PPK / Owner</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
 </body>
 </html>
-
-

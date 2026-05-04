@@ -15,14 +15,20 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $project->code }}</p>
             </div>
-            <!-- Header button removed as it's now inside the component -->
         </div>
     </x-slot>
 
     @include('projects.navigation')
 
-    <livewire:progress-report-manager :project="$project" />
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    @endpush
 
+    <div class="py-6 px-4 sm:px-6 lg:px-8">
+        <livewire:progress-dashboard :project="$project" />
+        
+        <div class="mt-8">
+            <livewire:progress-report-manager :project="$project" />
+        </div>
+    </div>
 </x-app-layout>
-
-

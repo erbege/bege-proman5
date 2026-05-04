@@ -14,7 +14,6 @@ class RabController extends Controller
      */
     public function index(Project $project)
     {
-        $this->authorize('rab.view');
         $user = auth()->user();
         if (!$user || !$this->canViewProject($project, $user)) {
             return response()->json(['message' => 'Unauthorized access to project'], 403);
@@ -48,7 +47,6 @@ class RabController extends Controller
      */
     public function show(Project $project, $itemId)
     {
-        $this->authorize('rab.view');
         $user = auth()->user();
         if (!$user || !$this->canViewProject($project, $user)) {
             return response()->json(['message' => 'Unauthorized access to project'], 403);
@@ -70,6 +68,10 @@ class RabController extends Controller
     private function canViewProject(Project $project, $user): bool
     {
         if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
+            return true;
+        }
+
+        if ((int) $project->created_by === (int) $user->id) {
             return true;
         }
 

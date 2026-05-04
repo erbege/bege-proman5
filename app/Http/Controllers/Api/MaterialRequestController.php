@@ -36,7 +36,6 @@ class MaterialRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('mr.view');
         $query = MaterialRequest::with(['project:id,name', 'requestedBy:id,name']);
 
         if ($request->has('project_id')) {
@@ -67,7 +66,6 @@ class MaterialRequestController extends Controller
      */
     public function show(MaterialRequest $materialRequest)
     {
-        $this->authorize('mr.view');
         $user = auth()->user();
         if (!$user || !$this->canViewRequest($materialRequest, $user)) {
             return $this->errorResponse('Unauthorized', 403);
@@ -112,13 +110,12 @@ class MaterialRequestController extends Controller
      */
     public function approve(Request $request, MaterialRequest $materialRequest)
     {
-        $this->authorize('mr.approve');
-        
         try {
             $this->mrService->approvalService()->approve($materialRequest, $request->comment);
+            $materialRequest->refresh();
             
             return $this->successResponse(
-                'Material request approved successfully', 
+                'Material request approved', 
                 new MaterialRequestResource($materialRequest->load('approvalLogs'))
             );
         } catch (\Exception $e) {
@@ -133,14 +130,10 @@ class MaterialRequestController extends Controller
      */
     public function reject(Request $request, MaterialRequest $materialRequest)
     {
-        $this->authorize('mr.approve');
-        
-        $request->validate([
-            'comment' => 'required|string|max:500'
-        ]);
-
         try {
-            $this->mrService->approvalService()->reject($materialRequest, $request->comment);
+            $reason = $request->input('comment', 'Rejected');
+            $this->mrService->approvalService()->reject($materialRequest, $reason);
+            $materialRequest->refresh();
             
             return $this->successResponse(
                 'Material request rejected', 

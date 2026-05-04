@@ -6,6 +6,8 @@ use App\Models\Project;
 use App\Models\ProgressReport;
 use App\Models\SystemSetting;
 use App\Models\WeeklyReport;
+use App\Services\DocumentationService;
+use App\Services\NotificationHelper;
 use App\Services\WeeklyReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
@@ -15,10 +17,12 @@ use Illuminate\Support\Facades\Storage;
 class WeeklyReportController extends Controller
 {
     protected WeeklyReportService $service;
+    protected DocumentationService $documentationService;
 
-    public function __construct(WeeklyReportService $service)
+    public function __construct(WeeklyReportService $service, DocumentationService $documentationService)
     {
         $this->service = $service;
+        $this->documentationService = $documentationService;
     }
 
     /**
@@ -340,31 +344,12 @@ class WeeklyReportController extends Controller
             'photos.*' => 'image|max:5120',
         ]);
 
-        $disk = SystemSetting::getStorageDisk();
-        $imageResizer = new \App\Services\ImageResizeService();
-        $uploads = $report->documentation_uploads ?? [];
-
-        $newPhotos = [];
-        foreach ($request->file('photos') as $file) {
-            $path = $imageResizer->processAndSave(
-                $file,
-                "weekly-reports/{$project->id}/docs",
-                $disk
-            );
-            $uploads[] = $path;
-            $newPhotos[] = [
-                'path' => $path,
-                'url' => SystemSetting::getFileUrl($path),
-                'name' => $file->getClientOriginalName(),
-            ];
-        }
-
-        $report->update(['documentation_uploads' => $uploads]);
+        $result = $this->documentationService->uploadDocumentation($report, $project, $request->file('photos'));
 
         return response()->json([
             'success' => true,
-            'message' => count($newPhotos) . ' foto berhasil diupload.',
-            'photos' => $newPhotos,
+            'message' => $result['count'] . ' foto berhasil diupload.',
+            'photos' => $result['photos'],
         ]);
     }
 
@@ -379,26 +364,12 @@ class WeeklyReportController extends Controller
             'photo_paths.*' => 'string',
         ]);
 
-        $uploads = $report->documentation_uploads ?? [];
-        $added = [];
-
-        foreach ($request->input('photo_paths') as $path) {
-            if (!in_array($path, $uploads)) {
-                $uploads[] = $path;
-                $added[] = [
-                    'path' => $path,
-                    'url' => SystemSetting::getFileUrl($path),
-                    'name' => basename($path),
-                ];
-            }
-        }
-
-        $report->update(['documentation_uploads' => $uploads]);
+        $result = $this->documentationService->addProgressPhotos($report, $request->input('photo_paths'));
 
         return response()->json([
             'success' => true,
-            'message' => count($added) . ' foto dari progress report ditambahkan.',
-            'photos' => $added,
+            'message' => $result['count'] . ' foto dari progress report ditambahkan.',
+            'photos' => $result['photos'],
         ]);
     }
 
@@ -414,20 +385,9 @@ class WeeklyReportController extends Controller
             'path' => 'required_if:type,upload|string',
         ]);
 
-        if ($request->input('type') === 'project_file') {
-            $ids = $report->documentation_ids ?? [];
-            $ids = array_values(array_filter($ids, fn($id) => $id != $request->input('id')));
-            $report->update(['documentation_ids' => $ids]);
-        } else {
-            $uploads = $report->documentation_uploads ?? [];
-            $path = $request->input('path');
-            $uploads = array_values(array_filter($uploads, fn($p) => $p !== $path));
-            $report->update(['documentation_uploads' => $uploads]);
-
-            // Optionally delete the file
-            // $disk = SystemSetting::getStorageDisk();
-            // Storage::disk($disk)->delete($path);
-        }
+        $type = $request->input('type');
+        $identifier = $type === 'project_file' ? $request->input('id') : $request->input('path');
+        $this->documentationService->removeDocumentation($report, $type, $identifier);
 
         return response()->json([
             'success' => true,
@@ -446,7 +406,7 @@ class WeeklyReportController extends Controller
             'documentation_ids.*' => 'exists:project_files,id',
         ]);
 
-        $report->update(['documentation_ids' => $request->input('documentation_ids', [])]);
+        $this->documentationService->updateDocumentationIds($report, $request->input('documentation_ids', []));
 
         return response()->json([
             'success' => true,
@@ -481,28 +441,11 @@ class WeeklyReportController extends Controller
      */
     protected function getProgressPhotos(Project $project, WeeklyReport $report): array
     {
-        $reports = ProgressReport::where('project_id', $project->id)
-            ->whereBetween('report_date', [$report->period_start, $report->period_end])
-            ->with(['rabItem'])
-            ->orderBy('report_date')
-            ->get();
-
-        $photos = [];
-        foreach ($reports as $pr) {
-            if ($pr->photos && is_array($pr->photos)) {
-                foreach ($pr->photos as $photoPath) {
-                    $photos[] = [
-                        'path' => $photoPath,
-                        'url' => SystemSetting::getFileUrl($photoPath),
-                        'date' => $pr->report_date->format('d M Y'),
-                        'rab_item' => $pr->rabItem ? $pr->rabItem->full_code . ' - ' . $pr->rabItem->work_name : 'N/A',
-                        'reporter' => $pr->reporter ? $pr->reporter->name : 'Unknown',
-                    ];
-                }
-            }
-        }
-
-        return $photos;
+        return $this->documentationService->getProgressPhotosForPeriod(
+            $project,
+            Carbon::parse($report->period_start),
+            Carbon::parse($report->period_end)
+        );
     }
 
     /**
@@ -525,22 +468,45 @@ class WeeklyReportController extends Controller
     }
 
     /**
-     * Export weekly report to PDF
+     * Export weekly report to PDF (Format Standar PUPR)
      */
     public function exportPdf(Project $project, WeeklyReport $report)
     {
         $this->authorize('weekly_report.view');
-        $report->load(['coverImage.latestVersion', 'creator']);
+        $report->load(['coverImage.latestVersion', 'creator', 'approver', 'reviewer', 'submitter']);
+
+        // Pre-compute weather & labor summaries from detail_data
+        $weatherSummary = [];
+        $laborSummary = [];
+        if ($report->detail_data && is_array($report->detail_data)) {
+            foreach ($report->detail_data as $detail) {
+                $date = $detail['date_label'] ?? '-';
+                $weather = $detail['weather'] ?? '-';
+                $workers = $detail['workers_count'] ?? 0;
+
+                if (!isset($weatherSummary[$date])) {
+                    $weatherSummary[$date] = [
+                        'date' => $date,
+                        'weather' => $weather,
+                        'workers' => $workers,
+                        'description' => $detail['description'] ?? '-',
+                    ];
+                } else {
+                    // Aggregate workers for same date
+                    $weatherSummary[$date]['workers'] = max($weatherSummary[$date]['workers'], $workers);
+                }
+            }
+        }
 
         $pdf = Pdf::loadView('projects.weekly-reports.pdf', [
             'project' => $project,
             'report' => $report,
+            'weatherSummary' => array_values($weatherSummary),
         ]);
 
-        // A4 paper size with landscape orientation for wide cumulative progress table
-        $pdf->setPaper('a4', 'landscape');
+        $pdf->setPaper('a4', 'portrait');
 
-        $filename = "weekly-report-{$project->code}-week-{$report->week_number}.pdf";
+        $filename = "Laporan_Mingguan_{$project->code}_Minggu_{$report->week_number}.pdf";
 
         return $pdf->download($filename);
     }
@@ -621,198 +587,18 @@ class WeeklyReportController extends Controller
             'items.*' => 'numeric|min:0',
         ]);
 
-        $itemUpdates = $request->input('items'); // ['item_code' => new_actual_current]
-        $data = $report->cumulative_data;
+        $result = $this->service->updateCumulativeActuals($report, $request->input('items'));
 
-        if (!$data || !isset($data['sections'])) {
-            return response()->json(['error' => 'No cumulative data found.'], 422);
-        }
-
-        // Reset totals
-        $totals = [
-            'weight' => 0,
-            'planned_prev' => 0,
-            'planned_current' => 0,
-            'planned_cumulative' => 0,
-            'actual_prev' => 0,
-            'actual_current' => 0,
-            'actual_cumulative' => 0,
-            'deviation_prev' => 0,
-            'deviation_current' => 0,
-            'deviation_cumulative' => 0,
-        ];
-
-        // Recursively update sections
-        foreach ($data['sections'] as &$section) {
-            $this->updateSectionItems($section, $itemUpdates, $totals);
-        }
-
-        // Calculate deviation totals
-        $totals['deviation_prev'] = $totals['actual_prev'] - $totals['planned_prev'];
-        $totals['deviation_current'] = $totals['actual_current'] - $totals['planned_current'];
-        $totals['deviation_cumulative'] = $totals['actual_cumulative'] - $totals['planned_cumulative'];
-
-        $data['totals'] = $totals;
-        $report->update(['cumulative_data' => $data]);
-
-        // Cascade update to subsequent weeks
-        $cascadeCount = $this->cascadeToSubsequentWeeks($project, $report, $data);
-
-        $message = 'Data realisasi berhasil disimpan.';
-        if ($cascadeCount > 0) {
-            $message .= " ({$cascadeCount} minggu berikutnya juga diperbarui)";
+        if (empty($result['data'])) {
+            return response()->json(['error' => $result['message']], 422);
         }
 
         return response()->json([
             'success' => true,
-            'message' => $message,
-            'cumulative_data' => $data,
-            'cascaded_weeks' => $cascadeCount,
+            'message' => $result['message'],
+            'cumulative_data' => $result['data'],
+            'cascaded_weeks' => $result['cascaded_count'],
         ]);
-    }
-
-    /**
-     * Cascade actual progress changes to all subsequent weekly reports
-     */
-    protected function cascadeToSubsequentWeeks(Project $project, WeeklyReport $currentReport, array $currentData): int
-    {
-        // Get all subsequent weekly reports ordered by week_number
-        $subsequentReports = WeeklyReport::where('project_id', $project->id)
-            ->where('week_number', '>', $currentReport->week_number)
-            ->orderBy('week_number')
-            ->get();
-
-        if ($subsequentReports->isEmpty()) {
-            return 0;
-        }
-
-        // Build item code => actual_cumulative map from the current week
-        $prevCumulatives = [];
-        $this->collectItemCumulatives($currentData['sections'], $prevCumulatives);
-
-        // Process each subsequent week
-        foreach ($subsequentReports as $nextReport) {
-            $nextData = $nextReport->cumulative_data;
-            if (!$nextData || !isset($nextData['sections'])) {
-                continue;
-            }
-
-            // Reset totals for recalculation
-            $nextTotals = [
-                'weight' => 0,
-                'planned_prev' => 0,
-                'planned_current' => 0,
-                'planned_cumulative' => 0,
-                'actual_prev' => 0,
-                'actual_current' => 0,
-                'actual_cumulative' => 0,
-                'deviation_prev' => 0,
-                'deviation_current' => 0,
-                'deviation_cumulative' => 0,
-            ];
-
-            // Update each item's actual.up_to_prev from previous week's cumulative
-            foreach ($nextData['sections'] as &$section) {
-                $this->cascadeSectionItems($section, $prevCumulatives, $nextTotals);
-            }
-
-            // Calculate deviation totals
-            $nextTotals['deviation_prev'] = $nextTotals['actual_prev'] - $nextTotals['planned_prev'];
-            $nextTotals['deviation_current'] = $nextTotals['actual_current'] - $nextTotals['planned_current'];
-            $nextTotals['deviation_cumulative'] = $nextTotals['actual_cumulative'] - $nextTotals['planned_cumulative'];
-
-            $nextData['totals'] = $nextTotals;
-            $nextReport->update(['cumulative_data' => $nextData]);
-
-            // Update prevCumulatives for the next iteration
-            $prevCumulatives = [];
-            $this->collectItemCumulatives($nextData['sections'], $prevCumulatives);
-        }
-
-        return $subsequentReports->count();
-    }
-
-    /**
-     * Collect item code => actual_cumulative from sections recursively
-     */
-    protected function collectItemCumulatives(array $sections, array &$map): void
-    {
-        foreach ($sections as $section) {
-            foreach ($section['items'] ?? [] as $item) {
-                $map[$item['code']] = $item['actual']['cumulative'] ?? 0;
-            }
-            if (isset($section['children'])) {
-                $this->collectItemCumulatives($section['children'], $map);
-            }
-        }
-    }
-
-    /**
-     * Update a section's items with cascaded actual.up_to_prev and recalculate
-     */
-    protected function cascadeSectionItems(array &$section, array $prevCumulatives, array &$totals): void
-    {
-        foreach ($section['items'] as &$item) {
-            $code = $item['code'];
-
-            if (isset($prevCumulatives[$code])) {
-                $newUpToPrev = round((float) $prevCumulatives[$code], 4);
-                $item['actual']['up_to_prev'] = $newUpToPrev;
-                $item['actual']['cumulative'] = round($newUpToPrev + $item['actual']['current'], 4);
-                $item['deviation']['up_to_prev'] = round($newUpToPrev - $item['planned']['up_to_prev'], 4);
-                $item['deviation']['current'] = round($item['actual']['current'] - $item['planned']['current'], 4);
-                $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
-            }
-
-            // Accumulate totals
-            $totals['weight'] += $item['weight'] ?? 0;
-            $totals['planned_prev'] += $item['planned']['up_to_prev'] ?? 0;
-            $totals['planned_current'] += $item['planned']['current'] ?? 0;
-            $totals['planned_cumulative'] += $item['planned']['cumulative'] ?? 0;
-            $totals['actual_prev'] += $item['actual']['up_to_prev'] ?? 0;
-            $totals['actual_current'] += $item['actual']['current'] ?? 0;
-            $totals['actual_cumulative'] += $item['actual']['cumulative'] ?? 0;
-        }
-
-        if (isset($section['children'])) {
-            foreach ($section['children'] as &$child) {
-                $this->cascadeSectionItems($child, $prevCumulatives, $totals);
-            }
-        }
-    }
-
-    /**
-     * Recursively update items in a section and accumulate totals
-     */
-    protected function updateSectionItems(array &$section, array $itemUpdates, array &$totals): void
-    {
-        foreach ($section['items'] as &$item) {
-            $code = $item['code'];
-
-            if (isset($itemUpdates[$code])) {
-                $newActualCurrent = round((float) $itemUpdates[$code], 4);
-                $item['actual']['current'] = $newActualCurrent;
-                $item['actual']['cumulative'] = round($item['actual']['up_to_prev'] + $newActualCurrent, 4);
-                $item['deviation']['current'] = round($newActualCurrent - $item['planned']['current'], 4);
-                $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
-            }
-
-            // Accumulate totals
-            $totals['weight'] += $item['weight'] ?? 0;
-            $totals['planned_prev'] += $item['planned']['up_to_prev'] ?? 0;
-            $totals['planned_current'] += $item['planned']['current'] ?? 0;
-            $totals['planned_cumulative'] += $item['planned']['cumulative'] ?? 0;
-            $totals['actual_prev'] += $item['actual']['up_to_prev'] ?? 0;
-            $totals['actual_current'] += $item['actual']['current'] ?? 0;
-            $totals['actual_cumulative'] += $item['actual']['cumulative'] ?? 0;
-        }
-
-        // Process children recursively
-        if (isset($section['children'])) {
-            foreach ($section['children'] as &$child) {
-                $this->updateSectionItems($child, $itemUpdates, $totals);
-            }
-        }
     }
 
     /**
@@ -844,5 +630,108 @@ class WeeklyReportController extends Controller
         return redirect()
             ->route('projects.weekly-reports.index', $project)
             ->with('success', "{$count} weekly report berhasil dihapus.");
+    }
+
+    // ========================
+    // Approval Workflow Actions
+    // ========================
+
+    /**
+     * Submit weekly report for review (draft → in_review)
+     */
+    public function submitForReview(Project $project, WeeklyReport $report)
+    {
+        $this->authorize('weekly_report.manage');
+
+        try {
+            $this->service->submitForReview($report, auth()->id());
+
+            // Notify project managers / reviewers
+            $report->loadMissing('project');
+            NotificationHelper::sendToProjectTeam(
+                $report->project,
+                new \App\Notifications\WeeklyReportStatusNotification($report, 'submitted'),
+                auth()->id()
+            );
+
+            return back()->with('success', "Weekly Report Week {$report->week_number} berhasil diajukan untuk review.");
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Approve weekly report (in_review → approved)
+     */
+    public function approve(Request $request, Project $project, WeeklyReport $report)
+    {
+        $this->authorize('weekly_report.manage');
+
+        try {
+            $this->service->approve($report, auth()->id(), $request->input('comment'));
+
+            // Notify the creator/submitter
+            $report->loadMissing(['project', 'creator', 'submitter']);
+            NotificationHelper::sendToProjectTeam(
+                $report->project,
+                new \App\Notifications\WeeklyReportStatusNotification($report, 'approved'),
+                auth()->id()
+            );
+
+            return back()->with('success', "Weekly Report Week {$report->week_number} berhasil disetujui.");
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Reject weekly report (in_review → rejected)
+     */
+    public function reject(Request $request, Project $project, WeeklyReport $report)
+    {
+        $this->authorize('weekly_report.manage');
+
+        $request->validate([
+            'rejection_reason' => 'required|string|min:10',
+        ]);
+
+        try {
+            $this->service->reject($report, auth()->id(), $request->input('rejection_reason'));
+
+            // Notify the creator/submitter
+            $report->loadMissing(['project', 'creator', 'submitter']);
+            NotificationHelper::sendToProjectTeam(
+                $report->project,
+                new \App\Notifications\WeeklyReportStatusNotification($report, 'rejected'),
+                auth()->id()
+            );
+
+            return back()->with('success', "Weekly Report Week {$report->week_number} ditolak.");
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Publish weekly report (approved → published)
+     */
+    public function publish(Project $project, WeeklyReport $report)
+    {
+        $this->authorize('weekly_report.manage');
+
+        try {
+            $this->service->publish($report, auth()->id());
+
+            // Notify entire team including owner
+            $report->loadMissing('project');
+            NotificationHelper::sendToProjectTeam(
+                $report->project,
+                new \App\Notifications\WeeklyReportStatusNotification($report, 'published')
+            );
+
+            return back()->with('success', "Weekly Report Week {$report->week_number} berhasil dipublish.");
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
     }
 }

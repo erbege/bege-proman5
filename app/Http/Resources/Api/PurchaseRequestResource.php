@@ -28,6 +28,7 @@ class PurchaseRequestResource extends JsonResource
             'status' => $this->status,
             'priority' => $this->priority,
             'notes' => $this->notes,
+            'rejection_reason' => $this->rejection_reason,
             'total_estimated_price' => $canViewFinancials ? (float) $this->total_estimated_price : 0,
             'items' => $this->whenLoaded('items', function () use ($canViewFinancials) {
                 return $this->items->map(fn($item) => [

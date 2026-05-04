@@ -3,98 +3,173 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Project;
+use App\Http\Requests\StoreProgressReportRequest;
+use App\Http\Requests\UpdateProgressReportRequest;
 use App\Models\ProgressReport;
+use App\Models\Project;
+use App\Services\ProgressReportService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class ProgressReportController extends Controller
 {
-    /**
-     * List progress reports for a project.
-     * 
-     * Get a paginated list of progress reports for a specific project.
-     */
-    public function index(Project $project, Request $request)
+    protected ProgressReportService $service;
+
+    public function __construct(ProgressReportService $service)
     {
-        return $project->progressReports()
+        $this->service = $service;
+    }
+
+    public function index(Project $project, Request $request): JsonResponse
+    {
+        return response()->json($project->progressReports()
             ->with('reportedBy:id,name')
             ->latest()
-            ->paginate($request->per_page ?? 10);
+            ->paginate($request->per_page ?? 10));
     }
 
-    /**
-     * Get progress report details.
-     * 
-     * Get detailed information about a specific progress report.
-     */
-    public function show(Project $project, ProgressReport $report)
+    public function show(Project $project, ProgressReport $report): JsonResponse
     {
-        return response()->json([
-            'data' => $report->load(['reportedBy', 'rabItem'])
-        ]);
-    }
-
-    /**
-     * Create new progress report.
-     * 
-     * Create a new progress report for a project.
-     */
-    public function store(Project $project, Request $request)
-    {
-        $validated = $request->validate([
-            'rab_item_id' => 'required|exists:rab_items,id',
-            'report_date' => 'required|date',
-            'progress_percentage' => 'required|numeric|min:0|max:100',
-            'description' => 'nullable|string',
-            'issues' => 'nullable|string',
-            'weather' => 'nullable|in:sunny,cloudy,rainy,stormy',
-            'workers_count' => 'nullable|integer|min:0',
-        ]);
-
-        $validated['reported_by'] = auth()->id();
-        
-        if (!empty($validated['rab_item_id'])) {
-            $rabItem = \App\Models\RabItem::find($validated['rab_item_id']);
-            $validated['cumulative_progress'] = min(100, $rabItem->actual_progress + $validated['progress_percentage']);
+        if (Gate::denies('progress.view')) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $report = $project->progressReports()->create($validated);
+        return response()->json([
+            'data' => $report->load(['reportedBy', 'rabItem', 'reviewer', 'rejector', 'publisher']),
+        ]);
+    }
 
-        if ($report->rab_item_id) {
-            $report->rabItem->update([
-                'actual_progress' => $report->cumulative_progress ?? $report->progress_percentage,
+    public function store(StoreProgressReportRequest $request, Project $project): JsonResponse
+    {
+        if (Gate::denies('progress.create')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        try {
+            $validated = $request->validated();
+            $report = $this->service->create($project, $validated, [], auth()->id());
+            $this->service->notifyTeam($report, auth()->id());
+
+            return response()->json([
+                'message' => 'Progress report created successfully',
+                'data' => $report->load(['reportedBy', 'rabItem']),
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function update(UpdateProgressReportRequest $request, Project $project, ProgressReport $report): JsonResponse
+    {
+        if (Gate::denies('progress.update')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        try {
+            $validated = $request->validated();
+            $report = $this->service->updateReport($report, $project, $validated);
+
+            return response()->json([
+                'message' => 'Progress report updated successfully',
+                'data' => $report->load(['reportedBy', 'rabItem']),
             ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
 
-            $scheduleCalculator = new \App\Services\ScheduleCalculator();
-            $scheduleCalculator->updateFromProgress($project);
+    public function destroy(Project $project, ProgressReport $report): JsonResponse
+    {
+        if (Gate::denies('progress.delete')) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        // Notify stakeholders
-        $this->notifyStakeholders($report);
+        try {
+            $this->service->delete($report, $project);
 
-        return response()->json([
-            'message' => 'Progress report created successfully',
-            'data' => $report->load(['reportedBy', 'rabItem'])
-        ], 201);
+            return response()->json(['message' => 'Progress report deleted successfully']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    // ========================
+    // Workflow Endpoints
+    // ========================
+
+    public function submit(Project $project, ProgressReport $report): JsonResponse
+    {
+        if (Gate::denies('progress.manage')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        try {
+            $report = $this->service->submit($report);
+
+            return response()->json([
+                'message' => 'Progress report submitted successfully',
+                'data' => $report,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     /**
-     * Notify relevant stakeholders about the new progress report.
+     * Single endpoint for approve/reject.
+     * Body: { "action": "approve" | "reject", "notes": "..." }
      */
-    protected function notifyStakeholders(ProgressReport $report): void
+    public function review(Request $request, Project $project, ProgressReport $report): JsonResponse
     {
-        $users = collect();
-        if ($report->project && $report->project->createdBy) {
-            $users->push($report->project->createdBy);
+        if (Gate::denies('progress.approve')) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        // Add Project Managers explicitly as they are stakeholders but not necessarily 'admins' in helper
-        $projectManagers = \App\Models\User::role('project-manager')->get();
-        $users = $users->merge($projectManagers);
+        $validated = $request->validate([
+            'action' => 'required|in:approve,reject',
+            'notes' => 'nullable|string|max:2000',
+        ]);
 
-        \App\Services\NotificationHelper::sendToUsers(
-            $users,
-            new \App\Notifications\ProgressReportCreatedNotification($report)
-        );
+        try {
+            $reviewerId = auth()->id();
+
+            if ($validated['action'] === 'approve') {
+                $report = $this->service->approve($report, $reviewerId, $validated['notes'] ?? null);
+                $message = 'Progress report approved successfully';
+            } else {
+                $report = $this->service->reject($report, $reviewerId, $validated['notes'] ?? null);
+                $message = 'Progress report rejected successfully';
+            }
+
+            return response()->json([
+                'message' => $message,
+                'data' => $report->load(['reviewer', 'rejector']),
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function publish(Project $project, ProgressReport $report): JsonResponse
+    {
+        if (Gate::denies('progress.publish')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        try {
+            $report = $this->service->publish($report, auth()->id());
+
+            return response()->json([
+                'message' => 'Progress report published successfully',
+                'data' => $report,
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }

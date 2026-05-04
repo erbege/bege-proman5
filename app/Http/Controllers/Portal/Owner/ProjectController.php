@@ -65,6 +65,13 @@ class ProjectController extends Controller
             ->orderBy('week_number', 'desc')
             ->get();
 
+        $monthlyReports = \App\Models\MonthlyReport::where('project_id', $project->id)
+            ->published()
+            ->with('creator')
+            ->orderBy('year', 'desc')
+            ->orderBy('month', 'desc')
+            ->get();
+
         // Get latest progress stats
         $latestSchedule = $project->schedules->last();
         
@@ -74,6 +81,6 @@ class ProjectController extends Controller
             'deviation' => ($latestSchedule?->actual_cumulative ?? 0) - ($latestSchedule?->planned_cumulative ?? 0),
         ];
 
-        return view('portal.owner.projects.show', compact('project', 'weeklyReports', 'stats'));
+        return view('portal.owner.projects.show', compact('project', 'weeklyReports', 'monthlyReports', 'stats'));
     }
 }

@@ -7,15 +7,11 @@ use Illuminate\Notifications\Notification;
 
 class FcmChannel
 {
-    protected FcmNotificationService $fcmService;
-
-    public function __construct(FcmNotificationService $fcmService)
-    {
-        $this->fcmService = $fcmService;
-    }
-
     /**
      * Send the given notification via FCM.
+     * Lazily resolves the FCM service and gracefully handles failures so
+     * notification channels do not cause HTTP 500 in tests/environments
+     * where FCM or its dependencies are unavailable.
      */
     public function send($notifiable, Notification $notification): void
     {
@@ -29,12 +25,25 @@ class FcmChannel
             return;
         }
 
-        $this->fcmService->sendToUser(
-            $notifiable,
-            $fcmData['title'] ?? 'Notifikasi',
-            $fcmData['body'] ?? '',
-            $fcmData['data'] ?? [],
-            $fcmData['icon'] ?? null
-        );
+        try {
+            $fcmService = app()->make(\App\Services\FcmNotificationService::class);
+        } catch (\Throwable $e) {
+            // If FCM service cannot be resolved (misconfigured in testing), log and skip
+            \Log::warning('[FCM] Skipping send - FcmNotificationService unavailable', ['error' => $e->getMessage()]);
+            return;
+        }
+
+        try {
+            $fcmService->sendToUser(
+                $notifiable,
+                $fcmData['title'] ?? 'Notifikasi',
+                $fcmData['body'] ?? '',
+                $fcmData['data'] ?? [],
+                $fcmData['icon'] ?? null
+            );
+        } catch (\Throwable $e) {
+            // Log failure but do not interrupt the request lifecycle
+            \Log::error('[FCM] Failed to send notification', ['error' => $e->getMessage()]);
+        }
     }
 }

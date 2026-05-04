@@ -848,8 +848,8 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'List progress reports for a project.'
-      description: 'Get a paginated list of progress reports for a specific project.'
+      title: ''
+      description: ''
       authenticated: true
       deprecated: false
     headers:
@@ -904,8 +904,8 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Get progress report details.'
-      description: 'Get detailed information about a specific progress report.'
+      title: ''
+      description: ''
       authenticated: true
       deprecated: false
     headers:
@@ -972,13 +972,13 @@ endpoints:
       groupDescription: ''
       subgroup: ''
       subgroupDescription: ''
-      title: 'Create new progress report.'
-      description: 'Create a new progress report for a project.'
+      title: ''
+      description: ''
       authenticated: true
       deprecated: false
     headers:
       Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
+      Content-Type: multipart/form-data
       Accept: application/json
     urlParameters:
       project_id:
@@ -1001,19 +1001,19 @@ endpoints:
         custom: []
         name: rab_item_id
         description: 'The <code>id</code> of an existing record in the rab_items table.'
-        required: true
-        example: architecto
-        type: string
+        required: false
+        example: 16
+        type: integer
         enumValues: []
         exampleWasSpecified: false
-        nullable: false
+        nullable: true
         deprecated: false
       report_date:
         custom: []
         name: report_date
         description: 'Must be a valid date.'
         required: true
-        example: '2026-04-27T12:22:41'
+        example: '2026-05-04T05:26:40'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1030,12 +1030,23 @@ endpoints:
         exampleWasSpecified: false
         nullable: false
         deprecated: false
+      cumulative_progress:
+        custom: []
+        name: cumulative_progress
+        description: 'Must be at least 0. Must not be greater than 100.'
+        required: false
+        example: 7
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
       description:
         custom: []
         name: description
-        description: ''
+        description: 'Must not be greater than 5000 characters.'
         required: false
-        example: 'Eius et animi quos velit et.'
+        example: 'Quos velit et fugiat sunt nihil accusantium harum.'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1044,20 +1055,32 @@ endpoints:
       issues:
         custom: []
         name: issues
-        description: ''
+        description: 'Must not be greater than 5000 characters.'
         required: false
-        example: architecto
+        example: i
         type: string
         enumValues: []
         exampleWasSpecified: false
         nullable: true
+        deprecated: false
+      photos:
+        custom: []
+        name: photos
+        description: 'Must be an image. Must not be greater than 5120 kilobytes.'
+        required: false
+        example:
+          - null
+        type: 'file[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
         deprecated: false
       weather:
         custom: []
         name: weather
         description: ''
         required: false
-        example: rainy
+        example: cloudy
         type: string
         enumValues:
           - sunny
@@ -1067,9 +1090,86 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
+      weather_duration:
+        custom: []
+        name: weather_duration
+        description: 'Must not be greater than 100 characters.'
+        required: false
+        example: k
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
       workers_count:
         custom: []
         name: workers_count
+        description: 'Must be at least 0.'
+        required: false
+        example: 7
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      labor_details:
+        custom: []
+        name: labor_details
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      equipment_details:
+        custom: []
+        name: equipment_details
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      material_usage_summary:
+        custom: []
+        name: material_usage_summary
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details:
+        custom: []
+        name: safety_details
+        description: ''
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details.incidents:
+        custom: []
+        name: safety_details.incidents
+        description: 'Must be at least 0.'
+        required: false
+        example: 87
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details.near_miss:
+        custom: []
+        name: safety_details.near_miss
         description: 'Must be at least 0.'
         required: false
         example: 39
@@ -1078,14 +1178,837 @@ endpoints:
         exampleWasSpecified: false
         nullable: true
         deprecated: false
+      safety_details.apd_compliance:
+        custom: []
+        name: safety_details.apd_compliance
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details.notes:
+        custom: []
+        name: safety_details.notes
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      next_day_plan:
+        custom: []
+        name: next_day_plan
+        description: 'Must not be greater than 5000 characters.'
+        required: false
+        example: 'n'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      'labor_details[].category':
+        custom: []
+        name: 'labor_details[].category'
+        description: 'This field is required when <code>labor_details</code> is present.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'labor_details[].count':
+        custom: []
+        name: 'labor_details[].count'
+        description: 'This field is required when <code>labor_details</code> is present. Must be at least 0.'
+        required: false
+        example: 39
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'equipment_details[].name':
+        custom: []
+        name: 'equipment_details[].name'
+        description: 'This field is required when <code>equipment_details</code> is present.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'equipment_details[].qty':
+        custom: []
+        name: 'equipment_details[].qty'
+        description: 'This field is required when <code>equipment_details</code> is present. Must be at least 1.'
+        required: false
+        example: 22
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'equipment_details[].condition':
+        custom: []
+        name: 'equipment_details[].condition'
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      'equipment_details[].hours':
+        custom: []
+        name: 'equipment_details[].hours'
+        description: 'Must be at least 0.'
+        required: false
+        example: 39
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      'material_usage_summary[].material':
+        custom: []
+        name: 'material_usage_summary[].material'
+        description: 'This field is required when <code>material_usage_summary</code> is present.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'material_usage_summary[].qty_used':
+        custom: []
+        name: 'material_usage_summary[].qty_used'
+        description: 'This field is required when <code>material_usage_summary</code> is present. Must be at least 0.'
+        required: false
+        example: 39
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'material_usage_summary[].unit':
+        custom: []
+        name: 'material_usage_summary[].unit'
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
     cleanBodyParameters:
-      rab_item_id: architecto
-      report_date: '2026-04-27T12:22:41'
+      rab_item_id: 16
+      report_date: '2026-05-04T05:26:40'
       progress_percentage: 22
-      description: 'Eius et animi quos velit et.'
-      issues: architecto
-      weather: rainy
-      workers_count: 39
+      cumulative_progress: 7
+      description: 'Quos velit et fugiat sunt nihil accusantium harum.'
+      issues: i
+      weather: cloudy
+      weather_duration: k
+      workers_count: 7
+      safety_details:
+        incidents: 87
+        near_miss: 39
+        apd_compliance: false
+        notes: architecto
+      next_day_plan: 'n'
+      labor_details:
+        -
+          category: architecto
+          count: 39
+      equipment_details:
+        -
+          name: architecto
+          qty: 22
+          condition: architecto
+          hours: 39
+      material_usage_summary:
+        -
+          material: architecto
+          qty_used: 39
+          unit: architecto
+    fileParameters:
+      photos:
+        - null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+    uri: 'api/projects/{project_id}/progress/{report_id}'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: multipart/form-data
+      Accept: application/json
+    urlParameters:
+      project_id:
+        custom: []
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      report_id:
+        custom: []
+        name: report_id
+        description: 'The ID of the report.'
+        required: true
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      project_id: 1
+      report_id: 42
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      rab_item_id:
+        custom: []
+        name: rab_item_id
+        description: 'The <code>id</code> of an existing record in the rab_items table.'
+        required: false
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      report_date:
+        custom: []
+        name: report_date
+        description: 'Must be a valid date.'
+        required: false
+        example: '2026-05-04T05:26:40'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      progress_percentage:
+        custom: []
+        name: progress_percentage
+        description: 'Must be at least 0. Must not be greater than 100.'
+        required: false
+        example: 22
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      cumulative_progress:
+        custom: []
+        name: cumulative_progress
+        description: 'Must be at least 0. Must not be greater than 100.'
+        required: false
+        example: 7
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      description:
+        custom: []
+        name: description
+        description: 'Must not be greater than 5000 characters.'
+        required: false
+        example: 'Quos velit et fugiat sunt nihil accusantium harum.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      issues:
+        custom: []
+        name: issues
+        description: 'Must not be greater than 5000 characters.'
+        required: false
+        example: i
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      photos:
+        custom: []
+        name: photos
+        description: 'Must be an image. Must not be greater than 5120 kilobytes.'
+        required: false
+        example:
+          - null
+        type: 'file[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      weather:
+        custom: []
+        name: weather
+        description: ''
+        required: false
+        example: stormy
+        type: string
+        enumValues:
+          - sunny
+          - cloudy
+          - rainy
+          - stormy
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      weather_duration:
+        custom: []
+        name: weather_duration
+        description: 'Must not be greater than 100 characters.'
+        required: false
+        example: k
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      workers_count:
+        custom: []
+        name: workers_count
+        description: 'Must be at least 0.'
+        required: false
+        example: 7
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      labor_details:
+        custom: []
+        name: labor_details
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      equipment_details:
+        custom: []
+        name: equipment_details
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      material_usage_summary:
+        custom: []
+        name: material_usage_summary
+        description: ''
+        required: false
+        example: null
+        type: 'object[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details:
+        custom: []
+        name: safety_details
+        description: ''
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details.incidents:
+        custom: []
+        name: safety_details.incidents
+        description: 'Must be at least 0.'
+        required: false
+        example: 87
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details.near_miss:
+        custom: []
+        name: safety_details.near_miss
+        description: 'Must be at least 0.'
+        required: false
+        example: 39
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details.apd_compliance:
+        custom: []
+        name: safety_details.apd_compliance
+        description: ''
+        required: false
+        example: false
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      safety_details.notes:
+        custom: []
+        name: safety_details.notes
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      next_day_plan:
+        custom: []
+        name: next_day_plan
+        description: 'Must not be greater than 5000 characters.'
+        required: false
+        example: 'n'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      'labor_details[].category':
+        custom: []
+        name: 'labor_details[].category'
+        description: 'This field is required when <code>labor_details</code> is present.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'labor_details[].count':
+        custom: []
+        name: 'labor_details[].count'
+        description: 'This field is required when <code>labor_details</code> is present. Must be at least 0.'
+        required: false
+        example: 39
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'equipment_details[].name':
+        custom: []
+        name: 'equipment_details[].name'
+        description: 'This field is required when <code>equipment_details</code> is present.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'equipment_details[].qty':
+        custom: []
+        name: 'equipment_details[].qty'
+        description: 'This field is required when <code>equipment_details</code> is present. Must be at least 1.'
+        required: false
+        example: 22
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'equipment_details[].condition':
+        custom: []
+        name: 'equipment_details[].condition'
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      'equipment_details[].hours':
+        custom: []
+        name: 'equipment_details[].hours'
+        description: 'Must be at least 0.'
+        required: false
+        example: 39
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+      'material_usage_summary[].material':
+        custom: []
+        name: 'material_usage_summary[].material'
+        description: 'This field is required when <code>material_usage_summary</code> is present.'
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'material_usage_summary[].qty_used':
+        custom: []
+        name: 'material_usage_summary[].qty_used'
+        description: 'This field is required when <code>material_usage_summary</code> is present. Must be at least 0.'
+        required: false
+        example: 39
+        type: number
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      'material_usage_summary[].unit':
+        custom: []
+        name: 'material_usage_summary[].unit'
+        description: ''
+        required: false
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      rab_item_id: 16
+      report_date: '2026-05-04T05:26:40'
+      progress_percentage: 22
+      cumulative_progress: 7
+      description: 'Quos velit et fugiat sunt nihil accusantium harum.'
+      issues: i
+      weather: stormy
+      weather_duration: k
+      workers_count: 7
+      safety_details:
+        incidents: 87
+        near_miss: 39
+        apd_compliance: false
+        notes: architecto
+      next_day_plan: 'n'
+      labor_details:
+        -
+          category: architecto
+          count: 39
+      equipment_details:
+        -
+          name: architecto
+          qty: 22
+          condition: architecto
+          hours: 39
+      material_usage_summary:
+        -
+          material: architecto
+          qty_used: 39
+          unit: architecto
+    fileParameters:
+      photos:
+        - null
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/projects/{project_id}/progress/{report_id}'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        custom: []
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      report_id:
+        custom: []
+        name: report_id
+        description: 'The ID of the report.'
+        required: true
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      project_id: 1
+      report_id: 42
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/progress/{report_id}/submit'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        custom: []
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      report_id:
+        custom: []
+        name: report_id
+        description: 'The ID of the report.'
+        required: true
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      project_id: 1
+      report_id: 42
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/progress/{report_id}/review'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Single endpoint for approve/reject.'
+      description: 'Body: { "action": "approve" | "reject", "notes": "..." }'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        custom: []
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      report_id:
+        custom: []
+        name: report_id
+        description: 'The ID of the report.'
+        required: true
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      project_id: 1
+      report_id: 42
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      action:
+        custom: []
+        name: action
+        description: ''
+        required: true
+        example: reject
+        type: string
+        enumValues:
+          - approve
+          - reject
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      notes:
+        custom: []
+        name: notes
+        description: 'Must not be greater than 2000 characters.'
+        required: false
+        example: b
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      action: reject
+      notes: b
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/projects/{project_id}/progress/{report_id}/publish'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      project_id:
+        custom: []
+        name: project_id
+        description: 'The ID of the project.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      report_id:
+        custom: []
+        name: report_id
+        description: 'The ID of the report.'
+        required: true
+        example: 42
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      project_id: 1
+      report_id: 42
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
     fileParameters: []
     responses: []
     responseFields: []
@@ -1193,7 +2116,7 @@ endpoints:
         name: usage_date
         description: 'Must be a valid date.'
         required: true
-        example: '2026-04-27T12:22:41'
+        example: '2026-05-04T05:26:41'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -1267,7 +2190,7 @@ endpoints:
         nullable: true
         deprecated: false
     cleanBodyParameters:
-      usage_date: '2026-04-27T12:22:41'
+      usage_date: '2026-05-04T05:26:41'
       notes: architecto
       items:
         -
@@ -1344,214 +2267,6 @@ endpoints:
           content-type: application/json
           access-control-allow-origin: '*'
         description: null
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - GET
-    uri: api/goods-receipts
-    metadata:
-      custom: []
-      groupName: Endpoints
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'List goods receipts.'
-      description: 'Get a paginated list of goods receipts.'
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        custom: []
-        status: 401
-        content: '{"success":false,"message":"Sesi berakhir, silakan login kembali."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - GET
-    uri: 'api/goods-receipts/{goodsReceipt_id}'
-    metadata:
-      custom: []
-      groupName: Endpoints
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Get goods receipt details.'
-      description: 'Get detailed information about a specific goods receipt.'
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters:
-      goodsReceipt_id:
-        custom: []
-        name: goodsReceipt_id
-        description: 'The ID of the goodsReceipt.'
-        required: true
-        example: 1
-        type: integer
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanUrlParameters:
-      goodsReceipt_id: 1
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters: []
-    cleanBodyParameters: []
-    fileParameters: []
-    responses:
-      -
-        custom: []
-        status: 401
-        content: '{"success":false,"message":"Sesi berakhir, silakan login kembali."}'
-        headers:
-          cache-control: 'no-cache, private'
-          content-type: application/json
-          access-control-allow-origin: '*'
-        description: null
-    responseFields: []
-    auth:
-      - headers
-      - Authorization
-      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
-    controller: null
-    method: null
-    route: null
-  -
-    custom: []
-    httpMethods:
-      - POST
-    uri: api/goods-receipts
-    metadata:
-      custom: []
-      groupName: Endpoints
-      groupDescription: ''
-      subgroup: ''
-      subgroupDescription: ''
-      title: 'Create new goods receipt.'
-      description: 'Create a new goods receipt and update inventory.'
-      authenticated: true
-      deprecated: false
-    headers:
-      Authorization: 'Bearer {YOUR_AUTH_KEY}'
-      Content-Type: application/json
-      Accept: application/json
-    urlParameters: []
-    cleanUrlParameters: []
-    queryParameters: []
-    cleanQueryParameters: []
-    bodyParameters:
-      project_id:
-        custom: []
-        name: project_id
-        description: 'The <code>id</code> of an existing record in the projects table.'
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      purchase_order_id:
-        custom: []
-        name: purchase_order_id
-        description: 'The <code>id</code> of an existing record in the purchase_orders table.'
-        required: false
-        example: null
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      notes:
-        custom: []
-        name: notes
-        description: ''
-        required: false
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: true
-        deprecated: false
-      items:
-        custom: []
-        name: items
-        description: 'Must have at least 1 items.'
-        required: true
-        example:
-          - []
-        type: 'object[]'
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      'items[].material_id':
-        custom: []
-        name: 'items[].material_id'
-        description: 'The <code>id</code> of an existing record in the materials table.'
-        required: true
-        example: architecto
-        type: string
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-      'items[].quantity':
-        custom: []
-        name: 'items[].quantity'
-        description: 'Must be at least 0.01.'
-        required: true
-        example: 39
-        type: number
-        enumValues: []
-        exampleWasSpecified: false
-        nullable: false
-        deprecated: false
-    cleanBodyParameters:
-      project_id: architecto
-      notes: architecto
-      items:
-        -
-          material_id: architecto
-          quantity: 39
-    fileParameters: []
-    responses: []
     responseFields: []
     auth:
       - headers
@@ -1827,7 +2542,7 @@ endpoints:
         name: platform
         description: ''
         required: false
-        example: android
+        example: ios
         type: string
         enumValues:
           - web
@@ -1839,7 +2554,7 @@ endpoints:
     cleanBodyParameters:
       token: b
       device_name: 'n'
-      platform: android
+      platform: ios
     fileParameters: []
     responses: []
     responseFields: []
@@ -2179,6 +2894,464 @@ endpoints:
       Accept: application/json
     urlParameters: []
     cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/comments
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List comments for a model.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      commentable_type:
+        custom: []
+        name: commentable_type
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      commentable_id:
+        custom: []
+        name: commentable_id
+        description: ''
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      commentable_type: architecto
+      commentable_id: 16
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"success":false,"message":"Sesi berakhir, silakan login kembali."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/comments
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Store a new comment.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      commentable_type:
+        custom: []
+        name: commentable_type
+        description: ''
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      commentable_id:
+        custom: []
+        name: commentable_id
+        description: ''
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      content:
+        custom: []
+        name: content
+        description: 'Must not be greater than 1000 characters.'
+        required: true
+        example: 'n'
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      metadata:
+        custom: []
+        name: metadata
+        description: ''
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: true
+        deprecated: false
+    cleanBodyParameters:
+      commentable_type: architecto
+      commentable_id: 16
+      content: 'n'
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/comments/{id}'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Soft delete a comment (author only).'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the comment.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/owner/dashboard
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: ''
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"success":false,"message":"Sesi berakhir, silakan login kembali."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/owner/notifications
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get notifications for the owner.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"success":false,"message":"Sesi berakhir, silakan login kembali."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/owner/notifications/recent
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get recent unread notifications.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 401
+        content: '{"success":false,"message":"Sesi berakhir, silakan login kembali."}'
+        headers:
+          cache-control: 'no-cache, private'
+          content-type: application/json
+          access-control-allow-origin: '*'
+        description: null
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: 'api/owner/notifications/{id}/read'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Mark a notification as read.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the notification.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/owner/notifications/read-all
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Mark all notifications as read.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses: []
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/owner/notifications/{id}'
+    metadata:
+      custom: []
+      groupName: Endpoints
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete a notification.'
+      description: ''
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the notification.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: architecto
     queryParameters: []
     cleanQueryParameters: []
     bodyParameters: []

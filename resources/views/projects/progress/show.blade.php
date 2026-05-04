@@ -7,10 +7,22 @@
                 </h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400">{{ $report->report_date->format('d M Y') }}</p>
             </div>
-            <a href="{{ route('projects.progress.index', $project) }}"
-                class="text-gray-600 hover:text-gray-800 dark:text-gray-400">
-                ← Kembali
-            </a>
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('projects.progress.index', $project) }}"
+                    class="text-gray-600 hover:text-gray-800 dark:text-gray-400 text-sm font-medium">
+                    ← Kembali
+                </a>
+                <a href="{{ route('projects.progress.pdf', [$project, $report]) }}" target="_blank"
+                    class="inline-flex items-center px-4 py-2 bg-white dark:bg-dark-800 text-slate-700 dark:text-slate-300 text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-slate-50 dark:hover:bg-dark-700 transition border border-slate-200 dark:border-dark-700 shadow-sm">
+                    Export PDF
+                </a>
+                @can('progress.approve')
+                    <a href="{{ route('projects.progress.review', [$project, $report]) }}"
+                        class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-blue-700 transition shadow-sm">
+                        Review
+                    </a>
+                @endcan
+            </div>
         </div>
     </x-slot>
 

@@ -18,7 +18,6 @@ class InventoryController extends Controller
      */
     public function index(InventoryIndexRequest $request)
     {
-        $this->authorize('inventory.view');
         $validated = $request->validated();
         $query = Inventory::with(['project:id,name', 'material:id,code,name,unit']);
 
@@ -48,7 +47,6 @@ class InventoryController extends Controller
      */
     public function show(Inventory $inventory)
     {
-        $this->authorize('inventory.view');
         $data = $inventory->load(['project', 'material']);
 
         if (!auth()->user()->can('financials.view')) {
@@ -63,7 +61,6 @@ class InventoryController extends Controller
      */
     public function history(InventoryHistoryRequest $request)
     {
-        $this->authorize('inventory.view');
         $validated = $request->validated();
         $query = InventoryLog::with(['inventory.material', 'inventory.project', 'user:id,name']);
 

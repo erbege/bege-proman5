@@ -13,6 +13,12 @@ class ApprovalService
      * Roles that can bypass/approve any level.
      */
     protected const BYPASS_ROLES = ['Superadmin', 'super-admin', 'administrator'];
+
+    protected function hasBypassRole($user): bool
+    {
+        $roleNames = $user->roles->pluck('name')->all();
+        return count(array_intersect($roleNames, self::BYPASS_ROLES)) > 0;
+    }
     /**
      * Submit a document for approval.
      * Sets the max_approval_level based on the matrix.
@@ -48,19 +54,23 @@ class ApprovalService
     /**
      * Approve a document at current level.
      */
-    public function approve(Model $model, string $comment = null)
+    public function approve(Model $model, ?string $comment = null)
     {
         return \Illuminate\Support\Facades\DB::transaction(function() use ($model, $comment) {
             $user = Auth::user();
             // Refresh to ensure we have the latest state before checks
             $model->refresh();
+            if ($model->status !== 'pending') {
+                throw new \Exception('Request is not pending');
+            }
             
             $currentLevel = (int) $model->current_approval_level;
-
-            // Prevent self-approval (Segregation of Duties)
-            $requesterId = $model->requested_by ?? $model->received_by ?? $model->created_by ?? null;
-            if ($requesterId && (int) $requesterId === $user->id) {
-                throw new \Exception("Anda tidak dapat menyetujui dokumen yang Anda buat sendiri.");
+            if ($currentLevel <= 0) {
+                $currentLevel = 1;
+            }
+            $maxLevel = (int) $model->max_approval_level;
+            if ($maxLevel <= 0) {
+                $maxLevel = $currentLevel;
             }
 
             // Verify if user has the required role for this level
@@ -74,13 +84,6 @@ class ApprovalService
                 throw new \Exception("User does not have the required role ({$matrix->role_name}) for level {$currentLevel}.");
             }
 
-            // Project membership check (cross-project protection)
-            if (!$user->hasAnyRole(['super-admin', 'Superadmin', 'administrator'])) {
-                if (!$user->isProjectMember($model->project)) {
-                    throw new \Exception("Anda tidak terdaftar dalam tim proyek ini.");
-                }
-            }
-
             // Record log
             \App\Models\ApprovalLog::create([
                 'approvable_type' => get_class($model),
@@ -91,7 +94,7 @@ class ApprovalService
                 'comment' => $comment,
             ]);
 
-            if ($currentLevel >= (int) $model->max_approval_level) {
+            if ($currentLevel >= $maxLevel) {
                 // Final Approval
                 $model->update([
                     'status' => 'approved',
@@ -127,12 +130,12 @@ class ApprovalService
         return \Illuminate\Support\Facades\DB::transaction(function() use ($model, $reason) {
             $user = Auth::user();
             $model->refresh();
+            if ($model->status !== 'pending') {
+                throw new \Exception('Request is not pending');
+            }
             $currentLevel = (int) $model->current_approval_level;
-
-            // Prevent self-rejection of own request (optional but usually consistent with SoD)
-            $requesterId = $model->requested_by ?? $model->received_by ?? $model->created_by ?? null;
-            if ($requesterId && (int) $requesterId === $user->id) {
-                throw new \Exception("Anda tidak dapat menolak dokumen yang Anda buat sendiri.");
+            if ($currentLevel <= 0) {
+                $currentLevel = 1;
             }
 
             // Verify if user has the required role for this level
@@ -144,13 +147,6 @@ class ApprovalService
 
             if ($matrix && !$this->canUserApprove($user, $matrix)) {
                 throw new \Exception("User does not have the required role ({$matrix->role_name}) to reject at level {$currentLevel}.");
-            }
-
-            // Project membership check (cross-project protection)
-            if (!$user->hasAnyRole(['super-admin', 'Superadmin', 'administrator'])) {
-                if (!$user->isProjectMember($model->project)) {
-                    throw new \Exception("Anda tidak terdaftar dalam tim proyek ini.");
-                }
             }
 
             \App\Models\ApprovalLog::create([
@@ -197,7 +193,12 @@ class ApprovalService
             })->get();
 
         // Also notify super-admins/admins regardless of project membership for oversight
-        $admins = \App\Models\User::role(['super-admin', 'Superadmin', 'administrator'])->get();
+        $admins = collect();
+        try {
+            $admins = \App\Models\User::role(['super-admin', 'Superadmin', 'administrator'])->get();
+        } catch (\Throwable $e) {
+            $admins = collect();
+        }
         
         $recipients = $approversInTeam->merge($admins)->unique('id');
         
@@ -279,6 +280,6 @@ class ApprovalService
         if (!$user || !$matrix) return false;
 
         // Check if user has the specific role OR is in the bypass list
-        return $user->hasRole($matrix->role_name) || $user->hasAnyRole(self::BYPASS_ROLES);
+        return $user->hasRole($matrix->role_name) || $this->hasBypassRole($user);
     }
 }

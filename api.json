@@ -426,6 +426,333 @@
                 }
             }
         },
+        "/comments": {
+            "get": {
+                "operationId": "comment.index",
+                "summary": "List comments for a model",
+                "tags": [
+                    "Comment"
+                ],
+                "parameters": [
+                    {
+                        "name": "commentable_type",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "commentable_id",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Comments retrieved successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/CommentResource"
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "comment.store",
+                "summary": "Store a new comment",
+                "tags": [
+                    "Comment"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "commentable_type": {
+                                        "type": "string"
+                                    },
+                                    "commentable_id": {
+                                        "type": "integer"
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "maxLength": 1000
+                                    },
+                                    "metadata": {
+                                        "type": [
+                                            "array",
+                                            "null"
+                                        ],
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "required": [
+                                    "commentable_type",
+                                    "commentable_id",
+                                    "content"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Comment posted successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/CommentResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/comments/{id}": {
+            "delete": {
+                "operationId": "comment.destroy",
+                "summary": "Soft delete a comment (author only)",
+                "tags": [
+                    "Comment"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Comment deleted."
+                                                    ]
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/CommentResource"
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message",
+                                                "data"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Comment already deleted."
+                                                    ]
+                                                },
+                                                "data": {
+                                                    "$ref": "#/components/schemas/CommentResource"
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message",
+                                                "data"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Cannot delete comment on unpublished reports"
+                                                    ]
+                                                },
+                                                "error": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Cannot delete comment on unpublished reports"
+                                                    ]
+                                                },
+                                                "errors": {
+                                                    "type": "null"
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message",
+                                                "error",
+                                                "errors"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Unauthorized access to this project"
+                                                    ]
+                                                },
+                                                "error": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Unauthorized access to this project"
+                                                    ]
+                                                },
+                                                "errors": {
+                                                    "type": "null"
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message",
+                                                "error",
+                                                "errors"
+                                            ]
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "success": {
+                                                    "type": "boolean"
+                                                },
+                                                "message": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Forbidden: you can only delete your own message."
+                                                    ]
+                                                },
+                                                "error": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Forbidden: you can only delete your own message."
+                                                    ]
+                                                },
+                                                "errors": {
+                                                    "type": "null"
+                                                }
+                                            },
+                                            "required": [
+                                                "success",
+                                                "message",
+                                                "error",
+                                                "errors"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/dashboard/stats": {
             "get": {
                 "operationId": "dashboard.stats",
@@ -493,6 +820,108 @@
                                         }
                                     },
                                     "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/owner/dashboard": {
+            "get": {
+                "operationId": "owner.dashboard",
+                "tags": [
+                    "Dashboard"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "stats": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "total_projects": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        },
+                                                        "active_projects": {
+                                                            "type": "integer",
+                                                            "minimum": 0
+                                                        },
+                                                        "avg_progress": {
+                                                            "type": "number"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "total_projects",
+                                                        "active_projects",
+                                                        "avg_progress"
+                                                    ]
+                                                },
+                                                "projects": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "name": {
+                                                                "type": "string"
+                                                            },
+                                                            "code": {
+                                                                "type": "string"
+                                                            },
+                                                            "status": {
+                                                                "type": "string"
+                                                            },
+                                                            "progress": {
+                                                                "anyOf": [
+                                                                    {
+                                                                        "type": "string"
+                                                                    },
+                                                                    {
+                                                                        "type": "integer",
+                                                                        "enum": [
+                                                                            0
+                                                                        ]
+                                                                    }
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "code",
+                                                            "status",
+                                                            "progress"
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            "required": [
+                                                "stats",
+                                                "projects"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
                                         "data"
                                     ]
                                 }
@@ -638,17 +1067,44 @@
         "/goods-receipts": {
             "get": {
                 "operationId": "goodsReceipt.index",
-                "summary": "List goods receipts.\r\n\r\nGet a paginated list of goods receipts",
+                "description": "Get a paginated list of goods receipts.",
+                "summary": "List goods receipts",
                 "tags": [
                     "GoodsReceipt"
                 ],
                 "responses": {
                     "200": {
-                        "description": "`LengthAwarePaginator`",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/LengthAwarePaginator"
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Goods receipts retrieved successfully."
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "string"
+                                        },
+                                        "meta": {
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data",
+                                        "meta"
+                                    ]
                                 }
                             }
                         }
@@ -660,7 +1116,8 @@
             },
             "post": {
                 "operationId": "goodsReceipt.store",
-                "summary": "Create new goods receipt.\r\n\r\nCreate a new goods receipt and update inventory",
+                "description": "Create a new goods receipt and submit for approval.",
+                "summary": "Create new goods receipt",
                 "tags": [
                     "GoodsReceipt"
                 ],
@@ -680,6 +1137,20 @@
                                             "null"
                                         ]
                                     },
+                                    "receipt_date": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "format": "date-time"
+                                    },
+                                    "delivery_note_number": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 50
+                                    },
                                     "notes": {
                                         "type": [
                                             "string",
@@ -694,9 +1165,21 @@
                                                 "material_id": {
                                                     "type": "integer"
                                                 },
+                                                "purchase_order_item_id": {
+                                                    "type": [
+                                                        "integer",
+                                                        "null"
+                                                    ]
+                                                },
                                                 "quantity": {
                                                     "type": "number",
                                                     "minimum": 0.01
+                                                },
+                                                "notes": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
@@ -716,6 +1199,9 @@
                     }
                 },
                 "responses": {
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
                     "201": {
                         "description": "",
                         "content": {
@@ -723,17 +1209,21 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
                                         "message": {
                                             "type": "string",
                                             "enum": [
-                                                "Goods receipt created successfully"
+                                                "Goods receipt created and submitted for approval"
                                             ]
                                         },
                                         "data": {
-                                            "$ref": "#/components/schemas/GoodsReceipt"
+                                            "type": "string"
                                         }
                                     },
                                     "required": [
+                                        "success",
                                         "message",
                                         "data"
                                     ]
@@ -741,8 +1231,8 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -753,7 +1243,8 @@
         "/goods-receipts/{goodsReceipt}": {
             "get": {
                 "operationId": "goodsReceipt.show",
-                "summary": "Get goods receipt details.\r\n\r\nGet detailed information about a specific goods receipt",
+                "description": "Get detailed information about a specific goods receipt.",
+                "summary": "Get goods receipt details",
                 "tags": [
                     "GoodsReceipt"
                 ],
@@ -776,16 +1267,235 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Goods receipt retrieved successfully."
+                                            ]
+                                        },
                                         "data": {
                                             "$ref": "#/components/schemas/GoodsReceipt"
                                         }
                                     },
                                     "required": [
+                                        "success",
+                                        "message",
                                         "data"
                                     ]
                                 }
                             }
                         }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/goods-receipts/{goodsReceipt}/approve": {
+            "post": {
+                "operationId": "goodsReceipt.approve",
+                "summary": "Approve goods receipt",
+                "tags": [
+                    "GoodsReceipt"
+                ],
+                "parameters": [
+                    {
+                        "name": "goodsReceipt",
+                        "in": "path",
+                        "required": true,
+                        "description": "The goods receipt ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Goods receipt approved successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/GoodsReceipt"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/goods-receipts/{goodsReceipt}/reject": {
+            "post": {
+                "operationId": "goodsReceipt.reject",
+                "summary": "Reject goods receipt",
+                "tags": [
+                    "GoodsReceipt"
+                ],
+                "parameters": [
+                    {
+                        "name": "goodsReceipt",
+                        "in": "path",
+                        "required": true,
+                        "description": "The goods receipt ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "comment": {
+                                        "type": "string",
+                                        "maxLength": 500
+                                    }
+                                },
+                                "required": [
+                                    "comment"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Goods receipt rejected"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/GoodsReceipt"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -874,14 +1584,14 @@
                             }
                         }
                     },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -964,14 +1674,14 @@
                             }
                         }
                     },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     },
                     "422": {
                         "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -1023,9 +1733,6 @@
                                 }
                             }
                         }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -1151,9 +1858,6 @@
                             }
                         }
                     },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
@@ -1268,7 +1972,231 @@
                         }
                     },
                     "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/material-requests/{materialRequest}/approve": {
+            "post": {
+                "operationId": "materialRequest.approve",
+                "description": "Approve a pending material request at the current level.",
+                "summary": "Approve material request",
+                "tags": [
+                    "MaterialRequest"
+                ],
+                "parameters": [
+                    {
+                        "name": "materialRequest",
+                        "in": "path",
+                        "required": true,
+                        "description": "The material request ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Material request approved"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/MaterialRequestResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/material-requests/{materialRequest}/reject": {
+            "post": {
+                "operationId": "materialRequest.reject",
+                "description": "Reject a pending material request.",
+                "summary": "Reject material request",
+                "tags": [
+                    "MaterialRequest"
+                ],
+                "parameters": [
+                    {
+                        "name": "materialRequest",
+                        "in": "path",
+                        "required": true,
+                        "description": "The material request ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "comment": {
+                                        "type": "string",
+                                        "default": "Rejected"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Material request rejected"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/MaterialRequestResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -1838,10 +2766,338 @@
                 }
             }
         },
+        "/owner/notifications": {
+            "get": {
+                "operationId": "owner.notifications.index",
+                "summary": "Get notifications for the owner",
+                "tags": [
+                    "Notification"
+                ],
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "default": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Notifications retrieved successfully."
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/LengthAwarePaginator"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/owner/notifications/recent": {
+            "get": {
+                "operationId": "owner.notifications.recent",
+                "summary": "Get recent unread notifications",
+                "tags": [
+                    "Notification"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Recent notifications retrieved."
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "notifications": {
+                                                    "type": "string"
+                                                },
+                                                "unread_count": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "required": [
+                                                "notifications",
+                                                "unread_count"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/owner/notifications/{id}/read": {
+            "post": {
+                "operationId": "owner.notifications.read",
+                "summary": "Mark a notification as read",
+                "tags": [
+                    "Notification"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Notification marked as read."
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Notification not found"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Notification not found"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/owner/notifications/read-all": {
+            "post": {
+                "operationId": "owner.notifications.read-all",
+                "summary": "Mark all notifications as read",
+                "tags": [
+                    "Notification"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "All notifications marked as read."
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/owner/notifications/{id}": {
+            "delete": {
+                "operationId": "owner.notifications.destroy",
+                "summary": "Delete a notification",
+                "tags": [
+                    "Notification"
+                ],
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Notification deleted."
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Notification not found"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Notification not found"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/projects/{project}/progress": {
             "get": {
                 "operationId": "progressReport.index",
-                "summary": "List progress reports for a project.\r\n\r\nGet a paginated list of progress reports for a specific project",
                 "tags": [
                     "ProgressReport"
                 ],
@@ -1858,7 +3114,7 @@
                 ],
                 "responses": {
                     "200": {
-                        "description": "`LengthAwarePaginator`",
+                        "description": "",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1877,7 +3133,6 @@
             },
             "post": {
                 "operationId": "progressReport.store",
-                "summary": "Create new progress report.\r\n\r\nCreate a new progress report for a project",
                 "tags": [
                     "ProgressReport"
                 ],
@@ -1895,64 +3150,17 @@
                 "requestBody": {
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
-                                "type": "object",
-                                "properties": {
-                                    "rab_item_id": {
-                                        "type": "integer"
-                                    },
-                                    "report_date": {
-                                        "type": "string",
-                                        "format": "date-time"
-                                    },
-                                    "progress_percentage": {
-                                        "type": "number",
-                                        "minimum": 0,
-                                        "maximum": 100
-                                    },
-                                    "description": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
-                                    },
-                                    "issues": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ]
-                                    },
-                                    "weather": {
-                                        "type": [
-                                            "string",
-                                            "null"
-                                        ],
-                                        "enum": [
-                                            "sunny",
-                                            "cloudy",
-                                            "rainy",
-                                            "stormy"
-                                        ]
-                                    },
-                                    "workers_count": {
-                                        "type": [
-                                            "integer",
-                                            "null"
-                                        ],
-                                        "minimum": 0
-                                    }
-                                },
-                                "required": [
-                                    "rab_item_id",
-                                    "report_date",
-                                    "progress_percentage"
-                                ]
+                                "$ref": "#/components/schemas/StoreProgressReportRequest"
                             }
                         }
                     }
                 },
                 "responses": {
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
                     "201": {
                         "description": "",
                         "content": {
@@ -1978,8 +3186,8 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -1993,7 +3201,6 @@
         "/projects/{project}/progress/{report}": {
             "get": {
                 "operationId": "progressReport.show",
-                "summary": "Get progress report details.\r\n\r\nGet detailed information about a specific progress report",
                 "tags": [
                     "ProgressReport"
                 ],
@@ -2031,6 +3238,510 @@
                                     },
                                     "required": [
                                         "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Forbidden"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "progressReport.update",
+                "tags": [
+                    "ProgressReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "report",
+                        "in": "path",
+                        "required": true,
+                        "description": "The report ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateProgressReportRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Progress report updated successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProgressReport"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "progressReport.destroy",
+                "tags": [
+                    "ProgressReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "report",
+                        "in": "path",
+                        "required": true,
+                        "description": "The report ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Progress report deleted successfully"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Forbidden"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/projects/{project}/progress/{report}/submit": {
+            "post": {
+                "operationId": "progressReport.submit",
+                "tags": [
+                    "ProgressReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "report",
+                        "in": "path",
+                        "required": true,
+                        "description": "The report ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Progress report submitted successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProgressReport"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Forbidden"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/projects/{project}/progress/{report}/review": {
+            "post": {
+                "operationId": "progressReport.review",
+                "summary": "Single endpoint for approve/reject.\nBody: { \"action\": \"approve\" | \"reject\", \"notes\": \"...\" }",
+                "tags": [
+                    "ProgressReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "report",
+                        "in": "path",
+                        "required": true,
+                        "description": "The report ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "enum": [
+                                            "approve",
+                                            "reject"
+                                        ]
+                                    },
+                                    "notes": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 2000
+                                    }
+                                },
+                                "required": [
+                                    "action"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Progress report rejected successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProgressReport"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Forbidden"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/projects/{project}/progress/{report}/publish": {
+            "post": {
+                "operationId": "progressReport.publish",
+                "tags": [
+                    "ProgressReport"
+                ],
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "report",
+                        "in": "path",
+                        "required": true,
+                        "description": "The report ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Progress report published successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/ProgressReport"
+                                        }
+                                    },
+                                    "required": [
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Forbidden"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
                                     ]
                                 }
                             }
@@ -2138,6 +3849,42 @@
                                         "success",
                                         "message",
                                         "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
                                     ]
                                 }
                             }
@@ -2316,6 +4063,154 @@
                 }
             }
         },
+        "/projects/{project}/available-pr-items": {
+            "get": {
+                "operationId": "purchaseOrder.availablePrItems",
+                "description": "Get list of approved PR items for a project that have not been fully processed to PO.",
+                "summary": "Get available PR items for import",
+                "tags": [
+                    "PurchaseOrder"
+                ],
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "required": true,
+                        "description": "The project ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Available PR items retrieved successfully."
+                                            ]
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "pr_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "pr_number": {
+                                                        "type": "string"
+                                                    },
+                                                    "material_id": {
+                                                        "type": "integer"
+                                                    },
+                                                    "material_name": {
+                                                        "type": "string"
+                                                    },
+                                                    "unit": {
+                                                        "type": "string"
+                                                    },
+                                                    "quantity_requested": {
+                                                        "type": "number"
+                                                    },
+                                                    "quantity_ordered": {
+                                                        "type": "number"
+                                                    },
+                                                    "remaining_to_order": {
+                                                        "type": "number"
+                                                    },
+                                                    "estimated_price": {
+                                                        "type": "number"
+                                                    },
+                                                    "notes": {
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
+                                                    }
+                                                },
+                                                "required": [
+                                                    "id",
+                                                    "pr_id",
+                                                    "pr_number",
+                                                    "material_id",
+                                                    "material_name",
+                                                    "unit",
+                                                    "quantity_requested",
+                                                    "quantity_ordered",
+                                                    "remaining_to_order",
+                                                    "estimated_price",
+                                                    "notes"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized access to project"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized access to project"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
         "/purchase-orders": {
             "get": {
                 "operationId": "purchaseOrder.index",
@@ -2360,9 +4255,6 @@
                                 }
                             }
                         }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -2462,6 +4354,211 @@
                                             "type": "string",
                                             "enum": [
                                                 "Purchase order detail retrieved successfully."
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PurchaseOrderResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/purchase-orders/{purchaseOrder}/approve": {
+            "post": {
+                "operationId": "purchaseOrder.approve",
+                "summary": "Approve purchase order",
+                "tags": [
+                    "PurchaseOrder"
+                ],
+                "parameters": [
+                    {
+                        "name": "purchaseOrder",
+                        "in": "path",
+                        "required": true,
+                        "description": "The purchase order ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Purchase order approved successfully"
+                                            ]
+                                        },
+                                        "data": {
+                                            "$ref": "#/components/schemas/PurchaseOrderResource"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    }
+                }
+            }
+        },
+        "/purchase-orders/{purchaseOrder}/reject": {
+            "post": {
+                "operationId": "purchaseOrder.reject",
+                "summary": "Reject purchase order",
+                "tags": [
+                    "PurchaseOrder"
+                ],
+                "parameters": [
+                    {
+                        "name": "purchaseOrder",
+                        "in": "path",
+                        "required": true,
+                        "description": "The purchase order ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "comment": {
+                                        "type": "string",
+                                        "maxLength": 500
+                                    }
+                                },
+                                "required": [
+                                    "comment"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Purchase order rejected"
                                             ]
                                         },
                                         "data": {
@@ -2678,9 +4775,6 @@
                             }
                         }
                     },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
                     }
@@ -2795,7 +4889,40 @@
                         }
                     },
                     "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized"
+                                            ]
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -2826,6 +4953,36 @@
                     }
                 ],
                 "responses": {
+                    "422": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        },
+                                        "errors": {
+                                            "type": "null"
+                                        }
+                                    },
+                                    "required": [
+                                        "success",
+                                        "message",
+                                        "error",
+                                        "errors"
+                                    ]
+                                }
+                            }
+                        }
+                    },
                     "200": {
                         "description": "",
                         "content": {
@@ -2854,45 +5011,6 @@
                                 }
                             }
                         }
-                    },
-                    "422": {
-                        "description": "",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean"
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "enum": [
-                                                "Request is not pending"
-                                            ]
-                                        },
-                                        "error": {
-                                            "type": "string",
-                                            "enum": [
-                                                "Request is not pending"
-                                            ]
-                                        },
-                                        "errors": {
-                                            "type": "null"
-                                        }
-                                    },
-                                    "required": [
-                                        "success",
-                                        "message",
-                                        "error",
-                                        "errors"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -2923,15 +5041,28 @@
                     }
                 ],
                 "requestBody": {
+                    "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/RejectPurchaseRequestRequest"
+                                "type": "object",
+                                "properties": {
+                                    "reason": {
+                                        "type": "string",
+                                        "maxLength": 500
+                                    }
+                                },
+                                "required": [
+                                    "reason"
+                                ]
                             }
                         }
                     }
                 },
                 "responses": {
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
                     "200": {
                         "description": "",
                         "content": {
@@ -2960,12 +5091,6 @@
                                 }
                             }
                         }
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -3074,7 +5199,25 @@
                         }
                     },
                     "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized access to project"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -3131,7 +5274,25 @@
                         }
                     },
                     "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Unauthorized access to project"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -3450,6 +5611,9 @@
                             }
                         }
                     },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
@@ -3692,6 +5856,9 @@
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "401": {
                         "$ref": "#/components/responses/AuthenticationException"
@@ -3948,7 +6115,72 @@
                                                     "type": "string"
                                                 },
                                                 "cascaded_weeks": {
-                                                    "type": "integer"
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "data": {
+                                                                    "type": "string"
+                                                                },
+                                                                "cascaded_count": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "message": {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "Data realisasi berhasil disimpan."
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "data",
+                                                                "cascaded_count",
+                                                                "message"
+                                                            ]
+                                                        },
+                                                        {
+                                                            "type": "object",
+                                                            "properties": {
+                                                                "data": {
+                                                                    "anyOf": [
+                                                                        {
+                                                                            "type": [
+                                                                                "array",
+                                                                                "null"
+                                                                            ],
+                                                                            "items": {}
+                                                                        },
+                                                                        {
+                                                                            "type": "array",
+                                                                            "items": {
+                                                                                "type": "string"
+                                                                            },
+                                                                            "minItems": 0,
+                                                                            "maxItems": 0,
+                                                                            "additionalItems": false
+                                                                        }
+                                                                    ]
+                                                                },
+                                                                "cascaded_count": {
+                                                                    "type": "integer",
+                                                                    "enum": [
+                                                                        0
+                                                                    ]
+                                                                },
+                                                                "message": {
+                                                                    "type": "string",
+                                                                    "enum": [
+                                                                        "No cumulative data found."
+                                                                    ]
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "data",
+                                                                "cascaded_count",
+                                                                "message"
+                                                            ]
+                                                        }
+                                                    ]
                                                 }
                                             },
                                             "required": [
@@ -4679,6 +6911,74 @@
                 ],
                 "title": "Client"
             },
+            "CommentResource": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "name": {
+                                "type": "string"
+                            },
+                            "avatar_url": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "role": {}
+                        },
+                        "required": [
+                            "id",
+                            "name",
+                            "avatar_url",
+                            "role"
+                        ]
+                    },
+                    "is_deleted": {
+                        "type": "boolean"
+                    },
+                    "deleted_at": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "metadata": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "created_at": {
+                        "type": "string"
+                    },
+                    "created_at_human": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "id",
+                    "user",
+                    "is_deleted",
+                    "deleted_at",
+                    "content",
+                    "metadata",
+                    "created_at",
+                    "created_at_human"
+                ],
+                "title": "CommentResource"
+            },
             "GoodsReceipt": {
                 "type": "object",
                 "properties": {
@@ -4713,6 +7013,37 @@
                     "received_by": {
                         "type": "integer"
                     },
+                    "status": {
+                        "type": "string"
+                    },
+                    "current_approval_level": {
+                        "type": "integer"
+                    },
+                    "max_approval_level": {
+                        "type": "integer"
+                    },
+                    "is_fully_approved": {
+                        "type": "boolean"
+                    },
+                    "approved_by": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "approved_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "rejection_reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "created_at": {
                         "type": [
                             "string",
@@ -4737,6 +7068,13 @@
                     "delivery_note_number",
                     "notes",
                     "received_by",
+                    "status",
+                    "current_approval_level",
+                    "max_approval_level",
+                    "is_fully_approved",
+                    "approved_by",
+                    "approved_at",
+                    "rejection_reason",
                     "created_at",
                     "updated_at"
                 ],
@@ -5137,7 +7475,10 @@
                         "type": "integer"
                     },
                     "rab_item_id": {
-                        "type": "integer"
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "report_date": {
                         "type": "string",
@@ -5174,6 +7515,12 @@
                             "null"
                         ]
                     },
+                    "weather_duration": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "workers_count": {
                         "type": "integer"
                     },
@@ -5184,8 +7531,95 @@
                         ],
                         "items": {}
                     },
+                    "equipment_details": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "material_usage_summary": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "safety_details": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {}
+                    },
+                    "next_day_plan": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "reported_by": {
                         "type": "integer"
+                    },
+                    "status": {
+                        "type": "string"
+                    },
+                    "report_code": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "reviewed_by": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "reviewed_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "review_notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "rejected_by": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "rejected_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "rejected_notes": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
+                    "published_by": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "published_at": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
                     },
                     "created_at": {
                         "type": [
@@ -5213,9 +7647,24 @@
                     "issues",
                     "photos",
                     "weather",
+                    "weather_duration",
                     "workers_count",
                     "labor_details",
+                    "equipment_details",
+                    "material_usage_summary",
+                    "safety_details",
+                    "next_day_plan",
                     "reported_by",
+                    "status",
+                    "report_code",
+                    "reviewed_by",
+                    "reviewed_at",
+                    "review_notes",
+                    "rejected_by",
+                    "rejected_at",
+                    "rejected_notes",
+                    "published_by",
+                    "published_at",
                     "created_at",
                     "updated_at"
                 ],
@@ -5241,6 +7690,12 @@
                     },
                     "client_name": {
                         "type": "string"
+                    },
+                    "owner_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "type": {
                         "type": "string"
@@ -5302,6 +7757,7 @@
                     "name",
                     "description",
                     "client_name",
+                    "owner_id",
                     "type",
                     "start_date",
                     "end_date",
@@ -5669,6 +8125,12 @@
                             "null"
                         ]
                     },
+                    "rejection_reason": {
+                        "type": [
+                            "string",
+                            "null"
+                        ]
+                    },
                     "total_estimated_price": {
                         "anyOf": [
                             {
@@ -5762,6 +8224,7 @@
                     "status",
                     "priority",
                     "notes",
+                    "rejection_reason",
                     "total_estimated_price",
                     "created_at"
                 ],
@@ -5946,19 +8409,6 @@
                 ],
                 "title": "RabSection"
             },
-            "RejectPurchaseRequestRequest": {
-                "type": "object",
-                "properties": {
-                    "reason": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 255
-                    }
-                },
-                "title": "RejectPurchaseRequestRequest"
-            },
             "StoreMaterialRequestRequest": {
                 "type": "object",
                 "properties": {
@@ -6064,6 +8514,203 @@
                 ],
                 "title": "StoreMaterialUsageRequest"
             },
+            "StoreProgressReportRequest": {
+                "type": "object",
+                "properties": {
+                    "rab_item_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "report_date": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "progress_percentage": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "cumulative_progress": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 5000
+                    },
+                    "issues": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 5000
+                    },
+                    "weather": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "sunny",
+                            "cloudy",
+                            "rainy",
+                            "stormy"
+                        ]
+                    },
+                    "weather_duration": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "workers_count": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "next_day_plan": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 5000
+                    },
+                    "photos": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "format": "binary",
+                            "contentMediaType": "application/octet-stream",
+                            "maxLength": 5120
+                        },
+                        "maxItems": 5
+                    },
+                    "safety_details": {
+                        "type": "object",
+                        "properties": {
+                            "incidents": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "minimum": 0
+                            },
+                            "near_miss": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "minimum": 0
+                            },
+                            "apd_compliance": {
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            },
+                            "notes": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    },
+                    "labor_details": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "category": {
+                                    "type": "string"
+                                },
+                                "count": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "equipment_details": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "qty": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "condition": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "hours": {
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ],
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "material_usage_summary": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "material": {
+                                    "type": "string"
+                                },
+                                "qty_used": {
+                                    "type": "number",
+                                    "minimum": 0
+                                },
+                                "unit": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "report_date",
+                    "progress_percentage"
+                ],
+                "title": "StoreProgressReportRequest"
+            },
             "StorePurchaseOrderRequest": {
                 "type": "object",
                 "properties": {
@@ -6112,6 +8759,12 @@
                             "properties": {
                                 "material_id": {
                                     "type": "integer"
+                                },
+                                "purchase_request_item_id": {
+                                    "type": [
+                                        "integer",
+                                        "null"
+                                    ]
                                 },
                                 "quantity": {
                                     "type": "number",
@@ -6296,6 +8949,205 @@
                 ],
                 "title": "Supplier"
             },
+            "UpdateProgressReportRequest": {
+                "type": "object",
+                "properties": {
+                    "rab_item_id": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
+                    },
+                    "report_date": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "format": "date-time"
+                    },
+                    "progress_percentage": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "cumulative_progress": {
+                        "type": [
+                            "number",
+                            "null"
+                        ],
+                        "minimum": 0,
+                        "maximum": 100
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 5000
+                    },
+                    "issues": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 5000
+                    },
+                    "weather": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "enum": [
+                            "sunny",
+                            "cloudy",
+                            "rainy",
+                            "stormy"
+                        ]
+                    },
+                    "weather_duration": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 100
+                    },
+                    "workers_count": {
+                        "type": [
+                            "integer",
+                            "null"
+                        ],
+                        "minimum": 0
+                    },
+                    "next_day_plan": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 5000
+                    },
+                    "photos": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "string",
+                            "format": "binary",
+                            "contentMediaType": "application/octet-stream",
+                            "maxLength": 5120
+                        },
+                        "maxItems": 5
+                    },
+                    "safety_details": {
+                        "type": "object",
+                        "properties": {
+                            "incidents": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "minimum": 0
+                            },
+                            "near_miss": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ],
+                                "minimum": 0
+                            },
+                            "apd_compliance": {
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
+                            },
+                            "notes": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    },
+                    "labor_details": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "category": {
+                                    "type": "string"
+                                },
+                                "count": {
+                                    "type": "integer",
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "equipment_details": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "qty": {
+                                    "type": "integer",
+                                    "minimum": 1
+                                },
+                                "condition": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                },
+                                "hours": {
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ],
+                                    "minimum": 0
+                                }
+                            }
+                        }
+                    },
+                    "material_usage_summary": {
+                        "type": [
+                            "array",
+                            "null"
+                        ],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "material": {
+                                    "type": "string"
+                                },
+                                "qty_used": {
+                                    "type": "number",
+                                    "minimum": 0
+                                },
+                                "unit": {
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "title": "UpdateProgressReportRequest"
+            },
             "WeeklyReportResource": {
                 "type": "object",
                 "properties": {
@@ -6370,6 +9222,12 @@
                             "id",
                             "name"
                         ]
+                    },
+                    "comments": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/CommentResource"
+                        }
                     },
                     "created_at": {
                         "type": "string"

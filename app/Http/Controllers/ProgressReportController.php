@@ -2,17 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Project;
+use App\Http\Requests\StoreProgressReportRequest;
+use App\Http\Requests\UpdateProgressReportRequest;
 use App\Models\ProgressReport;
-use App\Models\RabItem;
-use App\Models\SystemSetting;
-use App\Services\ScheduleCalculator;
+use App\Models\Project;
+use App\Services\ProgressReportService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class ProgressReportController extends Controller
 {
+    protected ProgressReportService $service;
+
+    public function __construct(ProgressReportService $service)
+    {
+        $this->service = $service;
+    }
+
     public function index(Project $project)
     {
         $this->authorize('progress.view');
@@ -42,67 +49,14 @@ class ProgressReportController extends Controller
         return view('projects.progress.create', compact('project', 'rabItems', 'weatherOptions'));
     }
 
-    public function store(Request $request, Project $project)
+    public function store(StoreProgressReportRequest $request, Project $project)
     {
         $this->authorize('progress.create');
-        $validated = $request->validate([
-            'rab_item_id' => 'nullable|exists:rab_items,id',
-            'report_date' => 'required|date',
-            'progress_percentage' => 'required|numeric|min:0|max:100',
-            'description' => 'nullable|string',
-            'issues' => 'nullable|string',
-            'weather' => 'nullable|in:sunny,cloudy,rainy,stormy',
-            'workers_count' => 'nullable|integer|min:0',
-            'labor_details' => 'nullable|array',
-            'photos' => 'nullable|array|max:5',
-            'photos.*' => 'image|max:5120', // 5MB max per image
-        ]);
+        $validated = $request->validated();
+        $photoFiles = $request->file('photos', []);
 
-        $validated['project_id'] = $project->id;
-        $validated['reported_by'] = Auth::id();
-
-        // Handle photo uploads with resize and WebP conversion
-        if ($request->hasFile('photos')) {
-            $disk = SystemSetting::getStorageDisk();
-            $imageResizer = new \App\Services\ImageResizeService();
-            $photoPaths = $imageResizer->processMultiple(
-                $request->file('photos'),
-                "progress/{$project->id}",
-                $disk
-            );
-            $validated['photos'] = $photoPaths;
-        }
-
-        // Calculate cumulative progress if rab_item_id is provided
-        if (!empty($validated['rab_item_id'])) {
-            $rabItem = RabItem::find($validated['rab_item_id']);
-            $validated['cumulative_progress'] = min(100, $rabItem->actual_progress + $validated['progress_percentage']);
-        }
-
-        $report = ProgressReport::create($validated);
-
-        // Update RAB item progress
-        if ($report->rab_item_id) {
-            $report->rabItem->update([
-                'actual_progress' => $report->cumulative_progress ?? $report->progress_percentage,
-            ]);
-
-            // Regenerate schedule
-            $scheduleCalculator = new ScheduleCalculator();
-            $scheduleCalculator->updateFromProgress($project);
-        }
-
-        // Notify project team members (except reporter)
-        $report->load(['project', 'reporter']);
-        $teamMembers = $project->team()
-            ->where('users.id', '!=', Auth::id())
-            ->get();
-
-        \App\Services\NotificationHelper::sendToProjectTeam(
-            $project,
-            new \App\Notifications\ProgressReportCreatedNotification($report),
-            Auth::id()
-        );
+        $report = $this->service->create($project, $validated, $photoFiles, Auth::id());
+        $this->service->notifyTeam($report, Auth::id());
 
         return redirect()
             ->route('projects.progress.index', $project)
@@ -112,41 +66,139 @@ class ProgressReportController extends Controller
     public function show(Project $project, ProgressReport $report)
     {
         $this->authorize('progress.view');
-        $report->load(['rabItem.section', 'reporter']);
+        $report->load(['rabItem.section', 'reporter', 'reviewer', 'rejector', 'publisher']);
 
         return view('projects.progress.show', compact('project', 'report'));
+    }
+
+    public function reviewPage(Project $project, ProgressReport $report)
+    {
+        $this->authorize('progress.approve');
+        $report->load(['rabItem.section', 'reporter', 'reviewer', 'rejector', 'publisher']);
+
+        return view('projects.progress.review', compact('project', 'report'));
+    }
+
+    public function update(UpdateProgressReportRequest $request, Project $project, ProgressReport $report)
+    {
+        $this->authorize('progress.update');
+        $validated = $request->validated();
+        $photoFiles = $request->file('photos', []);
+
+        $report = $this->service->updateReport($report, $project, $validated, $photoFiles);
+
+        return redirect()
+            ->route('projects.progress.show', [$project, $report])
+            ->with('success', 'Laporan progress berhasil diperbarui.');
     }
 
     public function destroy(Project $project, ProgressReport $report)
     {
         $this->authorize('progress.delete');
-        $hasRabItem = $report->rab_item_id ? true : false;
-        $rabItem = $report->rabItem;
 
-        // Delete photos
-        if ($report->photos) {
-            $disk = SystemSetting::getStorageDisk();
-            foreach ($report->photos as $photo) {
-                Storage::disk($disk)->delete($photo);
-            }
+        if (! $report->canDelete) {
+            return redirect()
+                ->route('projects.progress.index', $project)
+                ->with('error', "Laporan dengan status '{$report->status_label}' tidak dapat dihapus.");
         }
 
-        $report->delete();
+        $this->service->delete($report, $project);
 
-        // Regenerate schedule if the deleted report was linked to a RAB item
-        if ($hasRabItem && $rabItem) {
-            // Recalculate actual_progress for the RAB item
-            $actualProgress = ProgressReport::where('rab_item_id', $rabItem->id)->sum('progress_percentage');
-            $rabItem->update([
-                'actual_progress' => min(100, $actualProgress)
-            ]);
+        return redirect()
+            ->route('projects.progress.index', $project)->with('success', 'Laporan progress berhasil dihapus.');
+    }
 
-            $scheduleCalculator = new ScheduleCalculator();
-            $scheduleCalculator->updateFromProgress($project);
+    // ========================
+    // Workflow Actions
+    // ========================
+
+    public function submit(Project $project, ProgressReport $report): RedirectResponse
+    {
+        $this->authorize('progress.manage');
+
+        try {
+            $this->service->submit($report);
+            $message = "Laporan {$report->report_code} berhasil diajukan untuk diverifikasi.";
+        } catch (\Exception $e) {
+            $message = "Gagal mengajukan: {$e->getMessage()}";
         }
 
         return redirect()
             ->route('projects.progress.index', $project)
-            ->with('success', 'Laporan progress berhasil dihapus.');
+            ->with('success', $message);
+    }
+
+    public function approve(Request $request, Project $project, ProgressReport $report): RedirectResponse
+    {
+        $this->authorize('progress.approve');
+
+        $notes = $request->input('notes');
+        $reviewerId = Auth::id();
+
+        try {
+            $this->service->approve($report, $reviewerId, $notes);
+            $message = "Laporan {$report->report_code} berhasil diverifikasi.";
+        } catch (\Exception $e) {
+            $message = "Gagal memverifikasi: {$e->getMessage()}";
+        }
+
+        return redirect()
+            ->route('projects.progress.index', $project)
+            ->with('success', $message);
+    }
+
+    public function reject(Request $request, Project $project, ProgressReport $report): RedirectResponse
+    {
+        $this->authorize('progress.approve');
+
+        $validated = $request->validate([
+            'notes' => 'nullable|string|max:2000',
+        ]);
+
+        $reviewerId = Auth::id();
+
+        try {
+            $this->service->reject($report, $reviewerId, $validated['notes'] ?? null);
+            $message = "Laporan {$report->report_code} ditolak dan dikembalikan untuk revisi.";
+        } catch (\Exception $e) {
+            $message = "Gagal menolak: {$e->getMessage()}";
+        }
+
+        return redirect()
+            ->route('projects.progress.index', $project)
+            ->with('success', $message);
+    }
+
+    public function publish(Project $project, ProgressReport $report): RedirectResponse
+    {
+        $this->authorize('progress.publish');
+
+        try {
+            $this->service->publish($report, Auth::id());
+            $message = "Laporan {$report->report_code} berhasil dipublikasikan.";
+        } catch (\Exception $e) {
+            $message = "Gagal memublikasikan: {$e->getMessage()}";
+        }
+
+        return redirect()
+            ->route('projects.progress.index', $project)
+            ->with('success', $message);
+    }
+
+    public function exportPdf(Project $project, ProgressReport $report)
+    {
+        $this->authorize('progress.view');
+        $report->load(['rabItem.section', 'reporter', 'reviewer', 'rejector', 'publisher']);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('projects.progress.pdf', [
+            'project' => $project,
+            'report' => $report,
+        ]);
+
+        $pdf->setPaper('A4', 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->stream();
+        }, "Laporan_Harian_{$project->code}_{$report->report_date->format('Ymd')}.pdf");
     }
 }

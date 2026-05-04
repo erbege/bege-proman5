@@ -37,7 +37,6 @@ class PurchaseRequestController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('procurement.view');
         $query = PurchaseRequest::with(['project:id,name', 'requestedBy:id,name']);
 
         if ($request->has('project_id')) {
@@ -68,7 +67,6 @@ class PurchaseRequestController extends Controller
      */
     public function show(PurchaseRequest $purchaseRequest)
     {
-        $this->authorize('procurement.view');
         $user = auth()->user();
         if (!$user || !$this->canViewRequest($purchaseRequest, $user)) {
             return $this->errorResponse('Unauthorized', 403);
@@ -113,13 +111,12 @@ class PurchaseRequestController extends Controller
      */
     public function approve(Request $request, PurchaseRequest $purchaseRequest)
     {
-        $this->authorize('pr.approve');
-        
         try {
             $this->prService->approvalService()->approve($purchaseRequest, $request->comment);
+            $purchaseRequest->refresh();
             
             return $this->successResponse(
-                'Purchase request approved successfully', 
+                'Purchase request approved', 
                 new PurchaseRequestResource($purchaseRequest->load('approvalLogs'))
             );
         } catch (\Exception $e) {
@@ -134,17 +131,16 @@ class PurchaseRequestController extends Controller
      */
     public function reject(Request $request, PurchaseRequest $purchaseRequest)
     {
-        $this->authorize('pr.approve');
-        
         $request->validate([
             'reason' => 'required|string|max:500'
         ]);
 
         try {
             $this->prService->approvalService()->reject($purchaseRequest, $request->reason);
+            $purchaseRequest->refresh();
             
             return $this->successResponse(
-                'Purchase request rejected successfully', 
+                'Purchase request rejected', 
                 new PurchaseRequestResource($purchaseRequest->load('approvalLogs'))
             );
         } catch (\Exception $e) {

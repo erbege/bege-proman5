@@ -385,34 +385,60 @@ class WeeklyReportService
         return $generated;
     }
     /**
-     * Update cumulative data actual progress for a report and cascade to future weeks
+     * Update cumulative data actual progress for a report and cascade to future weeks.
+     *
+     * @return array{data: array, cascaded_count: int, message: string}
      */
-    public function updateCumulativeActuals(WeeklyReport $report, array $itemUpdates): int
+    public function updateCumulativeActuals(WeeklyReport $report, array $itemUpdates): array
     {
         $data = $report->cumulative_data;
         if (!$data || !isset($data['sections'])) {
-            return 0;
+            return [
+                'data' => $data ?? [],
+                'cascaded_count' => 0,
+                'message' => 'No cumulative data found.',
+            ];
         }
 
-        $totals = [
-            'weight' => 0, 'planned_prev' => 0, 'planned_current' => 0, 'planned_cumulative' => 0,
-            'actual_prev' => 0, 'actual_current' => 0, 'actual_cumulative' => 0,
-            'deviation_prev' => 0, 'deviation_current' => 0, 'deviation_cumulative' => 0,
-        ];
+        $totals = $this->makeEmptyTotals();
 
         foreach ($data['sections'] as &$section) {
             $this->updateSectionItems($section, $itemUpdates, $totals);
         }
 
-        $totals['deviation_prev'] = $totals['actual_prev'] - $totals['planned_prev'];
-        $totals['deviation_current'] = $totals['actual_current'] - $totals['planned_current'];
-        $totals['deviation_cumulative'] = $totals['actual_cumulative'] - $totals['planned_cumulative'];
+        $this->calculateDeviationTotals($totals);
 
         $data['totals'] = $totals;
         $report->update(['cumulative_data' => $data]);
 
         // Cascade update to subsequent weeks
-        return $this->cascadeToSubsequentWeeks($report->project, $report, $data);
+        $cascadedCount = $this->cascadeToSubsequentWeeks($report->project, $report, $data);
+
+        $message = 'Data realisasi berhasil disimpan.';
+        if ($cascadedCount > 0) {
+            $message .= " ({$cascadedCount} minggu berikutnya juga diperbarui)";
+        }
+
+        return [
+            'data' => $data,
+            'cascaded_count' => $cascadedCount,
+            'message' => $message,
+        ];
+    }
+
+    /**
+     * Collect item code => actual_cumulative from sections recursively.
+     */
+    public function collectItemCumulatives(array $sections, array &$map): void
+    {
+        foreach ($sections as $section) {
+            foreach ($section['items'] ?? [] as $item) {
+                $map[$item['code']] = $item['actual']['cumulative'] ?? 0;
+            }
+            if (isset($section['children'])) {
+                $this->collectItemCumulatives($section['children'], $map);
+            }
+        }
     }
 
     protected function cascadeToSubsequentWeeks(Project $project, WeeklyReport $currentReport, array $currentData): int
@@ -431,19 +457,13 @@ class WeeklyReportService
             $nextData = $nextReport->cumulative_data;
             if (!$nextData || !isset($nextData['sections'])) continue;
 
-            $nextTotals = [
-                'weight' => 0, 'planned_prev' => 0, 'planned_current' => 0, 'planned_cumulative' => 0,
-                'actual_prev' => 0, 'actual_current' => 0, 'actual_cumulative' => 0,
-                'deviation_prev' => 0, 'deviation_current' => 0, 'deviation_cumulative' => 0,
-            ];
+            $nextTotals = $this->makeEmptyTotals();
 
             foreach ($nextData['sections'] as &$section) {
                 $this->cascadeSectionItems($section, $prevCumulatives, $nextTotals);
             }
 
-            $nextTotals['deviation_prev'] = $nextTotals['actual_prev'] - $nextTotals['planned_prev'];
-            $nextTotals['deviation_current'] = $nextTotals['actual_current'] - $nextTotals['planned_current'];
-            $nextTotals['deviation_cumulative'] = $nextTotals['actual_cumulative'] - $nextTotals['planned_cumulative'];
+            $this->calculateDeviationTotals($nextTotals);
 
             $nextData['totals'] = $nextTotals;
             $nextReport->update(['cumulative_data' => $nextData]);
@@ -469,13 +489,7 @@ class WeeklyReportService
                 $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
             }
 
-            $totals['weight'] += $item['weight'] ?? 0;
-            $totals['planned_prev'] += $item['planned']['up_to_prev'] ?? 0;
-            $totals['planned_current'] += $item['planned']['current'] ?? 0;
-            $totals['planned_cumulative'] += $item['planned']['cumulative'] ?? 0;
-            $totals['actual_prev'] += $item['actual']['up_to_prev'] ?? 0;
-            $totals['actual_current'] += $item['actual']['current'] ?? 0;
-            $totals['actual_cumulative'] += $item['actual']['cumulative'] ?? 0;
+            $this->accumulateItemTotals($totals, $item);
         }
 
         if (isset($section['children'])) {
@@ -498,13 +512,7 @@ class WeeklyReportService
                 $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
             }
 
-            $totals['weight'] += $item['weight'] ?? 0;
-            $totals['planned_prev'] += $item['planned']['up_to_prev'] ?? 0;
-            $totals['planned_current'] += $item['planned']['current'] ?? 0;
-            $totals['planned_cumulative'] += $item['planned']['cumulative'] ?? 0;
-            $totals['actual_prev'] += $item['actual']['up_to_prev'] ?? 0;
-            $totals['actual_current'] += $item['actual']['current'] ?? 0;
-            $totals['actual_cumulative'] += $item['actual']['cumulative'] ?? 0;
+            $this->accumulateItemTotals($totals, $item);
         }
 
         if (isset($section['children'])) {
@@ -513,5 +521,158 @@ class WeeklyReportService
             }
         }
     }
-}
 
+    /**
+     * Create an empty totals array.
+     */
+    protected function makeEmptyTotals(): array
+    {
+        return [
+            'weight' => 0, 'planned_prev' => 0, 'planned_current' => 0, 'planned_cumulative' => 0,
+            'actual_prev' => 0, 'actual_current' => 0, 'actual_cumulative' => 0,
+            'deviation_prev' => 0, 'deviation_current' => 0, 'deviation_cumulative' => 0,
+        ];
+    }
+
+    /**
+     * Calculate deviation fields on a totals array.
+     */
+    protected function calculateDeviationTotals(array &$totals): void
+    {
+        $totals['deviation_prev'] = $totals['actual_prev'] - $totals['planned_prev'];
+        $totals['deviation_current'] = $totals['actual_current'] - $totals['planned_current'];
+        $totals['deviation_cumulative'] = $totals['actual_cumulative'] - $totals['planned_cumulative'];
+    }
+
+    /**
+     * Accumulate a single item's values into running totals.
+     */
+    protected function accumulateItemTotals(array &$totals, array $item): void
+    {
+        $totals['weight'] += $item['weight'] ?? 0;
+        $totals['planned_prev'] += $item['planned']['up_to_prev'] ?? 0;
+        $totals['planned_current'] += $item['planned']['current'] ?? 0;
+        $totals['planned_cumulative'] += $item['planned']['cumulative'] ?? 0;
+        $totals['actual_prev'] += $item['actual']['up_to_prev'] ?? 0;
+        $totals['actual_current'] += $item['actual']['current'] ?? 0;
+        $totals['actual_cumulative'] += $item['actual']['cumulative'] ?? 0;
+    }
+
+    // ========================
+    // Workflow Transitions
+    // ========================
+
+    /**
+     * Submit a weekly report for review.
+     * Transition: draft|rejected → in_review
+     */
+    public function submitForReview(WeeklyReport $report, int $submitterId): WeeklyReport
+    {
+        if (!$report->can_submit) {
+            throw new \Exception("Weekly report dengan status '{$report->status_label}' tidak dapat diajukan untuk review.");
+        }
+
+        $report->update([
+            'status' => WeeklyReport::STATUS_IN_REVIEW,
+            'submitted_by' => $submitterId,
+            'submitted_at' => now(),
+            'rejection_reason' => null, // Clear any previous rejection
+        ]);
+
+        \App\Models\ApprovalLog::create([
+            'approvable_type' => WeeklyReport::class,
+            'approvable_id' => $report->id,
+            'level' => 1,
+            'user_id' => $submitterId,
+            'status' => 'submitted',
+            'comment' => 'Weekly report diajukan untuk review.',
+        ]);
+
+        return $report;
+    }
+
+    /**
+     * Approve a weekly report.
+     * Transition: in_review → approved
+     */
+    public function approve(WeeklyReport $report, int $approverId, ?string $comment = null): WeeklyReport
+    {
+        if (!$report->can_approve) {
+            throw new \Exception("Weekly report dengan status '{$report->status_label}' tidak dapat disetujui.");
+        }
+
+        $report->update([
+            'status' => WeeklyReport::STATUS_APPROVED,
+            'approved_by' => $approverId,
+            'approved_at' => now(),
+            'reviewed_by' => $report->reviewed_by ?? $approverId,
+            'reviewed_at' => $report->reviewed_at ?? now(),
+        ]);
+
+        \App\Models\ApprovalLog::create([
+            'approvable_type' => WeeklyReport::class,
+            'approvable_id' => $report->id,
+            'level' => 2,
+            'user_id' => $approverId,
+            'status' => 'approved',
+            'comment' => $comment ?? 'Weekly report disetujui.',
+        ]);
+
+        return $report;
+    }
+
+    /**
+     * Reject a weekly report.
+     * Transition: in_review → rejected
+     */
+    public function reject(WeeklyReport $report, int $rejecterId, string $reason): WeeklyReport
+    {
+        if ($report->status !== WeeklyReport::STATUS_IN_REVIEW) {
+            throw new \Exception("Hanya weekly report berstatus 'Sedang Review' yang dapat ditolak.");
+        }
+
+        $report->update([
+            'status' => WeeklyReport::STATUS_REJECTED,
+            'rejection_reason' => $reason,
+            'reviewed_by' => $rejecterId,
+            'reviewed_at' => now(),
+        ]);
+
+        \App\Models\ApprovalLog::create([
+            'approvable_type' => WeeklyReport::class,
+            'approvable_id' => $report->id,
+            'level' => 2,
+            'user_id' => $rejecterId,
+            'status' => 'rejected',
+            'comment' => $reason,
+        ]);
+
+        return $report;
+    }
+
+    /**
+     * Publish a weekly report (make visible to owners/stakeholders).
+     * Transition: approved → published
+     */
+    public function publish(WeeklyReport $report, int $publisherId): WeeklyReport
+    {
+        if (!$report->can_publish) {
+            throw new \Exception("Hanya weekly report berstatus 'Disetujui' yang dapat dipublish.");
+        }
+
+        $report->update([
+            'status' => WeeklyReport::STATUS_PUBLISHED,
+        ]);
+
+        \App\Models\ApprovalLog::create([
+            'approvable_type' => WeeklyReport::class,
+            'approvable_id' => $report->id,
+            'level' => 3,
+            'user_id' => $publisherId,
+            'status' => 'published',
+            'comment' => 'Weekly report dipublish.',
+        ]);
+
+        return $report;
+    }
+}

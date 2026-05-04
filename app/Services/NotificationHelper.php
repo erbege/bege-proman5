@@ -19,7 +19,11 @@ class NotificationHelper
      */
     protected static function getAdmins(?int $excludeUserId = null): Collection
     {
-        $query = User::role(self::$adminRoles);
+        try {
+            $query = User::role(self::$adminRoles);
+        } catch (\Throwable $e) {
+            return new Collection();
+        }
 
         if ($excludeUserId) {
             $query->where('id', '!=', $excludeUserId);

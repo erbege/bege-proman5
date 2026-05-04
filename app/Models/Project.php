@@ -96,6 +96,14 @@ class Project extends Model
         return $this->hasMany(ProgressReport::class);
     }
 
+    /**
+     * Alias used by scoped route model binding for {report} parameter.
+     */
+    public function reports(): HasMany
+    {
+        return $this->progressReports();
+    }
+
     public function goodsReceipts(): HasMany
     {
         return $this->hasMany(GoodsReceipt::class);

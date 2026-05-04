@@ -145,7 +145,7 @@
                 class="px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-150 {{ request()->routeIs('projects.progress.*') ? 'bg-gold-50 text-gold-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700' }}">
                 <div class="flex items-center">
                     <x-heroicon-o-chart-bar class="w-4 h-4 mr-2" />
-                    Laporan
+                    Laporan Harian
                 </div>
             </a>
 
@@ -156,6 +156,17 @@
                 <div class="flex items-center">
                     <x-heroicon-o-document-chart-bar class="w-4 h-4 mr-2" />
                     Weekly Report
+                </div>
+            </a>
+            @endcan
+
+            <!-- Monthly Reports -->
+            @can('monthly_report.view')
+            <a href="{{ route('projects.monthly-reports.index', $project) }}"
+                class="px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-150 {{ request()->routeIs('projects.monthly-reports.*') ? 'bg-gold-50 text-gold-700 dark:bg-indigo-900/50 dark:text-indigo-300' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700' }}">
+                <div class="flex items-center">
+                    <x-heroicon-o-presentation-chart-line class="w-4 h-4 mr-2" />
+                    Monthly Report
                 </div>
             </a>
             @endcan

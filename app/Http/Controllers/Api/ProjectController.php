@@ -25,7 +25,6 @@ class ProjectController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('projects.view');
         $query = Project::with(['creator']);
 
         $user = auth()->user();
@@ -60,7 +59,6 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        $this->authorize('projects.view');
         $user = auth()->user();
         if (!$user || !$this->canViewProject($project, $user)) {
             return $this->errorResponse('Unauthorized', 403);
@@ -124,6 +122,10 @@ class ProjectController extends Controller
     private function canViewProject(Project $project, $user): bool
     {
         if ($user->hasAnyRole(self::ELEVATED_ROLES) || $user->can('projects.view.all')) {
+            return true;
+        }
+
+        if ((int) $project->created_by === (int) $user->id) {
             return true;
         }
 

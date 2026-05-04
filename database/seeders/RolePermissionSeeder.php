@@ -93,13 +93,23 @@ class RolePermissionSeeder extends Seeder
             'progress.create',
             'progress.update',
             'progress.delete',
+            'progress.manage',
+            'progress.approve',
+            'progress.publish',
 
             // Dashboard & Reports
             'dashboard.view',
             'reports.export',
             'weekly_report.view',
             'weekly_report.manage',
+            'weekly_report.approve',
             'weekly_report.publish',
+            'weekly_report.comment',
+            'monthly_report.view',
+            'monthly_report.manage',
+            'monthly_report.approve',
+            'monthly_report.publish',
+            'monthly_report.comment',
 
             // Settings
             'settings.view',
@@ -135,68 +145,31 @@ class RolePermissionSeeder extends Seeder
 
         // Project Manager
         $projectManager = Role::findOrCreate('project-manager');
-        $projectManager->givePermissionTo([
-            'projects.view',
-            'projects.view.all',
-            'projects.create',
-            'projects.update',
-            'projects.manage-team',
-            'rab.view',
-            'rab.create',
-            'rab.update',
-            'rab.import',
-            'rab.analyze',
-            'schedule.view',
-            'schedule.update',
-            'materials.view',
-            'inventory.view',
-            'suppliers.view',
-            'mr.view',
-            'mr.manage',
-            'mr.approve',
-            'pr.view',
-            'pr.approve',
-            'po.view',
-            'po.approve',
-            'gr.view',
-            'gr.create',
-            'gr.approve',
-            'procurement.view',
-            'procurement.manage',
+$projectManager->givePermissionTo([
+            'projects.view', 'projects.view.all', 'projects.create', 'projects.update', 'projects.manage-team',
+            'rab.view', 'rab.create', 'rab.update', 'rab.import', 'rab.analyze',
+            'schedule.view', 'schedule.update',
+            'materials.view', 'inventory.view', 'suppliers.view',
+            'mr.view', 'mr.manage', 'mr.approve',
+            'pr.view', 'pr.approve', 'po.view', 'po.approve', 'gr.view', 'gr.create', 'gr.approve',
+            'procurement.view', 'procurement.manage',
             'usage.view',
-            'progress.view',
-            'progress.update',
-            'dashboard.view',
-            'reports.view',
-            'reports.export',
-            'financials.view',
-            'financials.view-report',
-            'financials.manage',
-            'analysis.view',
-            'analysis.manage',
-            'analysis.run-ai',
-            'weekly_report.view',
-            'weekly_report.manage',
-            'weekly_report.publish',
+            'progress.view', 'progress.create', 'progress.update', 'progress.manage', 'progress.approve', 'progress.publish',
+            'dashboard.view', 'reports.view', 'reports.export',
+            'financials.view', 'financials.view-report', 'financials.manage',
+            'analysis.view', 'analysis.manage', 'analysis.run-ai',
+            'weekly_report.manage', 'weekly_report.approve', 'weekly_report.publish',
+            'monthly_report.view', 'monthly_report.manage', 'monthly_report.approve', 'monthly_report.publish',
         ]);
 
         // Site Manager
         $siteManager = Role::findOrCreate('site-manager');
-        $siteManager->givePermissionTo([
-            'projects.view',
-            'rab.view',
-            'schedule.view',
-            'materials.view',
-            'inventory.view',
-            'mr.view',
-            'mr.create',
-            'mr.update',
-            'pr.view',
-            'usage.view',
-            'usage.create',
-            'progress.view',
-            'progress.create',
-            'progress.update',
+$siteManager->givePermissionTo([
+            'projects.view', 'rab.view', 'schedule.view',
+            'materials.view', 'inventory.view',
+            'mr.view', 'mr.create', 'mr.update',
+            'pr.view', 'usage.view', 'usage.create',
+            'progress.view', 'progress.create', 'progress.update', 'progress.manage',
             'dashboard.view',
         ]);
 
@@ -265,6 +238,7 @@ class RolePermissionSeeder extends Seeder
             'reports.export',
             'financials.view',
             'weekly_report.view',
+            'monthly_report.view',
         ]);
 
         // Engineer
@@ -407,20 +381,11 @@ class RolePermissionSeeder extends Seeder
 
         // Superintendent
         $superintendent = Role::findOrCreate('superintendent');
-        $superintendent->givePermissionTo([
-            'projects.view',
-            'rab.view',
-            'schedule.view',
-            'materials.view',
-            'inventory.view',
-            'mr.view',
-            'mr.create',
-            'usage.view',
-            'usage.create',
-            'progress.view',
-            'progress.create',
-            'progress.update',
-            'dashboard.view',
+$superintendent->givePermissionTo([
+            'projects.view', 'rab.view', 'schedule.view', 'materials.view', 'inventory.view',
+            'mr.view', 'mr.create', 'usage.view', 'usage.create',
+            'progress.view', 'progress.create', 'progress.update', 'progress.manage',
+            'dashboard.view', 'reports.view',
         ]);
 
         // Tukang (Worker)
@@ -472,6 +437,8 @@ class RolePermissionSeeder extends Seeder
             'dashboard.view',
             'weekly_report.view',
             'weekly_report.comment',
+            'monthly_report.view',
+            'monthly_report.comment',
             'analysis.view',
         ]);
     }

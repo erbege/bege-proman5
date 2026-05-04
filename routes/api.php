@@ -72,8 +72,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/progress', [Api\ProgressReportController::class, 'index']);
         Route::get('/progress/{report}', [Api\ProgressReportController::class, 'show']);
         Route::post('/progress', [Api\ProgressReportController::class, 'store']);
+        Route::put('/progress/{report}', [Api\ProgressReportController::class, 'update']);
+        Route::delete('/progress/{report}', [Api\ProgressReportController::class, 'destroy']);
 
-        // Weekly Reports
+        // Progress Report Workflow
+        Route::post('/progress/{report}/submit', [Api\ProgressReportController::class, 'submit']);
+        Route::post('/progress/{report}/review', [Api\ProgressReportController::class, 'review']);
+        Route::post('/progress/{report}/publish', [Api\ProgressReportController::class, 'publish']);
         Route::get('/weekly-reports', [Api\WeeklyReportController::class, 'index']);
         Route::post('/weekly-reports', [Api\WeeklyReportController::class, 'store']);
         Route::post('/weekly-reports/auto-generate', [Api\WeeklyReportController::class, 'autoGenerate']);

@@ -164,9 +164,7 @@
                                             </td>
                                             <td class="px-3 py-1.5 whitespace-nowrap text-center">
                                                 <span
-                                                    class="px-2 py-1 text-xs font-medium rounded-full 
-                                                                         @if($report->status === 'published') bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
-                                                                         @else bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 @endif">
+                                                    class="px-2 py-1 text-xs font-medium rounded-full {{ $report->status_color }}">
                                                     {{ $report->status_label }}
                                                 </span>
                                             </td>
