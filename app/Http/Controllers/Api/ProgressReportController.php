@@ -66,6 +66,10 @@ class ProgressReportController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        if (! $report->is_editable) {
+            return response()->json(['message' => 'Laporan yang sudah diajukan tidak dapat diubah.'], 422);
+        }
+
         try {
             $validated = $request->validated();
             $report = $this->service->updateReport($report, $project, $validated);
@@ -100,8 +104,12 @@ class ProgressReportController extends Controller
 
     public function submit(Project $project, ProgressReport $report): JsonResponse
     {
-        if (Gate::denies('progress.manage')) {
+        if (Gate::denies('progress.update')) {
             return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        if ($report->reported_by != auth()->id() && ! auth()->user()->hasRole(['Superadmin', 'super-admin'])) {
+            return response()->json(['message' => 'Hanya pembuat laporan yang dapat mengajukan laporan ini.'], 403);
         }
 
         try {

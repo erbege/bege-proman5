@@ -117,6 +117,11 @@ class ProgressReport extends Model
         return $this->belongsTo(User::class, 'published_by');
     }
 
+    public function progressReportMaterials(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProgressReportMaterial::class);
+    }
+
     // ========================
     // Auto Numbering
     // ========================
@@ -182,7 +187,7 @@ class ProgressReport extends Model
 
     public function getIsEditableAttribute(): bool
     {
-        return in_array($this->status, [self::STATUS_DRAFT, self::STATUS_REJECTED]);
+        return $this->status === self::STATUS_DRAFT;
     }
 
     public function getCanSubmitAttribute(): bool
@@ -212,7 +217,7 @@ class ProgressReport extends Model
 
     public function getCanDeleteAttribute(): bool
     {
-        return in_array($this->status, [self::STATUS_DRAFT, self::STATUS_REJECTED]);
+        return $this->status === self::STATUS_DRAFT;
     }
 
     public function getPhotoUrlsAttribute(): array

@@ -94,6 +94,20 @@ class MaterialMatcherService
             if ($exists)
                 continue;
 
+            // Pre-filter: material name must contain at least one keyword from work name
+            // This avoids thousands of fuzzy matches for irrelevant materials
+            $keywords = $this->extractKeywords($workName);
+            $hasKeyword = false;
+            foreach ($keywords as $keyword) {
+                if (str_contains(strtolower($material->name), $keyword)) {
+                    $hasKeyword = true;
+                    break;
+                }
+            }
+
+            if (!$hasKeyword)
+                continue;
+
             $score = $this->calculateMatchScore($workNameLower, strtolower($material->name));
 
             if ($score >= 50) {
@@ -445,21 +459,19 @@ class MaterialMatcherService
         }
 
         // Threshold: If similarity is below 75%, consider it as no match
-        // But we still return the score so UI can show it (yellow/red)
-        if ($highestScore < 75) {
+        if ($bestMaterial && $highestScore >= 75) {
             return [
-                'id' => null,
+                'id' => $bestMatchId,
                 'score' => (int) $highestScore,
-                'material' => null, // Or maybe return the best guess?
-                // PLAN2.md says return ID null but keep score.
-                'best_guess' => $bestMaterial, // Useful for suggestion
+                'material' => $bestMaterial,
             ];
         }
 
         return [
-            'id' => $bestMatchId,
+            'id' => null,
             'score' => (int) $highestScore,
-            'material' => $bestMaterial,
+            'material' => null,
+            'best_guess' => $bestMaterial, // Useful for suggestion
         ];
     }
 

@@ -59,20 +59,23 @@ class WeeklyReportService
     /**
      * Generate cumulative progress data for a given period
      */
-    public function generateCumulativeData(Project $project, Carbon $periodEnd, int $weekNumber): array
+    public function generateCumulativeData(Project $project, Carbon $periodEnd, int $weekNumber, ?WeeklyReport $report = null): array
     {
         $periodStart = $this->calculatePeriod($project, $weekNumber)['start'];
         $prevPeriodEnd = $periodStart->copy()->subDay();
 
-        // Carry over from previous weekly report if exists
+        // Carry over from previous snapshot table if exists
         $prevCumulatives = [];
         if ($weekNumber > 1) {
             $prevReport = WeeklyReport::where('project_id', $project->id)
                 ->where('week_number', $weekNumber - 1)
                 ->first();
 
-            if ($prevReport && isset($prevReport->cumulative_data['sections'])) {
-                $this->collectItemCumulatives($prevReport->cumulative_data['sections'], $prevCumulatives);
+            if ($prevReport) {
+                $prevCumulatives = \App\Models\ReportProgressSnapshot::where('report_type', 'weekly')
+                    ->where('report_id', $prevReport->id)
+                    ->pluck('actual_weight', 'rab_item_id')
+                    ->toArray();
             }
         }
 
@@ -85,32 +88,46 @@ class WeeklyReportService
 
         $result = [
             'sections' => [],
-            'totals' => [
-                'weight' => 0,
-                'planned_prev' => 0,
-                'planned_current' => 0,
-                'planned_cumulative' => 0,
-                'actual_prev' => 0,
-                'actual_current' => 0,
-                'actual_cumulative' => 0,
-                'deviation_prev' => 0,
-                'deviation_current' => 0,
-                'deviation_cumulative' => 0,
-            ],
+            'totals' => $this->makeEmptyTotals(),
         ];
 
+        $snapshots = [];
+
         foreach ($sections as $section) {
-            $sectionData = $this->processSectionForCumulative($section, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives);
+            $sectionData = $this->processSectionForCumulative($section, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives, $snapshots);
             if (!empty($sectionData['items']) || !empty($sectionData['children'])) {
                 $result['sections'][] = $sectionData;
                 $this->accumulateTotals($result['totals'], $sectionData);
             }
         }
 
+        // Save snapshots if report is provided
+        if ($report) {
+            \App\Models\ReportProgressSnapshot::where('report_type', 'weekly')
+                ->where('report_id', $report->id)
+                ->delete();
+
+            $snapshotData = [];
+            foreach ($snapshots as $itemId => $data) {
+                $snapshotData[] = [
+                    'report_type' => 'weekly',
+                    'report_id' => $report->id,
+                    'rab_item_id' => $itemId,
+                    'planned_weight' => $data['planned'],
+                    'actual_weight' => $data['actual'],
+                    'deviation' => $data['actual'] - $data['planned'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            
+            if (!empty($snapshotData)) {
+                \App\Models\ReportProgressSnapshot::insert($snapshotData);
+            }
+        }
+
         // Calculate deviations for totals
-        $result['totals']['deviation_prev'] = $result['totals']['actual_prev'] - $result['totals']['planned_prev'];
-        $result['totals']['deviation_current'] = $result['totals']['actual_current'] - $result['totals']['planned_current'];
-        $result['totals']['deviation_cumulative'] = $result['totals']['actual_cumulative'] - $result['totals']['planned_cumulative'];
+        $this->calculateDeviationTotals($result['totals']);
 
         return $result;
     }
@@ -118,9 +135,10 @@ class WeeklyReportService
     /**
      * Process a section recursively for cumulative data
      */
-    protected function processSectionForCumulative(RabSection $section, Project $project, Carbon $periodStart, Carbon $periodEnd, Carbon $prevPeriodEnd, array $prevCumulatives): array
+    protected function processSectionForCumulative(RabSection $section, Project $project, Carbon $periodStart, Carbon $periodEnd, Carbon $prevPeriodEnd, array $prevCumulatives, array &$snapshots): array
     {
         $sectionData = [
+            'id' => $section->id,
             'code' => $section->full_code,
             'name' => $section->name,
             'level' => $section->level ?? 0,
@@ -132,12 +150,17 @@ class WeeklyReportService
         foreach ($section->items as $item) {
             $itemData = $this->calculateItemProgress($item, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives);
             $sectionData['items'][] = $itemData;
+            
+            $snapshots[$item->id] = [
+                'planned' => $itemData['planned']['cumulative'],
+                'actual' => $itemData['actual']['cumulative'],
+            ];
         }
 
         // Process child sections recursively
         if ($section->children && $section->children->count() > 0) {
             foreach ($section->children as $child) {
-                $childData = $this->processSectionForCumulative($child, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives);
+                $childData = $this->processSectionForCumulative($child, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives, $snapshots);
                 if (!empty($childData['items']) || !empty($childData['children'])) {
                     $sectionData['children'][] = $childData;
                 }
@@ -159,10 +182,9 @@ class WeeklyReportService
         $plannedCumulative = $this->calculatePlannedProgress($item, $project, $periodEnd);
         $plannedCurrent = $plannedCumulative - $plannedPrev;
 
-        // Calculate actual progress
-        // Priority: use value from previous weekly report if available, else fallback to ProgressReport table
-        if (isset($prevCumulatives[$item->full_code])) {
-            $actualPrev = (float) $prevCumulatives[$item->full_code];
+        // Priority: use value from previous snapshot if available
+        if (isset($prevCumulatives[$item->id])) {
+            $actualPrev = (float) $prevCumulatives[$item->id];
         } else {
             $actualPrev = $this->calculateActualProgress($item, $prevPeriodEnd);
         }
@@ -336,7 +358,7 @@ class WeeklyReportService
 
         if ($existing) {
             // Update existing report data
-            $cumulativeData = $this->generateCumulativeData($project, $period['end'], $weekNumber);
+            $cumulativeData = $this->generateCumulativeData($project, $period['end'], $weekNumber, $existing);
             $detailData = $this->generateDetailData($project, $period['start'], $period['end']);
 
             $existing->update([
@@ -348,20 +370,27 @@ class WeeklyReportService
         }
 
         // Generate new report
-        $cumulativeData = $this->generateCumulativeData($project, $period['end'], $weekNumber);
-        $detailData = $this->generateDetailData($project, $period['start'], $period['end']);
-
-        return WeeklyReport::create([
+        $report = WeeklyReport::create([
             'project_id' => $project->id,
             'week_number' => $weekNumber,
             'period_start' => $period['start'],
             'period_end' => $period['end'],
             'cover_title' => "Weekly Progress Report - Week {$weekNumber}",
-            'cumulative_data' => $cumulativeData,
-            'detail_data' => $detailData,
+            'cumulative_data' => [], // Will be filled below
+            'detail_data' => [],     // Will be filled below
             'status' => 'draft',
             'created_by' => auth()->id(),
         ]);
+
+        $cumulativeData = $this->generateCumulativeData($project, $period['end'], $weekNumber, $report);
+        $detailData = $this->generateDetailData($project, $period['start'], $period['end']);
+
+        $report->update([
+            'cumulative_data' => $cumulativeData,
+            'detail_data' => $detailData,
+        ]);
+
+        return $report;
     }
 
     /**
@@ -450,53 +479,63 @@ class WeeklyReportService
 
         if ($subsequentReports->isEmpty()) return 0;
 
-        $prevCumulatives = [];
-        $this->collectItemCumulatives($currentData['sections'], $prevCumulatives);
+        // 1. Collect item cumulatives from the current report (which was just updated)
+        $currentSnapshots = \App\Models\ReportProgressSnapshot::where('report_type', 'weekly')
+            ->where('report_id', $currentReport->id)
+            ->pluck('actual_weight', 'rab_item_id')
+            ->toArray();
 
         foreach ($subsequentReports as $nextReport) {
-            $nextData = $nextReport->cumulative_data;
-            if (!$nextData || !isset($nextData['sections'])) continue;
+            // 2. For each item, update the snapshot
+            $nextSnapshots = \App\Models\ReportProgressSnapshot::where('report_type', 'weekly')
+                ->where('report_id', $nextReport->id)
+                ->get();
 
-            $nextTotals = $this->makeEmptyTotals();
-
-            foreach ($nextData['sections'] as &$section) {
-                $this->cascadeSectionItems($section, $prevCumulatives, $nextTotals);
+            foreach ($nextSnapshots as $snapshot) {
+                if (isset($currentSnapshots[$snapshot->rab_item_id])) {
+                    $prevCumulative = $currentSnapshots[$snapshot->rab_item_id];
+                    
+                    $currentActual = $this->getItemActualCurrent($nextReport, $snapshot->rab_item_id);
+                    $newCumulative = $prevCumulative + $currentActual;
+                    
+                    $snapshot->update([
+                        'actual_weight' => $newCumulative,
+                        'deviation' => $newCumulative - $snapshot->planned_weight,
+                    ]);
+                    
+                    // Update for the next iteration
+                    $currentSnapshots[$snapshot->rab_item_id] = $newCumulative;
+                }
             }
 
-            $this->calculateDeviationTotals($nextTotals);
-
-            $nextData['totals'] = $nextTotals;
-            $nextReport->update(['cumulative_data' => $nextData]);
-
-            $prevCumulatives = [];
-            $this->collectItemCumulatives($nextData['sections'], $prevCumulatives);
+            // 3. Sync JSON
+            $this->syncReportWithSnapshots($nextReport);
         }
 
         return $subsequentReports->count();
     }
 
-    protected function cascadeSectionItems(array &$section, array $prevCumulatives, array &$totals): void
+    protected function getItemActualCurrent(WeeklyReport $report, int $rabItemId): float
     {
-        foreach ($section['items'] as &$item) {
-            $code = $item['code'];
+        $sections = $report->cumulative_data['sections'] ?? [];
+        return $this->findItemActualCurrent($sections, $rabItemId);
+    }
 
-            if (isset($prevCumulatives[$code])) {
-                $newUpToPrev = round((float) $prevCumulatives[$code], 4);
-                $item['actual']['up_to_prev'] = $newUpToPrev;
-                $item['actual']['cumulative'] = round($newUpToPrev + $item['actual']['current'], 4);
-                $item['deviation']['up_to_prev'] = round($newUpToPrev - $item['planned']['up_to_prev'], 4);
-                $item['deviation']['current'] = round($item['actual']['current'] - $item['planned']['current'], 4);
-                $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
+    protected function findItemActualCurrent(array $sections, int $rabItemId): float
+    {
+        foreach ($sections as $section) {
+            foreach ($section['items'] ?? [] as $item) {
+                $rabItem = \App\Models\RabItem::find($rabItemId);
+                if (($item['id'] ?? null) == $rabItemId || ($item['code'] ?? null) == ($rabItem->full_code ?? '')) {
+                    return (float) ($item['actual']['current'] ?? 0);
+                }
             }
-
-            $this->accumulateItemTotals($totals, $item);
-        }
-
-        if (isset($section['children'])) {
-            foreach ($section['children'] as &$child) {
-                $this->cascadeSectionItems($child, $prevCumulatives, $totals);
+            if (isset($section['children'])) {
+                $val = $this->findItemActualCurrent($section['children'], $rabItemId);
+                if ($val !== 0.0) return $val;
             }
         }
+        return 0;
     }
 
     protected function updateSectionItems(array &$section, array $itemUpdates, array &$totals): void

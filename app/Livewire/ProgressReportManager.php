@@ -63,9 +63,10 @@ class ProgressReportManager extends Component
     public string $nextDayPlan = '';
 
     public array $equipmentDetails = [];
-
     public array $materialUsageSummary = [];
-
+    public array $materialSearchResults = [];
+    public ?int $activeMaterialRow = null;
+    public array $materialSearchQueries = [];
     public array $safetyDetails = ['incidents' => 0, 'near_miss' => 0, 'apd_compliance' => true, 'notes' => ''];
 
     protected $weatherOptions = [
@@ -145,7 +146,15 @@ class ProgressReportManager extends Component
         $this->weatherDuration = $previousReport->weather_duration;
         $this->workerCount = $previousReport->workers_count ?? 0;
         $this->equipmentDetails = $previousReport->equipment_details ?? [];
-        $this->materialUsageSummary = $previousReport->material_usage_summary ?? [];
+        $this->materialUsageSummary = array_map(function($m) {
+            return [
+                'material_id' => $m['material_id'] ?? null,
+                'material_name' => $m['material_name'] ?? ($m['material'] ?? ''),
+                'qty_used' => $m['qty_used'] ?? 0,
+                'unit' => $m['unit'] ?? '',
+                'is_manual' => $m['is_manual'] ?? (!isset($m['material_id']))
+            ];
+        }, $previousReport->material_usage_summary ?? []);
 
         // Initialize safety details from yesterday
         if ($previousReport->safety_details) {
@@ -159,7 +168,7 @@ class ProgressReportManager extends Component
     {
         $this->authorize('progress.create');
         $this->resetValidation();
-        $this->reset(['editingId', 'rabItemId', 'reportDate', 'progressPercentage', 'description', 'issues', 'weather', 'weatherDuration', 'workerCount', 'photos', 'nextDayPlan', 'equipmentDetails', 'materialUsageSummary']);
+        $this->reset(['editingId', 'rabItemId', 'reportDate', 'progressPercentage', 'description', 'issues', 'weather', 'weatherDuration', 'workerCount', 'photos', 'nextDayPlan', 'equipmentDetails', 'materialUsageSummary', 'materialSearchResults', 'activeMaterialRow', 'materialSearchQueries']);
         $this->safetyDetails = ['incidents' => 0, 'near_miss' => 0, 'apd_compliance' => true, 'notes' => ''];
         $this->reportDate = now()->format('Y-m-d');
 
@@ -182,7 +191,15 @@ class ProgressReportManager extends Component
             $this->workerCount = $report->workers_count ?? 0;
             $this->nextDayPlan = $report->next_day_plan ?? '';
             $this->equipmentDetails = $report->equipment_details ?? [];
-            $this->materialUsageSummary = $report->material_usage_summary ?? [];
+            $this->materialUsageSummary = array_map(function($m) {
+                return [
+                    'material_id' => $m['material_id'] ?? null,
+                    'material_name' => $m['material_name'] ?? ($m['material'] ?? ''),
+                    'qty_used' => $m['qty_used'] ?? 0,
+                    'unit' => $m['unit'] ?? '',
+                    'is_manual' => $m['is_manual'] ?? (!isset($m['material_id']))
+                ];
+            }, $report->material_usage_summary ?? []);
             if ($report->safety_details) {
                 $this->safetyDetails = array_merge($this->safetyDetails, $report->safety_details);
             }
@@ -308,9 +325,11 @@ class ProgressReportManager extends Component
             'equipmentDetails.*.condition' => 'nullable|string',
             'equipmentDetails.*.hours' => 'nullable|numeric|min:0',
             'materialUsageSummary' => 'nullable|array',
-            'materialUsageSummary.*.material' => 'required_with:materialUsageSummary|string',
-            'materialUsageSummary.*.qty_used' => 'required_with:materialUsageSummary|numeric|min:0',
+            'materialUsageSummary.*.material_id' => 'nullable|exists:materials,id',
+            'materialUsageSummary.*.material_name' => 'required|string',
+            'materialUsageSummary.*.qty_used' => 'required|numeric|min:0',
             'materialUsageSummary.*.unit' => 'nullable|string',
+            'materialUsageSummary.*.is_manual' => 'nullable|boolean',
             'safetyDetails.incidents' => 'nullable|integer|min:0',
             'safetyDetails.near_miss' => 'nullable|integer|min:0',
             'safetyDetails.apd_compliance' => 'nullable|boolean',
@@ -325,11 +344,11 @@ class ProgressReportManager extends Component
             'issues' => $this->issues ?: null,
             'weather' => $this->weather ?: null,
             'weather_duration' => $this->weatherDuration ?: null,
-            'workers_count' => $this->workerCount ?: null,
+            'workers_count' => (int) ($this->workerCount ?: 0),
             'labor_details' => null,
             'next_day_plan' => $this->nextDayPlan ?: null,
             'equipment_details' => ! empty($this->equipmentDetails) ? array_values(array_filter($this->equipmentDetails, fn($e) => ! empty($e['name']))) : null,
-            'material_usage_summary' => ! empty($this->materialUsageSummary) ? array_values(array_filter($this->materialUsageSummary, fn($m) => ! empty($m['material']))) : null,
+            'material_usage_summary' => ! empty($this->materialUsageSummary) ? array_values(array_filter($this->materialUsageSummary, fn($m) => ! empty($m['material_name']))) : null,
             'safety_details' => $this->safetyDetails,
         ];
 
@@ -345,6 +364,13 @@ class ProgressReportManager extends Component
 
         if ($this->editingId) {
             $report = ProgressReport::findOrFail($this->editingId);
+            
+            if (! $report->is_editable) {
+                session()->flash('error', 'Laporan yang sudah diajukan tidak dapat diubah.');
+                $this->closeModal();
+                return;
+            }
+
             $service->updateReport($report, $this->project, $data, $photoFiles);
             session()->flash('success', 'Laporan progress berhasil diperbarui.');
         } else {
@@ -401,7 +427,7 @@ class ProgressReportManager extends Component
 
     public function submitReport(int $id): void
     {
-        $this->authorize('progress.manage');
+        $this->authorize('progress.update');
         $report = ProgressReport::findOrFail($id);
 
         try {
@@ -449,6 +475,83 @@ class ProgressReportManager extends Component
         } catch (\Exception $e) {
             session()->flash('error', "Gagal: {$e->getMessage()}");
         }
+    }
+
+    // ========================
+    // Material Selection
+    // ========================
+
+    public function updatedMaterialSearchQueries($value, $key)
+    {
+        $this->activeMaterialRow = (int) $key;
+        $query = $value;
+
+        if (strlen($query) < 2) {
+            $this->materialSearchResults = [];
+            return;
+        }
+
+        $this->materialSearchResults = \App\Models\Inventory::where('project_id', $this->project->id)
+            ->with('material')
+            ->whereHas('material', function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('code', 'like', "%{$query}%");
+            })
+            ->limit(5)
+            ->get()
+            ->map(function ($inv) {
+                return [
+                    'id' => $inv->material_id,
+                    'name' => $inv->material->name,
+                    'unit' => $inv->material->unit,
+                    'stock' => (float) $inv->quantity,
+                ];
+            })
+            ->toArray();
+    }
+
+    public function startMaterialSearch($index)
+    {
+        $this->activeMaterialRow = $index;
+        $this->materialSearchQueries[$index] = $this->materialUsageSummary[$index]['material_name'] ?? '';
+        $this->materialSearchResults = [];
+    }
+
+    public function selectMaterial($materialId, $name, $unit)
+    {
+        if ($this->activeMaterialRow !== null) {
+            $this->materialUsageSummary[$this->activeMaterialRow]['material_id'] = $materialId;
+            $this->materialUsageSummary[$this->activeMaterialRow]['material_name'] = $name;
+            $this->materialUsageSummary[$this->activeMaterialRow]['unit'] = $unit;
+            $this->materialUsageSummary[$this->activeMaterialRow]['is_manual'] = false;
+            
+            // Sync search query
+            $this->materialSearchQueries[$this->activeMaterialRow] = $name;
+        }
+        $this->activeMaterialRow = null;
+        $this->materialSearchResults = [];
+    }
+
+    public function setManualMaterial()
+    {
+        if ($this->activeMaterialRow !== null) {
+            $this->materialUsageSummary[$this->activeMaterialRow]['material_id'] = null;
+            $this->materialUsageSummary[$this->activeMaterialRow]['is_manual'] = true;
+            $this->materialUsageSummary[$this->activeMaterialRow]['material_name'] = $this->materialSearchQueries[$this->activeMaterialRow] ?? '';
+        }
+        $this->activeMaterialRow = null;
+        $this->materialSearchResults = [];
+    }
+
+    public function addMaterialRow()
+    {
+        $this->materialUsageSummary[] = [
+            'material_id' => null,
+            'material_name' => '',
+            'qty_used' => 0,
+            'unit' => '',
+            'is_manual' => false
+        ];
     }
 
     public function render()

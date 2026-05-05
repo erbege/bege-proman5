@@ -210,7 +210,7 @@ endpoints:
         name: order_date
         description: 'Must be a valid date.'
         required: true
-        example: '2026-05-04T05:26:41'
+        example: '2026-05-04T12:21:31'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -341,7 +341,7 @@ endpoints:
     cleanBodyParameters:
       project_id: architecto
       supplier_id: architecto
-      order_date: '2026-05-04T05:26:41'
+      order_date: '2026-05-04T12:21:31'
       expected_delivery: '2052-05-27'
       payment_terms: architecto
       notes: architecto

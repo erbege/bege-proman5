@@ -92,10 +92,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/weekly-reports/{report}/documentations', [Api\WeeklyReportController::class, 'removeDocumentation']);
         Route::patch('/weekly-reports/{report}/activities', [Api\WeeklyReportController::class, 'updateActivities']);
 
-        // Material Usage
+        // Material Usage & Inventory
         Route::get('/material-usages', [Api\MaterialUsageController::class, 'index']);
         Route::post('/material-usages', [Api\MaterialUsageController::class, 'store']);
         Route::get('/material-usages/{materialUsage}', [Api\MaterialUsageController::class, 'show']);
+        Route::get('/inventory/search', [Api\MaterialInventoryController::class, 'search']);
 
         // Procurement Helpers
         Route::get('/available-mr-items', [Api\PurchaseRequestController::class, 'availableMrItems']);

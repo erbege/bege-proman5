@@ -143,7 +143,7 @@ endpoints:
         name: request_date
         description: 'Must be a valid date.'
         required: false
-        example: '2026-05-04T05:26:41'
+        example: '2026-05-04T12:21:30'
         type: string
         enumValues: []
         exampleWasSpecified: false
@@ -207,7 +207,7 @@ endpoints:
         deprecated: false
     cleanBodyParameters:
       project_id: architecto
-      request_date: '2026-05-04T05:26:41'
+      request_date: '2026-05-04T12:21:30'
       notes: architecto
       items:
         -

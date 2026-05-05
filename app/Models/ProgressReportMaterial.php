@@ -2,32 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class MaterialUsageItem extends Model
+class ProgressReportMaterial extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
-        'material_usage_id',
+        'progress_report_id',
         'material_id',
         'material_name',
         'quantity',
-        'unit_cost',
-        'total_cost',
+        'unit',
         'notes',
     ];
 
     protected $casts = [
-        'quantity' => 'decimal:4',
+        'quantity' => 'decimal:2',
     ];
 
-    // Relationships
-    public function materialUsage(): BelongsTo
+    public function progressReport(): BelongsTo
     {
-        return $this->belongsTo(MaterialUsage::class);
+        return $this->belongsTo(ProgressReport::class);
     }
 
     public function material(): BelongsTo

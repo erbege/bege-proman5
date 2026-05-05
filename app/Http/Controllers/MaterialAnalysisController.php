@@ -176,6 +176,7 @@ class MaterialAnalysisController extends Controller
      */
     public function analyzeAllLocal(Request $request, Project $project)
     {
+        \Log::info("analyzeAllLocal hit for project {$project->id} with method " . $request->method());
         $this->authorize('analysis.manage');
 
         $unanalyzedCount = $project->rabItems()->notAnalyzed()->count();
@@ -190,6 +191,7 @@ class MaterialAnalysisController extends Controller
         // If SSE/EventSource request (Accept: text/event-stream) or GET request, return streaming progress
         $acceptHeader = $request->header('Accept', '');
         if (str_contains($acceptHeader, 'text/event-stream') || $request->isMethod('get')) {
+            \Log::info("Starting local material analysis stream for project {$project->id}");
             $unanalyzedItems = $project->rabItems()->notAnalyzed()->get();
             return $this->streamLocalAnalysis($project, $unanalyzedItems);
         }
@@ -200,11 +202,8 @@ class MaterialAnalysisController extends Controller
         // Process in chunks of 100 to prevent memory exhaustion
         $project->rabItems()->notAnalyzed()->chunk(100, function ($items) use (&$successCount, &$noMatchCount) {
             foreach ($items as $item) {
-                $materials = $this->matcher->analyzeWorkName(
-                    $item->work_name,
-                    (float) $item->volume,
-                    $item->unit
-                );
+                // Consistency: Use analyzeRabItemLocal which handles AHSP-source items better
+                $materials = $this->matcher->analyzeRabItemLocal($item);
 
                 if (!empty($materials)) {
                     $this->saveLocalForecasts($item, $materials);
@@ -231,47 +230,89 @@ class MaterialAnalysisController extends Controller
      */
     protected function streamLocalAnalysis(Project $project, $items)
     {
-        // Internal helper, usually called from authorized analyzeAllLocal
+        // Increase limits for potentially long-running process
+        set_time_limit(600); // 10 minutes
+        ini_set('memory_limit', '1G');
+
+        // Close session to prevent locking other requests
+        if (session_id()) {
+            session_write_close();
+        }
+
         return response()->stream(function () use ($items) {
+            // Clear all previous buffers to ensure immediate output
+            while (ob_get_level() > 0) {
+                ob_end_clean();
+            }
             $total = $items->count();
             $processed = 0;
             $successCount = 0;
             $noMatchCount = 0;
 
-            foreach ($items as $item) {
-                // Use source-based local matching
-                $materials = $this->matcher->analyzeRabItemLocal($item);
+            // Send initial start event
+            echo "data: " . json_encode([
+                'progress' => 0,
+                'message' => 'Memulai analisis...',
+                'current' => 0,
+                'total' => $total,
+                'success' => 0,
+                'noMatch' => 0,
+            ]) . "\n\n";
+            
+            if (ob_get_level() > 0) ob_end_flush();
+            flush();
 
-                if (!empty($materials)) {
-                    $this->saveLocalForecasts($item, $materials);
-                    $successCount++;
-                } else {
-                    $noMatchCount++;
+            \Log::info("Stream started with {$total} items");
+            try {
+                foreach ($items as $item) {
+                    try {
+                        // Use source-based local matching
+                        $materials = $this->matcher->analyzeRabItemLocal($item);
+
+                        if (!empty($materials)) {
+                            $this->saveLocalForecasts($item, $materials);
+                            $successCount++;
+                        } else {
+                            $noMatchCount++;
+                        }
+                    } catch (\Exception $e) {
+                        \Log::error("Error analyzing RAB item {$item->id}: " . $e->getMessage());
+                        $noMatchCount++;
+                    }
+
+                    $processed++;
+                    $percent = round(($processed / $total) * 100);
+
+                    echo "data: " . json_encode([
+                        'progress' => $percent,
+                        'current' => $processed,
+                        'total' => $total,
+                        'item' => $item->work_name,
+                        'success' => $successCount,
+                        'noMatch' => $noMatchCount,
+                    ]) . "\n\n";
+
+                    if (connection_aborted()) {
+                        break;
+                    }
+
+                    flush();
                 }
 
-                $processed++;
-                $percent = round(($processed / $total) * 100);
-
                 echo "data: " . json_encode([
-                    'progress' => $percent,
-                    'current' => $processed,
-                    'total' => $total,
-                    'item' => $item->work_name,
-                    'success' => $successCount,
-                    'noMatch' => $noMatchCount,
+                    'progress' => 100,
+                    'complete' => true,
+                    'message' => "Analisis lokal selesai. {$successCount} item berhasil, {$noMatchCount} tidak ditemukan.",
                 ]) . "\n\n";
 
-                ob_flush();
-                flush();
+            } catch (\Exception $e) {
+                \Log::error("Fatal error in local analysis stream: " . $e->getMessage());
+                echo "data: " . json_encode([
+                    'error' => true,
+                    'message' => 'Terjadi kesalahan fatal: ' . $e->getMessage(),
+                ]) . "\n\n";
             }
 
-            echo "data: " . json_encode([
-                'progress' => 100,
-                'complete' => true,
-                'message' => "Analisis lokal selesai. {$successCount} item berhasil, {$noMatchCount} tidak ditemukan.",
-            ]) . "\n\n";
-
-            ob_flush();
             flush();
         }, 200, [
             'Content-Type' => 'text/event-stream',

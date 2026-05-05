@@ -52,12 +52,12 @@ class MonthlyReportService
     /**
      * Generate cumulative progress data for a given period
      */
-    public function generateCumulativeData(Project $project, Carbon $periodEnd, int $year, int $month): array
+    public function generateCumulativeData(Project $project, Carbon $periodEnd, int $year, int $month, ?MonthlyReport $report = null): array
     {
         $periodStart = $this->calculatePeriod($year, $month)['start'];
         $prevPeriodEnd = $periodStart->copy()->subDay();
 
-        // Carry over from previous monthly report if exists
+        // Carry over from previous snapshot table if exists
         $prevCumulatives = [];
         $prevDate = $periodStart->copy()->subMonth();
         $prevReport = MonthlyReport::where('project_id', $project->id)
@@ -65,8 +65,11 @@ class MonthlyReportService
             ->where('month', $prevDate->month)
             ->first();
 
-        if ($prevReport && isset($prevReport->cumulative_data['sections'])) {
-            $this->collectItemCumulatives($prevReport->cumulative_data['sections'], $prevCumulatives);
+        if ($prevReport) {
+            $prevCumulatives = \App\Models\ReportProgressSnapshot::where('report_type', 'monthly')
+                ->where('report_id', $prevReport->id)
+                ->pluck('actual_weight', 'rab_item_id')
+                ->toArray();
         }
 
         // Get all RAB sections with items
@@ -78,32 +81,46 @@ class MonthlyReportService
 
         $result = [
             'sections' => [],
-            'totals' => [
-                'weight' => 0,
-                'planned_prev' => 0,
-                'planned_current' => 0,
-                'planned_cumulative' => 0,
-                'actual_prev' => 0,
-                'actual_current' => 0,
-                'actual_cumulative' => 0,
-                'deviation_prev' => 0,
-                'deviation_current' => 0,
-                'deviation_cumulative' => 0,
-            ],
+            'totals' => $this->makeEmptyTotals(),
         ];
 
+        $snapshots = [];
+
         foreach ($sections as $section) {
-            $sectionData = $this->processSectionForCumulative($section, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives);
+            $sectionData = $this->processSectionForCumulative($section, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives, $snapshots);
             if (!empty($sectionData['items']) || !empty($sectionData['children'])) {
                 $result['sections'][] = $sectionData;
                 $this->accumulateTotals($result['totals'], $sectionData);
             }
         }
 
+        // Save snapshots if report is provided
+        if ($report) {
+            \App\Models\ReportProgressSnapshot::where('report_type', 'monthly')
+                ->where('report_id', $report->id)
+                ->delete();
+
+            $snapshotData = [];
+            foreach ($snapshots as $itemId => $data) {
+                $snapshotData[] = [
+                    'report_type' => 'monthly',
+                    'report_id' => $report->id,
+                    'rab_item_id' => $itemId,
+                    'planned_weight' => $data['planned'],
+                    'actual_weight' => $data['actual'],
+                    'deviation' => $data['actual'] - $data['planned'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            
+            if (!empty($snapshotData)) {
+                \App\Models\ReportProgressSnapshot::insert($snapshotData);
+            }
+        }
+
         // Calculate deviations for totals
-        $result['totals']['deviation_prev'] = $result['totals']['actual_prev'] - $result['totals']['planned_prev'];
-        $result['totals']['deviation_current'] = $result['totals']['actual_current'] - $result['totals']['planned_current'];
-        $result['totals']['deviation_cumulative'] = $result['totals']['actual_cumulative'] - $result['totals']['planned_cumulative'];
+        $this->calculateDeviationTotals($result['totals']);
 
         return $result;
     }
@@ -111,9 +128,10 @@ class MonthlyReportService
     /**
      * Process a section recursively for cumulative data
      */
-    protected function processSectionForCumulative(RabSection $section, Project $project, Carbon $periodStart, Carbon $periodEnd, Carbon $prevPeriodEnd, array $prevCumulatives): array
+    protected function processSectionForCumulative(RabSection $section, Project $project, Carbon $periodStart, Carbon $periodEnd, Carbon $prevPeriodEnd, array $prevCumulatives, array &$snapshots): array
     {
         $sectionData = [
+            'id' => $section->id,
             'code' => $section->full_code,
             'name' => $section->name,
             'level' => $section->level ?? 0,
@@ -125,12 +143,17 @@ class MonthlyReportService
         foreach ($section->items as $item) {
             $itemData = $this->calculateItemProgress($item, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives);
             $sectionData['items'][] = $itemData;
+            
+            $snapshots[$item->id] = [
+                'planned' => $itemData['planned']['cumulative'],
+                'actual' => $itemData['actual']['cumulative'],
+            ];
         }
 
         // Process child sections recursively
         if ($section->children && $section->children->count() > 0) {
             foreach ($section->children as $child) {
-                $childData = $this->processSectionForCumulative($child, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives);
+                $childData = $this->processSectionForCumulative($child, $project, $periodStart, $periodEnd, $prevPeriodEnd, $prevCumulatives, $snapshots);
                 if (!empty($childData['items']) || !empty($childData['children'])) {
                     $sectionData['children'][] = $childData;
                 }
@@ -152,10 +175,10 @@ class MonthlyReportService
         $plannedCumWeight = $this->calculatePlannedProgress($item, $project, $periodEnd);
         $plannedCurrentWeight = $plannedCumWeight - $plannedPrevWeight;
 
-        // Actual: Previous cumulative (either from previous report or calculate from scratch)
+        // Actual: Previous cumulative (either from previous snapshot or calculate from scratch)
         if (isset($prevCumulatives[$item->id])) {
-            $actualPrevWeight = (float) ($prevCumulatives[$item->id]['weight'] ?? 0);
-            $actualPrevProgress = (float) ($prevCumulatives[$item->id]['progress'] ?? 0);
+            $actualPrevWeight = (float) $prevCumulatives[$item->id];
+            $actualPrevProgress = $weight > 0 ? ($actualPrevWeight / $weight) * 100 : 0;
         } else {
             $actualPrevWeight = $this->calculateActualProgress($item, $prevPeriodEnd);
             $actualPrevProgress = $weight > 0 ? ($actualPrevWeight / $weight) * 100 : 0;
@@ -383,51 +406,119 @@ class MonthlyReportService
 
         if ($subsequentReports->isEmpty()) return 0;
 
-        $prevCumulatives = [];
-        $this->collectItemCumulatives($currentData['sections'], $prevCumulatives);
+        // 1. Collect item cumulatives from the current report (which was just updated)
+        $currentSnapshots = \App\Models\ReportProgressSnapshot::where('report_type', 'monthly')
+            ->where('report_id', $currentReport->id)
+            ->pluck('actual_weight', 'rab_item_id')
+            ->toArray();
 
         foreach ($subsequentReports as $nextReport) {
-            $nextData = $nextReport->cumulative_data;
-            if (!$nextData || !isset($nextData['sections'])) continue;
+            // 2. For each item, update the 'up_to_prev' and 'cumulative' in snapshot
+            // This is complex for bulk SQL if we don't store 'current' actual.
+            // For now, we'll iterate and update snapshots then sync.
+            
+            $nextSnapshots = \App\Models\ReportProgressSnapshot::where('report_type', 'monthly')
+                ->where('report_id', $nextReport->id)
+                ->get();
 
-            $nextTotals = $this->makeEmptyTotals();
-
-            foreach ($nextData['sections'] as &$section) {
-                $this->cascadeSectionItems($section, $prevCumulatives, $nextTotals);
+            foreach ($nextSnapshots as $snapshot) {
+                if (isset($currentSnapshots[$snapshot->rab_item_id])) {
+                    $prevCumulative = $currentSnapshots[$snapshot->rab_item_id];
+                    // currentActual = currentCumulative - oldUpToPrev
+                    // In our case, we want to maintain the 'currentActual' of the next month
+                    // but update its 'up_to_prev' to the 'prevCumulative'.
+                    
+                    $oldUpToPrev = $snapshot->actual_weight - $this->getItemActualCurrent($nextReport, $snapshot->rab_item_id);
+                    $currentActual = $snapshot->actual_weight - $oldUpToPrev;
+                    
+                    $newCumulative = $prevCumulative + $currentActual;
+                    
+                    $snapshot->update([
+                        'actual_weight' => $newCumulative,
+                        'deviation' => $newCumulative - $snapshot->planned_weight,
+                    ]);
+                    
+                    // Update for the next iteration
+                    $currentSnapshots[$snapshot->rab_item_id] = $newCumulative;
+                }
             }
 
-            $this->calculateDeviationTotals($nextTotals);
-
-            $nextData['totals'] = $nextTotals;
-            $nextReport->update(['cumulative_data' => $nextData]);
-
-            $prevCumulatives = [];
-            $this->collectItemCumulatives($nextData['sections'], $prevCumulatives);
+            // 3. Sync JSON
+            $this->syncReportWithSnapshots($nextReport);
         }
 
         return $subsequentReports->count();
     }
 
-    protected function cascadeSectionItems(array &$section, array $prevCumulatives, array &$totals): void
+    protected function getItemActualCurrent(MonthlyReport $report, int $rabItemId): float
+    {
+        // Pull from JSON as a fallback to find what the 'current' actual was
+        $sections = $report->cumulative_data['sections'] ?? [];
+        return $this->findItemActualCurrent($sections, $rabItemId);
+    }
+
+    protected function findItemActualCurrent(array $sections, int $rabItemId): float
+    {
+        foreach ($sections as $section) {
+            foreach ($section['items'] ?? [] as $item) {
+                // Since we don't have ID in some JSON versions, use code as fallback
+                $rabItem = RabItem::find($rabItemId);
+                if (($item['id'] ?? null) == $rabItemId || ($item['code'] ?? null) == ($rabItem->full_code ?? '')) {
+                    return (float) ($item['actual']['current'] ?? 0);
+                }
+            }
+            if (isset($section['children'])) {
+                $val = $this->findItemActualCurrent($section['children'], $rabItemId);
+                if ($val !== 0.0) return $val;
+            }
+        }
+        return 0;
+    }
+
+    /**
+     * Sync JSON cumulative_data with the snapshots in database.
+     */
+    public function syncReportWithSnapshots(MonthlyReport $report): void
+    {
+        $snapshots = \App\Models\ReportProgressSnapshot::where('report_type', 'monthly')
+            ->where('report_id', $report->id)
+            ->pluck('actual_weight', 'rab_item_id')
+            ->toArray();
+
+        $data = $report->cumulative_data;
+        if (!$data || !isset($data['sections'])) return;
+
+        $totals = $this->makeEmptyTotals();
+        foreach ($data['sections'] as &$section) {
+            $this->syncSectionWithSnapshots($section, $snapshots, $totals);
+        }
+
+        $this->calculateDeviationTotals($totals);
+        $data['totals'] = $totals;
+        
+        $report->update(['cumulative_data' => $data]);
+    }
+
+    protected function syncSectionWithSnapshots(array &$section, array $snapshots, array &$totals): void
     {
         foreach ($section['items'] as &$item) {
-            $code = $item['code'];
-
-            if (isset($prevCumulatives[$code])) {
-                $newUpToPrev = round((float) $prevCumulatives[$code], 4);
-                $item['actual']['up_to_prev'] = $newUpToPrev;
-                $item['actual']['cumulative'] = round($newUpToPrev + $item['actual']['current'], 4);
-                $item['deviation']['up_to_prev'] = round($newUpToPrev - $item['planned']['up_to_prev'], 4);
-                $item['deviation']['current'] = round($item['actual']['current'] - $item['planned']['current'], 4);
-                $item['deviation']['cumulative'] = round($item['actual']['cumulative'] - $item['planned']['cumulative'], 4);
+            if (isset($snapshots[$item['id']])) {
+                $newCumulative = (float) $snapshots[$item['id']];
+                $weight = (float) $item['weight'];
+                
+                $item['actual']['cumulative'] = round($newCumulative, 4);
+                $item['actual']['up_to_prev'] = round($newCumulative - $item['actual']['current'], 4);
+                $item['actual']['progress'] = $weight > 0 ? round(($newCumulative / $weight) * 100, 2) : 0;
+                
+                $item['deviation']['up_to_prev'] = round($item['actual']['up_to_prev'] - $item['planned']['up_to_prev'], 4);
+                $item['deviation']['cumulative'] = round($newCumulative - $item['planned']['cumulative'], 4);
             }
-
             $this->accumulateItemTotals($totals, $item);
         }
 
         if (isset($section['children'])) {
             foreach ($section['children'] as &$child) {
-                $this->cascadeSectionItems($child, $prevCumulatives, $totals);
+                $this->syncSectionWithSnapshots($child, $snapshots, $totals);
             }
         }
     }

@@ -39,10 +39,12 @@
                 </p>
             </div>
             @endcan
+            @can('financials.view')
             <div>
                 <p class="text-[10px] font-bold uppercase text-gray-500 dark:text-gray-400">Nilai Kontrak</p>
                 <p class="text-lg font-black text-gray-900 dark:text-white">{{ $project->formatted_contract_value }}</p>
             </div>
+            @endcan
         </div>
     </div>
 
@@ -631,6 +633,85 @@
             </div>
         </div>
     @endif
+
+    {{-- Floating Summary Bar (Large Screens) --}}
+    @can('financials.view')
+    <div x-data="{ 
+            isVisible: false, 
+            isFolded: false,
+            scrollHandler() {
+                this.isVisible = window.scrollY > 400;
+            }
+        }" 
+        x-init="window.addEventListener('scroll', () => scrollHandler())"
+        x-show="isVisible"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="translate-y-20 opacity-0"
+        x-transition:enter-end="translate-y-0 opacity-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="translate-y-0 opacity-100"
+        x-transition:leave-end="translate-y-20 opacity-0"
+        class="fixed bottom-6 right-6 z-50 hidden lg:flex flex-col items-end pointer-events-none"
+    >
+        {{-- Expand Button (when folded) --}}
+        <button x-show="isFolded" @click="isFolded = false" x-cloak
+            class="pointer-events-auto bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all transform hover:scale-110 flex items-center justify-center">
+            <x-heroicon-o-banknotes class="w-6 h-6" />
+        </button>
+
+        {{-- Expanded Bar --}}
+        <div x-show="!isFolded" x-cloak
+            class="pointer-events-auto bg-white/80 dark:bg-dark-800/80 backdrop-blur-md border border-gray-200 dark:border-dark-700 rounded-2xl shadow-2xl p-4 min-w-[320px] flex flex-col gap-3 group">
+            <div class="flex justify-between items-center border-b border-gray-100 dark:border-dark-700 pb-2">
+                <span class="text-xs font-bold uppercase text-gray-500 dark:text-gray-400 tracking-wider flex items-center">
+                    <x-heroicon-o-presentation-chart-line class="w-4 h-4 mr-2 text-blue-500" />
+                    Ringkasan Finansial
+                </span>
+                <button @click="isFolded = true" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1">
+                    <x-heroicon-o-chevron-down class="w-4 h-4" />
+                </button>
+            </div>
+            
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-end">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Total RAB</span>
+                    <span class="text-lg font-black text-blue-600 dark:text-blue-400 leading-none">
+                        Rp {{ number_format($totalValue, 0, ',', '.') }}
+                    </span>
+                </div>
+                
+                <div class="flex justify-between items-end">
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Nilai Kontrak</span>
+                    <span class="text-sm font-bold text-gray-900 dark:text-white leading-none">
+                        {{ $project->formatted_contract_value }}
+                    </span>
+                </div>
+
+                {{-- Budget Status Bar --}}
+                @php
+                    $percentage = $project->contract_value > 0 ? ($totalValue / $project->contract_value) * 100 : 0;
+                    $statusColor = $percentage > 100 ? 'bg-red-500' : ($percentage > 90 ? 'bg-orange-500' : 'bg-green-500');
+                @endphp
+                <div class="mt-1">
+                    <div class="flex justify-between text-[10px] mb-1">
+                        <span class="font-medium {{ $percentage > 100 ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400' }}">
+                            {{ number_format($percentage, 1) }}% dari kontrak
+                        </span>
+                        @if($percentage > 100)
+                            <span class="text-red-600 dark:text-red-400 font-bold flex items-center">
+                                <x-heroicon-o-exclamation-triangle class="w-3 h-3 mr-1" />
+                                Over Budget
+                            </span>
+                        @endif
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-dark-700 rounded-full h-1.5 overflow-hidden">
+                        <div class="{{ $statusColor }} h-full transition-all duration-500" style="width: {{ min($percentage, 100) }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endcan
 </div>
 
 

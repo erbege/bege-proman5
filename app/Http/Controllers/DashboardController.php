@@ -78,7 +78,7 @@ class DashboardController extends Controller
         // Calculate overall progress for active projects (cache for 2 minutes)
         $progressCacheKey = 'dashboard_project_progress_' . ($isPrivileged ? 'admin' : $user->id);
         $projectProgress = Cache::remember($progressCacheKey, 120, function () use ($user, $isPrivileged) {
-            $query = Project::where('status', 'active')->with('schedules');
+            $query = Project::where('status', 'active');
             
             if (!$isPrivileged) {
                 $query->whereHas('team', function ($q) use ($user) {
@@ -87,14 +87,30 @@ class DashboardController extends Controller
             }
 
             return $query->get()->map(function ($project) {
-                $latestSchedule = $project->schedules->sortByDesc('week_number')->first();
+                $latestReport = \App\Models\WeeklyReport::where('project_id', $project->id)
+                    ->orderByDesc('week_number')
+                    ->first();
+
+                if ($latestReport) {
+                    $snapshotStats = \App\Models\ReportProgressSnapshot::where('report_type', 'weekly')
+                        ->where('report_id', $latestReport->id)
+                        ->selectRaw('SUM(planned_weight) as planned, SUM(actual_weight) as actual')
+                        ->first();
+                    
+                    $planned = $snapshotStats ? round($snapshotStats->planned, 1) : 0;
+                    $actual = $snapshotStats ? round($snapshotStats->actual, 1) : 0;
+                } else {
+                    $planned = 0;
+                    $actual = 0;
+                }
+
                 return [
                     'id' => $project->id,
                     'name' => $project->name,
                     'client' => $project->client_name,
-                    'planned' => $latestSchedule ? round($latestSchedule->planned_cumulative, 1) : 0,
-                    'actual' => $latestSchedule ? round($latestSchedule->actual_cumulative, 1) : 0,
-                    'deviation' => $latestSchedule ? round($latestSchedule->deviation, 1) : 0,
+                    'planned' => $planned,
+                    'actual' => $actual,
+                    'deviation' => round($actual - $planned, 1),
                 ];
             });
         });
@@ -115,28 +131,10 @@ class DashboardController extends Controller
 
         // Projects with Issues
         $issuesCacheKey = 'dashboard_projects_issues_' . ($isPrivileged ? 'admin' : $user->id);
-        $projectsWithIssues = Cache::remember($issuesCacheKey, 120, function () use ($user, $isPrivileged) {
-            $query = Project::where('status', 'active')
-                ->whereHas('schedules', function ($query) {
-                    $query->where('deviation', '<', -5);
-                })
-                ->with('schedules');
-
-            if (!$isPrivileged) {
-                $query->whereHas('team', function ($q) use ($user) {
-                    $q->where('user_id', $user->id)->where('is_active', true);
-                });
-            }
-
-            return $query->limit(5)->get()
-                ->map(function ($project) {
-                    $latestSchedule = $project->schedules->sortByDesc('week_number')->first();
-                    return [
-                        'id' => $project->id,
-                        'name' => $project->name,
-                        'deviation' => $latestSchedule ? round($latestSchedule->deviation, 1) : 0,
-                    ];
-                });
+        $projectsWithIssues = Cache::remember($issuesCacheKey, 120, function () use ($projectProgress) {
+            return $projectProgress->filter(function($p) {
+                return $p['deviation'] < -5;
+            })->sortBy('deviation')->take(5);
         });
 
         // Low Stock Alerts (Global)

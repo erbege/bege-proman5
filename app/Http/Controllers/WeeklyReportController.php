@@ -107,9 +107,7 @@ class WeeklyReportController extends Controller
         $periodEnd = \Carbon\Carbon::parse($validated['period_end']);
         $periodStart = \Carbon\Carbon::parse($validated['period_start']);
 
-        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $validated['week_number']);
-        $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
-
+        // We'll generate cumulative data AFTER creating the report to have the report ID for snapshots
         $report = WeeklyReport::create([
             'project_id' => $project->id,
             'week_number' => $validated['week_number'],
@@ -118,13 +116,21 @@ class WeeklyReportController extends Controller
             'cover_title' => $validated['cover_title'] ?? "Weekly Progress Report - Week {$validated['week_number']}",
             'cover_image_id' => $validated['cover_image_id'] ?? null,
             'cover_image_path' => $coverImagePath,
-            'cumulative_data' => $cumulativeData,
-            'detail_data' => $detailData,
+            'cumulative_data' => [], // Temporary
+            'detail_data' => [],     // Temporary
             'documentation_ids' => $validated['documentation_ids'] ?? [],
             'activities' => $validated['activities'] ?? null,
             'problems' => $validated['problems'] ?? null,
             'status' => 'draft',
             'created_by' => auth()->id(),
+        ]);
+
+        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $validated['week_number'], $report);
+        $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
+
+        $report->update([
+            'cumulative_data' => $cumulativeData,
+            'detail_data' => $detailData,
         ]);
 
         return redirect()
@@ -520,7 +526,7 @@ class WeeklyReportController extends Controller
         $periodEnd = \Carbon\Carbon::parse($report->period_end);
         $periodStart = \Carbon\Carbon::parse($report->period_start);
 
-        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $report->week_number);
+        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $report->week_number, $report);
         $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
 
         $report->update([

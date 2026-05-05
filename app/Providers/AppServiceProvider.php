@@ -31,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
         // Register observer for AHSP auto-sync to materials
         AhspBasePrice::observe(AhspBasePriceObserver::class);
 
+        // Register events
+        \Illuminate\Support\Facades\Event::listen(
+            \App\Events\ProgressReportApproved::class,
+            \App\Listeners\CreateDraftMaterialUsage::class
+        );
+
         // Scramble Authentication Configuration
         if (class_exists(\Dedoc\Scramble\Scramble::class)) {
             \Dedoc\Scramble\Scramble::afterOpenApiGenerated(function (\Dedoc\Scramble\Support\Generator\OpenApi $openApi) {

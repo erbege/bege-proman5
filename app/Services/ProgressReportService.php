@@ -36,18 +36,18 @@ class ProgressReportService
             $data['progress_percentage'] = (float) ($data['progress_percentage'] ?? 0);
 
             $rabItem = null;
-            if (! empty($data['rab_item_id'])) {
+            if (!empty($data['rab_item_id'])) {
                 $rabItem = RabItem::lockForUpdate()->find($data['rab_item_id']);
                 if ($rabItem) {
                     $data['cumulative_progress'] = $this->calculateCumulativeProgressForNewReport($rabItem, $data['progress_percentage']);
                 }
             }
 
-            if (! isset($data['cumulative_progress'])) {
+            if (!isset($data['cumulative_progress'])) {
                 $data['cumulative_progress'] = $data['progress_percentage'];
             }
 
-            if (! empty($photoFiles)) {
+            if (!empty($photoFiles)) {
                 $data['photos'] = $this->processPhotos($photoFiles, $project);
             }
 
@@ -57,7 +57,11 @@ class ProgressReportService
                 $rabItem->update([
                     'actual_progress' => $report->cumulative_progress ?? $report->progress_percentage,
                 ]);
-                $this->scheduleCalculator->updateFromProgress($project);
+                dispatch(new \App\Jobs\RecalculateProjectScheduleJob($project));
+            }
+
+            if (!empty($data['material_usage_summary'])) {
+                $this->syncMaterials($report, $data['material_usage_summary']);
             }
 
             return $report;
@@ -72,7 +76,7 @@ class ProgressReportService
         return DB::transaction(function () use ($report, $project, $data, $photoFiles) {
             $oldRabItemId = $report->rab_item_id;
 
-            if (! empty($photoFiles)) {
+            if (!empty($photoFiles)) {
                 $newPhotos = $this->processPhotos($photoFiles, $project);
                 $existingPhotos = is_array($report->photos) ? $report->photos : [];
                 $data['photos'] = array_merge($existingPhotos, $newPhotos);
@@ -94,7 +98,11 @@ class ProgressReportService
                 }
             }
 
-            $this->scheduleCalculator->updateFromProgress($project);
+            if (isset($data['material_usage_summary'])) {
+                $this->syncMaterials($report, $data['material_usage_summary']);
+            }
+
+            dispatch(new \App\Jobs\RecalculateProjectScheduleJob($project));
 
             return $report;
         });
@@ -105,7 +113,7 @@ class ProgressReportService
      */
     public function delete(ProgressReport $report, Project $project): void
     {
-        if (! $report->canDelete) {
+        if (!$report->canDelete) {
             throw new \Exception('Laporan dengan status ini tidak dapat dihapus.');
         }
 
@@ -118,7 +126,7 @@ class ProgressReportService
 
             if ($hasRabItem && $rabItem) {
                 $this->recalculateRabProgress($rabItem);
-                $this->scheduleCalculator->updateFromProgress($project);
+                dispatch(new \App\Jobs\RecalculateProjectScheduleJob($project));
             }
         });
     }
@@ -181,8 +189,12 @@ class ProgressReportService
      */
     public function submit(ProgressReport $report): ProgressReport
     {
-        if (! $report->canSubmit) {
+        if (!$report->canSubmit) {
             throw new \Exception("Laporan dengan status '{$report->status_label}' tidak dapat diajukan.");
+        }
+
+        if ($report->reported_by != auth()->id() && !auth()->user()->hasRole(['Superadmin', 'super-admin'])) {
+            throw new \Exception('Hanya pembuat laporan yang dapat mengajukan laporan ini.');
         }
 
         $this->validateSubmissionCompliance($report);
@@ -203,17 +215,17 @@ class ProgressReportService
         }
 
         $safety = is_array($report->safety_details) ? $report->safety_details : [];
-        if (! array_key_exists('incidents', $safety) || ! array_key_exists('near_miss', $safety)) {
+        if (!array_key_exists('incidents', $safety) || !array_key_exists('near_miss', $safety)) {
             throw new \Exception('Data K3 minimal harus memuat jumlah insiden dan near miss.');
         }
 
-        if (! is_numeric($safety['incidents']) || ! is_numeric($safety['near_miss'])) {
+        if (!is_numeric($safety['incidents']) || !is_numeric($safety['near_miss'])) {
             throw new \Exception('Nilai insiden dan near miss pada data K3 harus berupa angka.');
         }
 
         $equipment = is_array($report->equipment_details) ? $report->equipment_details : [];
         foreach ($equipment as $index => $item) {
-            if (! is_array($item)) {
+            if (!is_array($item)) {
                 throw new \Exception('Format data peralatan tidak valid.');
             }
 
@@ -221,7 +233,7 @@ class ProgressReportService
                 throw new \Exception("Nama peralatan pada baris ke-" . ($index + 1) . ' wajib diisi.');
             }
 
-            if (! isset($item['qty']) || ! is_numeric($item['qty']) || (float) $item['qty'] <= 0) {
+            if (!isset($item['qty']) || !is_numeric($item['qty']) || (float) $item['qty'] <= 0) {
                 throw new \Exception("Jumlah peralatan pada baris ke-" . ($index + 1) . ' harus lebih dari 0.');
             }
         }
@@ -247,6 +259,9 @@ class ProgressReportService
             'reviewed_at' => now(),
             'review_notes' => $notes,
         ]);
+
+        event(new \App\Events\ProgressReportApproved($report));
+
         $this->notifyWorkflow($report, 'approved');
 
         return $report;
@@ -306,14 +321,24 @@ class ProgressReportService
      */
     public function bulkApprove(array $reportIds, int $reviewerId): int
     {
-        return ProgressReport::whereIn('id', $reportIds)
+        $reports = ProgressReport::whereIn('id', $reportIds)
             ->where('status', ProgressReport::STATUS_SUBMITTED)
             ->where('reported_by', '!=', $reviewerId)
-            ->update([
+            ->get();
+
+        $count = 0;
+        foreach ($reports as $report) {
+            $report->update([
                 'status' => ProgressReport::STATUS_REVIEWED,
                 'reviewed_by' => $reviewerId,
                 'reviewed_at' => now(),
             ]);
+
+            event(new \App\Events\ProgressReportApproved($report));
+            $count++;
+        }
+
+        return $count;
     }
 
     // ========================
@@ -322,13 +347,29 @@ class ProgressReportService
 
     public function notifyTeam(ProgressReport $report, ?int $excludeUserId = null): void
     {
+        $this->notifyApprovers($report, $excludeUserId);
+    }
+
+    public function notifyApprovers(ProgressReport $report, ?int $excludeUserId = null): void
+    {
         $report->loadMissing(['project', 'reporter']);
 
-        NotificationHelper::sendToProjectTeam(
-            $report->project,
-            new ProgressReportCreatedNotification($report),
-            $excludeUserId ?? $report->reported_by
-        );
+        // Get users in the same project who have 'progress.approve' permission
+        $approvers = $report->project->team()
+            ->permission('progress.approve')
+            ->where('users.id', '!=', $excludeUserId ?? $report->reported_by)
+            ->get();
+
+        // Also include Superadmins as they usually have all permissions and should know
+        $admins = \App\Models\User::role(['Superadmin', 'super-admin', 'administrator'])
+            ->where('id', '!=', $excludeUserId ?? $report->reported_by)
+            ->get();
+
+        $recipients = $approvers->merge($admins)->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            \Illuminate\Support\Facades\Notification::send($recipients, new \App\Notifications\ProgressReportCreatedNotification($report));
+        }
     }
 
     protected function notifyWorkflow(ProgressReport $report, string $action): void
@@ -339,7 +380,7 @@ class ProgressReportService
         $excludeUserId = auth()->id() ?? $report->reported_by;
 
         if ($action === 'submitted') {
-            NotificationHelper::sendToPermission('progress.approve', $notification, $excludeUserId, true);
+            $this->notifyApprovers($report, $excludeUserId);
             return;
         }
 
@@ -374,7 +415,7 @@ class ProgressReportService
 
     protected function deletePhotos(ProgressReport $report): void
     {
-        if (! $report->photos || ! is_array($report->photos)) {
+        if (!$report->photos || !is_array($report->photos)) {
             return;
         }
 
@@ -395,11 +436,11 @@ class ProgressReportService
     public function calculateProgressVariance(Project $project): float
     {
         $actual = $project->progress_percentage ?? 0;
-        
+
         // Target progress from latest schedule or estimated planned progress
         // Here we assume project schedules might have planned progress if implemented
         $planned = $project->planned_progress ?? $actual; // Fallback to actual if no planned is set
-        
+
         return (float) ($actual - $planned);
     }
 
@@ -412,14 +453,16 @@ class ProgressReportService
             ->where('report_date', '>=', now()->subDays(7))
             ->whereNotIn('status', [ProgressReport::STATUS_REJECTED])
             ->get();
-            
-        if ($reports->isEmpty()) return 0.0;
-        
+
+        if ($reports->isEmpty())
+            return 0.0;
+
         $totalProgress = $reports->sum('progress_percentage');
         $totalWorkers = $reports->sum('workers_count');
-        
-        if ($totalWorkers <= 0) return 0.0;
-        
+
+        if ($totalWorkers <= 0)
+            return 0.0;
+
         return round($totalProgress / $totalWorkers, 4);
     }
 
@@ -429,13 +472,36 @@ class ProgressReportService
     public function calculateSafetyScore(Project $project): float
     {
         $totalReports = ProgressReport::where('project_id', $project->id)->count();
-        if ($totalReports === 0) return 100.0;
-        
+        if ($totalReports === 0)
+            return 100.0;
+
         $reportsWithIncidents = ProgressReport::where('project_id', $project->id)
             ->whereRaw('JSON_EXTRACT(safety_details, "$.incidents") > 0')
             ->count();
-            
+
         $safeReports = $totalReports - $reportsWithIncidents;
         return round(($safeReports / $totalReports) * 100, 1);
+    }
+
+    /**
+     * Sync material usage summary to progress_report_materials table.
+     */
+    protected function syncMaterials(ProgressReport $report, array $materials): void
+    {
+        $report->progressReportMaterials()->delete();
+
+        foreach ($materials as $item) {
+            if (empty($item['material_name'])) {
+                continue;
+            }
+
+            $report->progressReportMaterials()->create([
+                'material_id' => $item['material_id'] ?? null,
+                'material_name' => $item['material_name'],
+                'quantity' => $item['qty_used'] ?? 0,
+                'unit' => $item['unit'] ?? null,
+                'notes' => ($item['is_manual'] ?? false) ? 'Manual Entry' : 'Inventory Link',
+            ]);
+        }
     }
 }

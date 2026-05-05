@@ -143,18 +143,22 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         // Material Analysis (AI & Local)
         Route::prefix('analysis')->name('analysis.')->middleware('can:financials.view')->group(function () {
             Route::get('/', [MaterialAnalysisController::class, 'index'])->name('index');
-            Route::get('/{item}', [MaterialAnalysisController::class, 'showItem'])->name('analysis.show');
 
             Route::middleware('can:financials.manage')->group(function () {
                 Route::post('/analyze-all', [MaterialAnalysisController::class, 'analyzeAll'])->name('analyze-all');
                 Route::match(['get', 'post'], '/analyze-all-local', [MaterialAnalysisController::class, 'analyzeAllLocal'])->name('analyze-all-local');
+                Route::post('/bulk-delete', [MaterialAnalysisController::class, 'bulkDeleteForecasts'])->name('bulk-delete');
+                Route::post('/bulk-delete-materials', [MaterialAnalysisController::class, 'bulkDeleteMaterials'])->name('bulk-delete-materials');
+            });
+
+            Route::get('/{item}', [MaterialAnalysisController::class, 'showItem'])->name('show');
+
+            Route::middleware('can:financials.manage')->group(function () {
                 Route::post('/{item}/analyze', [MaterialAnalysisController::class, 'analyze'])->name('analyze');
                 Route::post('/{item}/analyze-local', [MaterialAnalysisController::class, 'analyzeLocal'])->name('analyze-local');
                 Route::post('/{item}/reanalyze', [MaterialAnalysisController::class, 'reanalyze'])->name('reanalyze');
                 Route::post('/{item}/reanalyze-local', [MaterialAnalysisController::class, 'reanalyzeLocal'])->name('reanalyze-local');
                 Route::post('/forecast/{forecast}/mapping', [MaterialAnalysisController::class, 'updateMapping'])->name('update-mapping');
-                Route::post('/bulk-delete', [MaterialAnalysisController::class, 'bulkDeleteForecasts'])->name('bulk-delete');
-                Route::post('/bulk-delete-materials', [MaterialAnalysisController::class, 'bulkDeleteMaterials'])->name('bulk-delete-materials');
                 Route::delete('/forecast/{forecast}', [MaterialAnalysisController::class, 'deleteForecast'])->name('delete-forecast');
             });
         });

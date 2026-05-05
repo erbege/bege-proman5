@@ -190,6 +190,29 @@
                                                     title="Lihat Detail">
                                                     <x-heroicon-o-eye class="w-5 h-5" />
                                                 </button>
+                                                @if ($report->status === 'draft' && auth()->user()->can('progress.update') && ($report->reported_by == auth()->id() || auth()->user()->hasRole(['Superadmin', 'super-admin'])))
+                                                    <button type="button"
+                                                        wire:click.stop="submitReport({{ $report->id }})"
+                                                        wire:confirm="Yakin ingin mengajukan laporan ini untuk diverifikasi? Anda tidak dapat mengubah data setelah diajukan."
+                                                        class="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition"
+                                                        title="Ajukan">
+                                                        <x-heroicon-o-paper-airplane class="w-5 h-5" />
+                                                    </button>
+                                                @endif
+                                                @if ($report->status === 'submitted' && auth()->user()->can('progress.approve'))
+                                                    <button type="button"
+                                                        wire:click.stop="openReviewModal({{ $report->id }}, 'approve')"
+                                                        class="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition"
+                                                        title="Approve">
+                                                        <x-heroicon-o-check-circle class="w-5 h-5" />
+                                                    </button>
+                                                    <button type="button"
+                                                        wire:click.stop="openReviewModal({{ $report->id }}, 'reject')"
+                                                        class="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition"
+                                                        title="Reject">
+                                                        <x-heroicon-o-x-circle class="w-5 h-5" />
+                                                    </button>
+                                                @endif
                                                 @if ($report->is_editable)
                                                     <button type="button"
                                                         wire:click.stop="openModal({{ $report->id }})"
@@ -289,6 +312,26 @@
                                                     class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition">
                                                     Detail
                                                 </button>
+                                                @if ($report->status === 'draft' && auth()->user()->can('progress.update') && ($report->reported_by == auth()->id() || auth()->user()->hasRole(['Superadmin', 'super-admin'])))
+                                                    <button type="button"
+                                                        wire:click.stop="submitReport({{ $report->id }})"
+                                                        wire:confirm="Yakin ingin mengajukan laporan ini?"
+                                                        class="px-3 py-1.5 text-xs font-medium text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition">
+                                                        Ajukan
+                                                    </button>
+                                                @endif
+                                                @if ($report->status === 'submitted' && auth()->user()->can('progress.approve'))
+                                                    <button type="button"
+                                                        wire:click.stop="openReviewModal({{ $report->id }}, 'approve')"
+                                                        class="px-3 py-1.5 text-xs font-medium text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition">
+                                                        Approve
+                                                    </button>
+                                                    <button type="button"
+                                                        wire:click.stop="openReviewModal({{ $report->id }}, 'reject')"
+                                                        class="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
+                                                        Reject
+                                                    </button>
+                                                @endif
                                                 @if ($report->is_editable)
                                                     <button type="button"
                                                         wire:click.stop="openModal({{ $report->id }})"
@@ -416,6 +459,29 @@
                                                             title="Detail">
                                                             <x-heroicon-o-eye class="w-4 h-4" />
                                                         </button>
+                                                        @if ($report->status === 'draft' && auth()->user()->can('progress.update') && ($report->reported_by == auth()->id() || auth()->user()->hasRole(['Superadmin', 'super-admin'])))
+                                                            <button type="button"
+                                                                wire:click.stop="submitReport({{ $report->id }})"
+                                                                wire:confirm="Ajukan laporan ini?"
+                                                                class="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded transition"
+                                                                title="Ajukan">
+                                                                <x-heroicon-o-paper-airplane class="w-4 h-4" />
+                                                            </button>
+                                                        @endif
+                                                        @if ($report->status === 'submitted' && auth()->user()->can('progress.approve'))
+                                                            <button type="button"
+                                                                wire:click.stop="openReviewModal({{ $report->id }}, 'approve')"
+                                                                class="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded transition"
+                                                                title="Approve">
+                                                                <x-heroicon-o-check-circle class="w-4 h-4" />
+                                                            </button>
+                                                            <button type="button"
+                                                                wire:click.stop="openReviewModal({{ $report->id }}, 'reject')"
+                                                                class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition"
+                                                                title="Reject">
+                                                                <x-heroicon-o-x-circle class="w-4 h-4" />
+                                                            </button>
+                                                        @endif
                                                         @if ($report->is_editable)
                                                             <button type="button"
                                                                 wire:click.stop="openModal({{ $report->id }})"
@@ -850,48 +916,112 @@
 
                                 <!-- Material -->
                                 <div
-                                    class="bg-white dark:bg-dark-900 rounded-2xl border dark:border-dark-700 overflow-hidden shadow-sm">
+                                    class="bg-white dark:bg-dark-900 rounded-2xl border dark:border-dark-700 overflow-visible shadow-sm">
                                     <div
                                         class="px-4 py-3 bg-gray-50 dark:bg-dark-800 border-b dark:border-dark-700 flex justify-between items-center">
                                         <span
                                             class="text-[10px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest">Daftar
                                             Material</span>
                                         <button type="button"
-                                            wire:click="$set('materialUsageSummary', {{ json_encode(array_merge($materialUsageSummary, [['material' => '', 'qty_used' => 0, 'unit' => '']])) }})"
+                                            wire:click="addMaterialRow"
                                             class="text-[9px] font-black uppercase text-amber-600 hover:text-amber-800 flex items-center">
                                             <x-heroicon-s-plus-circle class="w-3.5 h-3.5 mr-1" /> Tambah
                                         </button>
                                     </div>
-                                    <div class="p-4 space-y-3">
+                                    <div class="p-4 space-y-4 pb-48">
                                         @foreach ($materialUsageSummary as $idx => $mat)
-                                            <div class="flex items-center space-x-3 group">
-                                                <div class="flex-1 grid grid-cols-12 gap-2">
-                                                    <div class="col-span-6">
-                                                        <input
-                                                            wire:model="materialUsageSummary.{{ $idx }}.material"
-                                                            type="text" placeholder="Nama Material"
-                                                            class="w-full px-3 py-2 bg-gray-50 dark:bg-dark-800 border-none rounded-lg text-xs ring-1 ring-gray-100 dark:ring-dark-700 focus:ring-1 focus:ring-amber-500">
+                                            <div class="space-y-2 group p-3 bg-gray-50/50 dark:bg-dark-900/50 rounded-xl border border-gray-100 dark:border-dark-700">
+                                                <div class="flex items-center space-x-3">
+                                                    <div class="flex-1 grid grid-cols-12 gap-3">
+                                                        <!-- Material Search/Input -->
+                                                        <div class="col-span-12 md:col-span-6 relative" x-data="{ open: false }" @click.away="open = false">
+                                                            <label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Nama Material</label>
+                                                            
+                                                            @if(!($mat['is_manual'] ?? false))
+                                                                <div class="relative">
+                                                                    <input 
+                                                                        type="text" 
+                                                                        wire:model.live.debounce.300ms="materialSearchQueries.{{ $idx }}"
+                                                                        @focus="open = true; $wire.startMaterialSearch({{ $idx }})"
+                                                                        placeholder="Cari di inventori proyek..."
+                                                                        class="w-full px-3 py-2 bg-white dark:bg-dark-800 border-none rounded-lg text-xs ring-1 ring-gray-200 dark:ring-dark-700 focus:ring-1 focus:ring-amber-500"
+                                                                        value="{{ $mat['material_name'] ?? ($mat['material'] ?? '') }}"
+                                                                    >
+                                                                    
+                                                                    @if($activeMaterialRow === $idx && !empty($materialSearchResults))
+                                                                        <div x-show="open" class="absolute z-50 mt-1 w-full bg-white dark:bg-dark-800 rounded-xl shadow-2xl border border-gray-100 dark:border-dark-700 py-2 max-h-48 overflow-y-auto">
+                                                                            @foreach($materialSearchResults as $result)
+                                                                                <button type="button" 
+                                                                                    wire:click="selectMaterial({{ $result['id'] }}, '{{ $result['name'] }}', '{{ $result['unit'] }}')"
+                                                                                    @click="open = false"
+                                                                                    class="w-full text-left px-4 py-2.5 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition flex items-center justify-between group/item"
+                                                                                >
+                                                                                    <div>
+                                                                                        <p class="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover/item:text-amber-600">{{ $result['name'] }}</p>
+                                                                                        <p class="text-[9px] text-gray-400 uppercase tracking-tighter">Stok: {{ $result['stock'] }} {{ $result['unit'] }}</p>
+                                                                                    </div>
+                                                                                    <x-heroicon-s-plus-circle class="w-4 h-4 text-gray-300 group-hover/item:text-amber-500" />
+                                                                                </button>
+                                                                            @endforeach
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
+                                                                <button type="button" wire:click="setManualMaterial" class="mt-1 text-[9px] font-bold text-gray-400 hover:text-amber-600 transition flex items-center">
+                                                                    <x-heroicon-s-pencil class="w-3 h-3 mr-1" /> Tidak ketemu? Input manual
+                                                                </button>
+                                                            @else
+                                                                <div class="relative">
+                                                                    <input 
+                                                                        wire:model="materialUsageSummary.{{ $idx }}.material_name"
+                                                                        type="text" 
+                                                                        placeholder="Nama material manual..."
+                                                                        class="w-full px-3 py-2 bg-amber-50/30 dark:bg-amber-900/10 border-none rounded-lg text-xs ring-1 ring-amber-100 dark:ring-amber-900/30 focus:ring-1 focus:ring-amber-500 font-medium"
+                                                                    >
+                                                                    <span class="absolute right-2 top-2 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-[8px] font-black text-amber-700 dark:text-amber-400 rounded">MANUAL</span>
+                                                                </div>
+                                                                <button type="button" wire:click="$set('materialUsageSummary.{{ $idx }}.is_manual', false)" class="mt-1 text-[9px] font-bold text-amber-600 hover:text-amber-800 transition flex items-center">
+                                                                    <x-heroicon-s-magnifying-glass class="w-3 h-3 mr-1" /> Kembali ke pencarian
+                                                                </button>
+                                                            @endif
+                                                        </div>
+
+                                                        <!-- Qty -->
+                                                        <div class="col-span-6 md:col-span-3">
+                                                            <label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Jumlah</label>
+                                                            <input
+                                                                wire:model="materialUsageSummary.{{ $idx }}.qty_used"
+                                                                type="number" step="0.01"
+                                                                class="w-full px-3 py-2 bg-white dark:bg-dark-800 border-none rounded-lg text-xs font-bold ring-1 ring-gray-200 dark:ring-dark-700 focus:ring-1 focus:ring-amber-500 text-center">
+                                                        </div>
+
+                                                        <!-- Unit -->
+                                                        <div class="col-span-6 md:col-span-3">
+                                                            <label class="block text-[9px] font-bold text-gray-400 uppercase mb-1">Satuan</label>
+                                                            <input
+                                                                wire:model="materialUsageSummary.{{ $idx }}.unit"
+                                                                type="text" readonly
+                                                                class="w-full px-3 py-2 bg-gray-100 dark:bg-dark-800 border-none rounded-lg text-xs ring-1 ring-gray-100 dark:ring-dark-700 text-center text-gray-500"
+                                                                :readonly="!{{ $mat['is_manual'] ? 'true' : 'false' }}"
+                                                            >
+                                                        </div>
                                                     </div>
-                                                    <div class="col-span-3">
-                                                        <input
-                                                            wire:model="materialUsageSummary.{{ $idx }}.qty_used"
-                                                            type="number" step="0.01" placeholder="Qty"
-                                                            class="w-full px-3 py-2 bg-gray-50 dark:bg-dark-800 border-none rounded-lg text-xs font-bold ring-1 ring-gray-100 dark:ring-dark-700 focus:ring-1 focus:ring-amber-500 text-center">
-                                                    </div>
-                                                    <div class="col-span-3">
-                                                        <input
-                                                            wire:model="materialUsageSummary.{{ $idx }}.unit"
-                                                            type="text" placeholder="Unit"
-                                                            class="w-full px-3 py-2 bg-gray-50 dark:bg-dark-800 border-none rounded-lg text-xs ring-1 ring-gray-100 dark:ring-dark-700 focus:ring-1 focus:ring-amber-500 text-center">
+                                                    
+                                                    <div class="flex flex-col justify-center">
+                                                        <button type="button"
+                                                            wire:click="$set('materialUsageSummary', {{ json_encode(collect($materialUsageSummary)->forget($idx)->values()->toArray()) }})"
+                                                            class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition">
+                                                            <x-heroicon-s-trash class="w-5 h-5" />
+                                                        </button>
                                                     </div>
                                                 </div>
-                                                <button type="button"
-                                                    wire:click="$set('materialUsageSummary', {{ json_encode(collect($materialUsageSummary)->forget($idx)->values()->toArray()) }})"
-                                                    class="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition opacity-0 group-hover:opacity-100">
-                                                    <x-heroicon-s-trash class="w-4 h-4" />
-                                                </button>
                                             </div>
                                         @endforeach
+
+                                        @if(empty($materialUsageSummary))
+                                            <div class="text-center py-6 border-2 border-dashed border-gray-100 dark:border-dark-700 rounded-2xl">
+                                                <p class="text-xs text-gray-400 font-medium">Belum ada material yang ditambahkan</p>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -1315,6 +1445,12 @@
                                                         {{ $selectedReport->reviewer->name ?? 'Reviewer' }} •
                                                         {{ $selectedReport->reviewed_at?->translatedFormat('d M Y, H:i') }}
                                                     </p>
+                                                    @if ($selectedReport->review_notes)
+                                                        <div class="mt-2 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50">
+                                                            <p class="text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 mb-1">Catatan Verifikasi</p>
+                                                            <p class="text-xs text-emerald-800 dark:text-emerald-200">{{ $selectedReport->review_notes }}</p>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @endif
@@ -1329,6 +1465,12 @@
                                                         {{ $selectedReport->rejector->name ?? 'Reviewer' }} •
                                                         {{ $selectedReport->rejected_at?->translatedFormat('d M Y, H:i') }}
                                                     </p>
+                                                    @if ($selectedReport->rejected_notes)
+                                                        <div class="mt-2 p-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/50">
+                                                            <p class="text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-300 mb-1">Catatan Penolakan</p>
+                                                            <p class="text-xs text-red-800 dark:text-red-200">{{ $selectedReport->rejected_notes }}</p>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         @endif
@@ -1416,7 +1558,7 @@
                                                                         class="hover:bg-gray-50 dark:hover:bg-dark-800/50 transition-colors">
                                                                         <td
                                                                             class="px-4 py-2.5 font-medium text-gray-900 dark:text-white">
-                                                                            {{ $mat['material'] }}</td>
+                                                                            {{ $mat['material_name'] ?? ($mat['material'] ?? '-') }}</td>
                                                                         <td
                                                                             class="px-4 py-2.5 text-right font-black text-gold-600">
                                                                             {{ number_format($mat['qty_used'], 1) }}
@@ -1607,10 +1749,11 @@
                                     Reject
                                 </button>
                             @endif
-                            @if ($selectedReport->status === 'draft' && auth()->user()->can('progress.manage'))
+                            @if ($selectedReport->status === 'draft' && auth()->user()->can('progress.update') && ($selectedReport->reported_by == auth()->id() || auth()->user()->hasRole(['Superadmin', 'super-admin'])))
                                 <button type="button" wire:click="submitReport({{ $selectedReport->id }})"
+                                    wire:confirm="Yakin ingin mengajukan laporan ini?"
                                     class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider">
-                                    Submit
+                                    Ajukan
                                 </button>
                             @endif
                             @if ($selectedReport->status === 'reviewed' && auth()->user()->can('progress.publish'))

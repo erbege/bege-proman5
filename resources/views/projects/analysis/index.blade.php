@@ -1127,14 +1127,19 @@
                         this.isProcessing = true;
                         this.progress = 0;
 
-                        const url = '{{ route('projects.analysis.analyze-all-local', $project) }}';
-
-                        this.eventSource = new EventSource(url + '?_token={{ csrf_token() }}');
+                        const url = '{{ route('projects.analysis.analyze-all-local', ['project' => $project->id]) }}';
+                        console.log('Starting analysis with URL:', url);
+                        this.eventSource = new EventSource(url, { withCredentials: true });
 
                         this.eventSource.onmessage = (event) => {
                             const data = JSON.parse(event.data);
 
-                            if (data.complete) {
+                            if (data.error) {
+                                this.isProcessing = false;
+                                this.isComplete = true;
+                                this.message = data.message;
+                                this.eventSource.close();
+                            } else if (data.complete) {
                                 this.isProcessing = false;
                                 this.isComplete = true;
                                 this.message = data.message;
@@ -1144,7 +1149,7 @@
                                 this.progress = data.progress;
                                 this.current = data.current;
                                 this.total = data.total;
-                                this.currentItem = data.item;
+                                this.currentItem = data.item || data.message || this.currentItem;
                                 this.successCount = data.success;
                                 this.noMatchCount = data.noMatch;
                             }
@@ -1153,9 +1158,13 @@
                         this.eventSource.onerror = (error) => {
                             console.error('EventSource error:', error);
                             this.eventSource.close();
-                            this.isProcessing = false;
-                            this.isComplete = true;
-                            this.message = 'Terjadi kesalahan saat memproses analisis.';
+                            
+                            // If we already have a message (from data.error), don't overwrite it
+                            if (!this.message) {
+                                this.isProcessing = false;
+                                this.isComplete = true;
+                                this.message = 'Terjadi kesalahan saat memproses analisis. Silakan periksa log server.';
+                            }
                         };
                     },
 

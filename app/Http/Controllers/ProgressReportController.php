@@ -82,6 +82,13 @@ class ProgressReportController extends Controller
     public function update(UpdateProgressReportRequest $request, Project $project, ProgressReport $report)
     {
         $this->authorize('progress.update');
+
+        if (! $report->is_editable) {
+            return redirect()
+                ->route('projects.progress.show', [$project, $report])
+                ->with('error', 'Laporan yang sudah diajukan tidak dapat diubah.');
+        }
+
         $validated = $request->validated();
         $photoFiles = $request->file('photos', []);
 
@@ -114,7 +121,13 @@ class ProgressReportController extends Controller
 
     public function submit(Project $project, ProgressReport $report): RedirectResponse
     {
-        $this->authorize('progress.manage');
+        $this->authorize('progress.update');
+
+        if ($report->reported_by != Auth::id() && ! Auth::user()->hasRole(['Superadmin', 'super-admin'])) {
+            return redirect()
+                ->route('projects.progress.index', $project)
+                ->with('error', 'Hanya pembuat laporan yang dapat mengajukan laporan ini.');
+        }
 
         try {
             $this->service->submit($report);

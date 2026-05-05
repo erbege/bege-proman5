@@ -13,18 +13,30 @@ return new class extends Migration
             $table->string('status', 20)->default('draft')->change();
 
             // Auto-numbering report code
-            $table->string('report_code', 20)->nullable()->unique()->after('status');
+            if (!Schema::hasColumn('progress_reports', 'report_code')) {
+                $table->string('report_code', 20)->nullable()->unique()->after('status');
+            }
 
             // Rejected tracking
-            $table->unsignedBigInteger('rejected_by')->nullable()->after('review_notes');
-            $table->foreign('rejected_by')->references('id')->on('users')->nullOnDelete();
-            $table->timestamp('rejected_at')->nullable()->after('rejected_by');
-            $table->text('rejected_notes')->nullable()->after('rejected_at');
+            if (!Schema::hasColumn('progress_reports', 'rejected_by')) {
+                $table->unsignedBigInteger('rejected_by')->nullable()->after('review_notes');
+                $table->foreign('rejected_by')->references('id')->on('users')->nullOnDelete();
+            }
+            if (!Schema::hasColumn('progress_reports', 'rejected_at')) {
+                $table->timestamp('rejected_at')->nullable()->after('rejected_by');
+            }
+            if (!Schema::hasColumn('progress_reports', 'rejected_notes')) {
+                $table->text('rejected_notes')->nullable()->after('rejected_at');
+            }
 
             // Published tracking
-            $table->unsignedBigInteger('published_by')->nullable()->after('rejected_notes');
-            $table->foreign('published_by')->references('id')->on('users')->nullOnDelete();
-            $table->timestamp('published_at')->nullable()->after('published_by');
+            if (!Schema::hasColumn('progress_reports', 'published_by')) {
+                $table->unsignedBigInteger('published_by')->nullable()->after('rejected_notes');
+                $table->foreign('published_by')->references('id')->on('users')->nullOnDelete();
+            }
+            if (!Schema::hasColumn('progress_reports', 'published_at')) {
+                $table->timestamp('published_at')->nullable()->after('published_by');
+            }
         });
     }
 

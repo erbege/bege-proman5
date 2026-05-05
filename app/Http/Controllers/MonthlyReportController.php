@@ -102,9 +102,7 @@ class MonthlyReportController extends Controller
         $periodEnd = \Carbon\Carbon::parse($validated['period_end']);
         $periodStart = \Carbon\Carbon::parse($validated['period_start']);
 
-        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $validated['year'], $validated['month']);
-        $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
-
+        // We'll generate cumulative data AFTER creating the report to have the report ID for snapshots
         $report = MonthlyReport::create([
             'project_id' => $project->id,
             'year' => $validated['year'],
@@ -114,13 +112,21 @@ class MonthlyReportController extends Controller
             'cover_title' => $validated['cover_title'] ?? "Monthly Progress Report - " . Carbon::createFromDate($validated['year'], $validated['month'], 1)->translatedFormat('F Y'),
             'cover_image_id' => $validated['cover_image_id'] ?? null,
             'cover_image_path' => $coverImagePath,
-            'cumulative_data' => $cumulativeData,
-            'detail_data' => $detailData,
+            'cumulative_data' => [], // Temporary
+            'detail_data' => [],     // Temporary
             'documentation_ids' => $validated['documentation_ids'] ?? [],
             'activities' => $validated['activities'] ?? null,
             'problems' => $validated['problems'] ?? null,
             'status' => MonthlyReport::STATUS_DRAFT,
             'created_by' => auth()->id(),
+        ]);
+
+        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $validated['year'], $validated['month'], $report);
+        $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
+
+        $report->update([
+            'cumulative_data' => $cumulativeData,
+            'detail_data' => $detailData,
         ]);
 
         return redirect()
@@ -323,20 +329,25 @@ class MonthlyReportController extends Controller
                 $periodStart = $currentDate->copy()->startOfMonth();
                 $periodEnd = $currentDate->copy()->endOfMonth();
 
-                $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $year, $month);
-                $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
-
-                MonthlyReport::create([
+                $report = MonthlyReport::create([
                     'project_id' => $project->id,
                     'year' => $year,
                     'month' => $month,
                     'period_start' => $periodStart,
                     'period_end' => $periodEnd,
                     'cover_title' => "Monthly Progress Report - " . $currentDate->translatedFormat('F Y'),
-                    'cumulative_data' => $cumulativeData,
-                    'detail_data' => $detailData,
+                    'cumulative_data' => [], // Temporary
+                    'detail_data' => [],     // Temporary
                     'status' => MonthlyReport::STATUS_DRAFT,
                     'created_by' => auth()->id(),
+                ]);
+
+                $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $year, $month, $report);
+                $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
+
+                $report->update([
+                    'cumulative_data' => $cumulativeData,
+                    'detail_data' => $detailData,
                 ]);
                 
                 $generated++;
@@ -479,7 +490,7 @@ class MonthlyReportController extends Controller
         $periodEnd = \Carbon\Carbon::parse($report->period_end);
         $periodStart = \Carbon\Carbon::parse($report->period_start);
 
-        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $report->year, $report->month);
+        $cumulativeData = $this->service->generateCumulativeData($project, $periodEnd, $report->year, $report->month, $report);
         $detailData = $this->service->generateDetailData($project, $periodStart, $periodEnd);
 
         $report->update([
