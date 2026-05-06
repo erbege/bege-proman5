@@ -1,6 +1,5 @@
-Kalau alurnya mau realistis (sesuai praktik proyek konstruksi), keempat modul itu harus membentuk satu rantai proses yang rapi—dari kebutuhan lapangan sampai barang diterima dan tercatat. Saya akan jelaskan dengan pendekatan workflow + user role yang umum dipakai di sistem ERP/proyek.
+# Flowchart penerapan modul Material Request, Purchase Request, Purchase Order, dan Good Receive.
 
----
 
 # 🔷 1. Gambaran Alur Besar (End-to-End Flow)
 
@@ -236,67 +235,3 @@ Kalau mau simpel tapi tetap proper:
 
 ---
 
-Kalau Anda mau, saya bisa bantu:
-
-* bikin **diagram workflow (BPMN)**
-* atau **desain database (ERD)**
-* atau **API flow antar modul**
-
-Tinggal bilang mau fokus ke bagian mana 👍
-
-
-
-
-
-flowchart LR
-
-%% Lanes
-subgraph Site[Site / Project]
-A[Create Material Request (MR)] --> B{Stock Available?}
-B -- Yes --> C[Issue from Warehouse]
-B -- No --> D[Submit MR for Approval]
-D --> E{PM Approve?}
-E -- No --> F[Reject MR]
-E -- Yes --> G[Generate Purchase Request (PR)]
-end
-
-subgraph Procurement[Procurement]
-G --> H[Review PR & Budget Check]
-H --> I{Approve PR?}
-I -- No --> J[Reject PR]
-I -- Yes --> K[Create RFQ / Vendor Selection]
-K --> L[Create Purchase Order (PO)]
-L --> M{PO Approval}
-M -- No --> N[Reject PO]
-M -- Yes --> O[Send PO to Vendor]
-end
-
-subgraph Vendor[Vendor]
-O --> P[Deliver Goods]
-end
-
-subgraph Warehouse[Warehouse / QC]
-P --> Q[Receive Goods]
-Q --> R[Input Goods Receipt (GR)]
-R --> S[Quality & Quantity Check]
-S --> T{Accept?}
-T -- No --> U[Reject / Return Goods]
-T -- Yes --> V[Approve GR & Update Stock]
-end
-
-C --> V
-
-
-Saya sudah buatkan diagram BPMN dalam format **Mermaid** di canvas (sebelah kanan). Itu bisa langsung Anda:
-
-* copy ke dokumentasi
-* render di tools seperti Notion, Draw.io, atau Mermaid Live Editor
-* atau dijadikan acuan untuk desain UI/flow backend
-
-Kalau mau lebih advance, saya bisa bantu:
-
-* versi **BPMN 2.0 lengkap (dengan swimlane formal & gateway simbol resmi)**
-* atau dipecah jadi **4 diagram per modul (MR, PR, PO, GR)** biar lebih detail
-* atau ditambahkan **exception flow** (partial delivery, budget overrun, dll)
-
-Tinggal bilang mau diperdalam ke bagian mana 👍
